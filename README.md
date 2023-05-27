@@ -1,6 +1,6 @@
 # DOTS
 
-- [] Initialize flake with direnv support
+- [] Initialize flake with direnv and lorri  support
 - [] Determine folder structure
 - [] Start migrating scripts on a per-need basis
 - [] Update and publish daily
