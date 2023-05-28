@@ -119,6 +119,77 @@ mount -t zfs rpool/nixos/var/log "${MNT}"/var/log
 zfs create -o mountpoint=legacy rpool/nixos/empty
 zfs snapshot rpool/nixos/empty@start
 
+#@ Format and mount ESP
 mkfs.vfat -n EFI "${DISK}"-part1
 mkdir -p "${MNT}"/boot/efis/"${DISK##*/}"-part1
 mount -t vfat -o iocharset=iso8859-1 "${DISK}"-part1 "${MNT}"/boot/efis/"${DISK##*/}"-part1
+
+#@ Clone template flake configuration
+mkdir -p "${MNT}"/etc
+git clone --depth 1 --branch openzfs-guide \
+  https://github.com/ne9z/dotfiles-flake.git "${MNT}"/etc/nixos
+
+#@ Update
+rm -rf "${MNT}"/etc/nixos/.git
+git -C "${MNT}"/etc/nixos/ init -b main
+git -C "${MNT}"/etc/nixos/ add "${MNT}"/etc/nixos/
+git -C "${MNT}"/etc/nixos config user.email "craole-cc@proton.me"
+git -C "${MNT}"/etc/nixos config user.name "craole-cc"
+git -C "${MNT}"/etc/nixos commit -asm 'initial commit'
+
+#@ Customize configuration to your hardware
+sed -i \
+  "s|/dev/disk/by-id/|${DISK%/*}/|" \
+  "${MNT}"/etc/nixos/hosts/exampleHost/default.nix
+
+diskNames=""
+diskNames="${diskNames} \"${DISK##*/}\""
+
+sed -i "s|\"bootDevices_placeholder\"|${diskNames}|g" \
+  "${MNT}"/etc/nixos/hosts/exampleHost/default.nix
+
+sed -i "s|\"abcd1234\"|\"$(head -c4 /dev/urandom | od -A none -t x4 | sed 's| ||g' || true)\"|g" \
+  "${MNT}"/etc/nixos/hosts/exampleHost/default.nix
+
+sed -i "s|\"x86_64-linux\"|\"$(uname -m || true)-linux\"|g" \
+  "${MNT}"/etc/nixos/flake.nix
+
+cp "$(command -v nixos-generate-config || true)" ./nixos-generate-config
+
+chmod a+rw ./nixos-generate-config
+
+# shellcheck disable=SC2016
+echo 'print STDOUT $initrdAvailableKernelModules' >>./nixos-generate-config
+
+kernelModules="$(./nixos-generate-config --show-hardware-config --no-filesystems | tail -n1 || true)"
+
+sed -i "s|\"kernelModules_placeholder\"|${kernelModules}|g" \
+  "${MNT}"/etc/nixos/hosts/exampleHost/default.nix
+
+#@ Set root password
+rootPwd=$(mkpasswd -m SHA-512)
+
+#@ Declare password in configuration
+sed -i \
+  "s|rootHash_placeholder|${rootPwd}|" \
+  "${MNT}"/etc/nixos/configuration.nix
+
+#@ Commit changes to local repo
+git -C "${MNT}"/etc/nixos commit -asm 'initial installation'
+
+#@ Update flake lock file to track latest system version
+nix flake update --commit-lock-file \
+  "git+file://${MNT}/etc/nixos"
+
+#@ Install system and apply configuration
+nixos-install \
+--root "${MNT}" \
+--no-root-passwd \
+--flake "git+file://${MNT}/etc/nixos#exampleHost"
+
+#@ Unmount filesystems
+umount -Rl "${MNT}"
+zpool export -a
+
+#@ Reboot
+#reboot
