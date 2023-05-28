@@ -28,8 +28,6 @@ if ! command -v helix; then nix-env -f '<nixpkgs>' -iA helix; fi
 if ! command -v partprobe; then nix-env -f '<nixpkgs>' -iA parted; fi
 
 #@ Partition the disk
-blkdiscard -f "${DISK}" || true
-
 parted --script --align=optimal "${DISK}" -- \
   mklabel gpt \
   mkpart EFI 2MiB 1GiB \
@@ -46,9 +44,9 @@ udevadm settle
 
 #@ Setup encrypted swap. This is useful if the available memory is small:
 for i in ${DISK}; do
-  cryptsetup open --type plain --key-file /dev/random "${i}"-part4 "${i##*/}"-part4
-  mkswap /dev/mapper/"${i##*/}"-part4
-  swapon /dev/mapper/"${i##*/}"-part4
+  cryptsetup open --type plain --key-file /dev/random "${DISK}"-part4 "${DISK##*/}"-part4
+  mkswap /dev/mapper/"${DISK##*/}"-part4
+  swapon /dev/mapper/"${DISK##*/}"-part4
 done
 
 #@ Create root pool, compatible with grub
@@ -66,9 +64,7 @@ zpool create \
   -O mountpoint=/boot \
   -R "${MNT}" \
   bpool \
-  $(for i in ${DISK}; do
-    printf '%s ' "${i}-part2"
-  done)
+  $(printf '%s ' "${DISK}-part2")
 
 #@ Create root pool
 zpool create \
@@ -84,9 +80,7 @@ zpool create \
   -O xattr=sa \
   -O mountpoint=/ \
   rpool \
-  $(for i in ${DISK}; do
-    printf '%s ' "${i}-part3"
-  done)
+  $(printf '%s ' "${DISK}-part3")
 
 #@ Create root system container:
 # Unencrypted
