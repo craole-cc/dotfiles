@@ -1,51 +1,57 @@
 const std = @import("std");
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.heap.page_allocator;
 
-    const stdin = std.io.getStdIn().reader();
-    const input = stdin.readAllAlloc(allocator, 1024 * 1024) catch return;
-    defer allocator.free(input);
-
-    var parsed = std.json.parseFromSlice(std.json.Value, allocator, input, .{}) catch return;
+    const input = std.fs.File.stdin().readToEndAlloc(allocator, 1024 * 1024) catch return;
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, input, .{}) catch return;
     defer parsed.deinit();
 
-    const root = parsed.value;
-    const tool_input = root.object.get("tool_input") orelse return;
-    const cmd_val = tool_input.object.get("command") orelse return;
-    if (cmd_val != .string) return;
-    const cmd = cmd_val.string;
+    if (parsed.value != .object) return;
+    const tool_input = parsed.value.object.get("tool_input") orelse return;
+    if (tool_input != .object) return;
+    const command = tool_input.object.get("command") orelse return;
+    if (command != .string) return;
 
-    if (isDestructive(cmd)) {
+    if (isDestructive(command.string)) {
         std.debug.print("Blocked by codex-guard-destructive: matched dangerous pattern\n", .{});
         std.process.exit(2);
     }
 }
 
-fn isDestructive(cmd: []const u8) bool {
-    if (containsRmDangerous(cmd)) return true;
-    if (std.mem.indexOf(u8, cmd, "mkfs") != null) return true;
-    if (std.mem.indexOf(u8, cmd, "dd") != null and std.mem.indexOf(u8, cmd, "of=/dev/") != null) return true;
+fn isDestructive(command: []const u8) bool {
+    var segments = std.mem.tokenizeAny(u8, command, ";|&\n");
+    while (segments.next()) |segment| {
+        if (segmentIsDestructive(segment)) return true;
+    }
     return false;
 }
 
-fn containsRmDangerous(cmd: []const u8) bool {
-    var it = std.mem.splitScalar(u8, cmd, ' ');
-    var found_rm = false;
-    while (it.next()) |token| {
-        if (!found_rm) {
-            if (std.mem.eql(u8, token, "rm") or std.mem.startsWith(u8, token, "rm")) {
-                found_rm = true;
-            }
-        } else {
-            if (std.mem.eql(u8, token, "/") or
-                std.mem.eql(u8, token, "~") or
-                std.mem.eql(u8, token, "$HOME") or
-                std.mem.eql(u8, token, "/*"))
-            {
-                return true;
+fn segmentIsDestructive(segment: []const u8) bool {
+    const dangerous_targets = [_][]const u8{ "/", "/*", "~", "~/", "$HOME", "$HOME/", "${HOME}" };
+
+    var tokens = std.mem.tokenizeAny(u8, segment, " \t\"'()");
+    var after_rm = false;
+    var after_dd = false;
+
+    while (tokens.next()) |token| {
+        const name = std.fs.path.basename(token);
+
+        if (std.mem.eql(u8, name, "rm")) {
+            after_rm = true;
+            continue;
+        }
+        if (std.mem.eql(u8, name, "dd")) {
+            after_dd = true;
+            continue;
+        }
+        if (std.mem.startsWith(u8, name, "mkfs")) return true;
+
+        if (after_dd and std.mem.startsWith(u8, token, "of=/dev/")) return true;
+
+        if (after_rm) {
+            for (dangerous_targets) |target| {
+                if (std.mem.eql(u8, token, target)) return true;
             }
         }
     }

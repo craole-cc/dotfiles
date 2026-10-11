@@ -16,6 +16,7 @@
     nativeBuildInputs = with pkgs; [zig];
     buildPhase = ''
       export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache"
+      export ZIG_LOCAL_CACHE_DIR="$TMPDIR/zig-local-cache"
       zig build-exe guard.zig -O ReleaseSmall --name codex-guard-destructive
     '';
     installPhase = ''

@@ -44,10 +44,10 @@
       ./models
     ];
 
-  gather = field:
+  collect = field:
     foldl' recursiveUpdate {} (map (part: part.${field} or {}) parts);
 
-  typed = gather "settings";
+  typed = collect "settings";
   prewritten =
     optionalAttrs (cfg.settings != null)
     (fromTOML (readFile cfg.settings));
@@ -57,7 +57,7 @@ in
     inherit context;
 
     options =
-      gather "options"
+      collect "options"
       // {
         enable = mkEnable {
           inherit context;
@@ -130,17 +130,22 @@ in
         };
       };
 
-    outputs.programs.codex =
-      gather "programs"
-      // {
-        enable = true;
-        inherit (cfg) package;
-        mutableSettings = cfg.mutable;
-        context = mkIf (cfg.context != null) cfg.context;
-        settings = mkMerge [
-          (layer 900 typed)
-          (layer 800 prewritten)
-          cfg.config
-        ];
+    outputs = {
+      programs = {
+        mcp.servers = {}; # TODO, this is needed right
+        codex =
+          collect "programs"
+          // {
+            enable = true;
+            inherit (cfg) package;
+            mutableSettings = cfg.mutable;
+            context = mkIf (cfg.context != null) cfg.context;
+            settings = mkMerge [
+              (layer 900 typed)
+              (layer 800 prewritten)
+              cfg.config
+            ];
+          };
       };
+    };
   }
