@@ -6,7 +6,7 @@
   inherit (lix.options.construction) mkEnum mkFalse mkOption;
   inherit (lix.types.combinators) listOf nullOr;
   inherit (lix.types.primitives) str;
-  inherit (lix.context.emptiness) withoutNulls;
+  inherit (lix.content.emptiness) withoutNulls;
 in {
   options = {
     model = {

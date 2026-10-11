@@ -35,13 +35,13 @@
     map
     (file: import file {inherit lix pkgs cfg;})
     [
+      ./hooks
+      ./integrations
+      ./plugins
+      ./profiles
+      ./rules
       ./settings
       ./skills
-      ./plugins
-      ./hooks
-      ./rules
-      ./profiles
-      ./models
     ];
 
   collect = field:
