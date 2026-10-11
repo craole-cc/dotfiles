@@ -1,8 +1,11 @@
 {_, ...}: let
+  exports = {inherit isEmpty isNotEmpty withoutNulls;};
+
   inherit (_.debug.assertions) mkTest;
   inherit (_.debug.runners) runTests;
   inherit (_.lists.predicates) isList;
   inherit (_.attrsets.predicates) isAttrs;
+  inherit (_.attrsets.transformation) filterAttrs;
   inherit (_.strings.predicates) isString;
   inherit (_.strings.transformation) trim;
   inherit (_.strings.access) stringLength;
@@ -68,7 +71,7 @@
   */
   isNotEmpty = value: !isEmpty value;
 
-  exports = {inherit isEmpty isNotEmpty;};
+  withoutNulls = filterAttrs (_: value: value != null);
 in
   exports
   // {

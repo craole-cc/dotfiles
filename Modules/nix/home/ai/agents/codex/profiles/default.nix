@@ -1,11 +1,11 @@
 {
   lix,
   cfg,
-  withoutNulls,
   ...
 }: let
   inherit (lix.options.construction) mkOption;
   inherit (lix.types.combinators) attrsOf;
+  inherit (lix.context.emptiness) withoutNulls;
   inherit (lix.types.primitives) anything;
 in {
   options.profiles = mkOption {

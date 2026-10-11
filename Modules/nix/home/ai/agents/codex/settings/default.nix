@@ -1,12 +1,12 @@
 {
   lix,
   cfg,
-  withoutNulls,
   ...
 }: let
   inherit (lix.options.construction) mkEnum mkFalse mkOption;
   inherit (lix.types.combinators) listOf nullOr;
   inherit (lix.types.primitives) str;
+  inherit (lix.context.emptiness) withoutNulls;
 in {
   options = {
     model = {
