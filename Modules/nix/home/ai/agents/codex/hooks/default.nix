@@ -9,21 +9,6 @@
   inherit (lix.types.combinators) attrsOf either;
   inherit (lix.types.primitives) anything path;
   inherit (pkgs.stdenv) mkDerivation;
-
-  destructiveCommandGuard = mkDerivation {
-    name = "codex-guard-destructive";
-    src = ./.;
-    nativeBuildInputs = with pkgs; [zig];
-    buildPhase = ''
-      export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache"
-      export ZIG_LOCAL_CACHE_DIR="$TMPDIR/zig-local-cache"
-      zig build-exe guard.zig -O ReleaseSmall --name codex-guard-destructive
-    '';
-    installPhase = ''
-      mkdir -p $out/bin
-      cp codex-guard-destructive $out/bin/
-    '';
-  };
 in {
   options.hooks = mkOption {
     type = either path (attrsOf anything);
@@ -33,7 +18,21 @@ in {
         hooks = [
           {
             type = "command";
-            command = "${destructiveCommandGuard}/bin/codex-guard-destructive";
+            command = "${mkDerivation {
+              name = "codex-guard-destructive";
+              src = ./guard.zig;
+              dontUnpack = true;
+              nativeBuildInputs = with pkgs; [zig];
+              buildPhase = ''
+                export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache"
+                export ZIG_LOCAL_CACHE_DIR="$TMPDIR/zig-local-cache"
+                zig build-exe $src -O ReleaseSmall --name codex-guard-destructive
+              '';
+              installPhase = ''
+                mkdir -p $out/bin
+                cp codex-guard-destructive $out/bin/
+              '';
+            }}/bin/codex-guard-destructive";
             timeout = 10;
             statusMessage = "Checking for destructive commands";
           }
@@ -47,7 +46,6 @@ in {
     '';
   };
 
-  # Hooks sit behind a feature flag, so switch it on whenever any are defined.
   settings = {
     features = optionalAttrs (cfg.hooks != {}) {hooks = true;};
   };
