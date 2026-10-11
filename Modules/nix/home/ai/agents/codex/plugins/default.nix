@@ -25,7 +25,7 @@
     '';
 in {
   options = {
-    curated = mkOption {
+    curated.plugins = mkOption {
       type = listOf str;
       default = ["github"];
       description = ''
@@ -57,7 +57,7 @@ in {
   };
 
   programs = {
-    plugins = map fromOpenai cfg.curated ++ cfg.plugins;
+    plugins = map fromOpenai cfg.curated.plugins ++ cfg.plugins;
     marketplaces = {openai-curated = openai;} // cfg.marketplaces;
   };
 }

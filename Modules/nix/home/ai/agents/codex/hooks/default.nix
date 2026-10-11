@@ -22,7 +22,7 @@ in {
               name = "codex-guard-destructive";
               src = ./guard.zig;
               dontUnpack = true;
-              nativeBuildInputs = with pkgs; [zig];
+              nativeBuildInputs = with pkgs; [zig_0_15];
               buildPhase = ''
                 export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache"
                 export ZIG_LOCAL_CACHE_DIR="$TMPDIR/zig-local-cache"
