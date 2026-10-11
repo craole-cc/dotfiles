@@ -129,11 +129,9 @@ in
           '';
         };
       };
-
-    outputs = {
-      programs = {
-        mcp.servers = {}; # TODO, this is needed right
-        codex =
+    outputs = mkMerge [
+      {
+        programs.codex =
           collect "programs"
           // {
             enable = true;
@@ -146,6 +144,7 @@ in
               cfg.config
             ];
           };
-      };
-    };
+      }
+      (collect "outputs")
+    ];
   }
