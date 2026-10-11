@@ -8,6 +8,7 @@
   sub = "agents";
   mod = "hermes-agent";
 
+  inherit (lix.attrsets.construction) genAttrs;
   inherit (lix.lists.predicates) isIn;
   inherit (lix.lists.transformation) filter;
   inherit (lix.modules.construction) mkConfig mkContext;
@@ -43,7 +44,7 @@ in
       # `service` accepts settings, environmentFiles, mcpServers, backend,
       # documents, plugins, restart policy, and every future option under
       # services.hermes-agent.  Keep secrets in environmentFiles, not settings.
-      service = mkOption {
+      services = mkOption {
         type = anything;
         default = {
           gateway.enable = true;
@@ -53,14 +54,13 @@ in
 
       # This is the programs.hermes-agent shape: package and desktop options
       # may be overridden independently of the user service.
-      program = mkOption {
+      programs = mkOption {
         type = anything;
         default.desktop.enable = true;
       };
     };
 
-    outputs = {
-      services.hermes-agent = cfg.service // {enable = true;};
-      programs.hermes-agent = cfg.program // {enable = true;};
-    };
+    outputs = genAttrs ["services" "programs"] (scope: {
+      ${mod} = cfg.${scope} // {enable = true;};
+    });
   }
