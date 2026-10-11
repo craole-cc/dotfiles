@@ -4,7 +4,6 @@
   system,
   lix,
   user,
-  pkgs,
   ...
 }: let
   dom = "ai";
@@ -17,34 +16,38 @@
   inherit (lix.filesystem.access) readFile;
   inherit (lix.lists.predicates) isIn;
   inherit (lix.lists.transformation) filter;
-  inherit (lix.modules.construction) mkConfig mkContext mkIf mkMerge;
+  inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable mkOption mkPackageOption;
   inherit (lix.types.combinators) attrsOf enum nullOr;
-  inherit (lix.types.primitives) anything path str;
-  inherit (pkgs.formats) toml;
+  inherit (lix.types.primitives) anything bool path str;
 
   context = mkContext {inherit config dom sub mod;};
   inherit (context) cfg;
 
-  generated = let
-    file = "config.toml";
-    settings = let
-      typed = filterAttrs (_: value: value != null) {
-        model = cfg.model.main;
-        review_model = cfg.model.review;
-        approval_policy = cfg.approval.policy;
-        approvals_reviewer = cfg.approval.reviewer;
-        sandbox_mode = cfg.sandbox.mode;
-      };
-      prewritten =
-        optionalAttrs (cfg.settings != null)
-        (fromTOML (readFile cfg.settings));
-    in
-      recursiveUpdate (recursiveUpdate typed prewritten) cfg.config;
-  in {
-    inherit settings;
-    target = ".${mod}/${file}";
-    source = (toml {}).generate file settings;
+  withoutNulls = filterAttrs (_: value: value != null);
+
+  # Final config.toml contents: typed options < prewritten file < `config`.
+  settings = let
+    typed = withoutNulls {
+      model = cfg.model.main;
+      review_model = cfg.model.review;
+      approval_policy = cfg.approval.policy;
+      approvals_reviewer = cfg.approval.reviewer;
+      sandbox_mode = cfg.sandbox.mode;
+    };
+    prewritten =
+      optionalAttrs (cfg.settings != null)
+      (fromTOML (readFile cfg.settings));
+  in
+    recursiveUpdate (recursiveUpdate typed prewritten) cfg.config;
+
+  # Forwarded to programs.codex under Home Manager's own option names.
+  # Null means unset, so Home Manager keeps its default.
+  passthrough = withoutNulls {
+    mutableSettings = cfg.mutable;
+    custom-instructions = cfg.instructions;
+    enableMcpIntegration = cfg.mcp;
+    inherit (cfg) rules skills hooks plugins profiles;
   };
 in
   mkConfig {
@@ -141,19 +144,82 @@ in
       generated = mkOption {
         type = attrsOf anything;
         readOnly = true;
-        default = generated.settings;
+        default = settings;
         description = ''
           The final merged config.toml contents, for inspection (read-only).
         '';
       };
+
+      mutable = mkOption {
+        type = nullOr bool;
+        default = null;
+        description = ''
+          Forwarded to `programs.codex.mutableSettings`. Null keeps Home Manager's default.
+        '';
+      };
+
+      instructions = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Global instructions, forwarded to `programs.codex.custom-instructions`.
+        '';
+      };
+
+      mcp = mkOption {
+        type = nullOr bool;
+        default = null;
+        description = ''
+          Forwarded to `programs.codex.enableMcpIntegration`.
+        '';
+      };
+
+      rules = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Command prefix rules, forwarded to `programs.codex.rules`.
+        '';
+      };
+
+      skills = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Forwarded to `programs.codex.skills`.
+        '';
+      };
+
+      hooks = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Lifecycle hooks, forwarded to `programs.codex.hooks`.
+        '';
+      };
+
+      plugins = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Forwarded to `programs.codex.plugins`.
+        '';
+      };
+
+      profiles = mkOption {
+        type = nullOr anything;
+        default = null;
+        description = ''
+          Config profiles, forwarded to `programs.codex.profiles`.
+        '';
+      };
     };
 
-    outputs = mkMerge [
-      {home.packages = [cfg.package];}
-      (
-        with generated;
-          mkIf (settings != {})
-          {home.file."${target}" = {inherit source;};}
-      )
-    ];
+    outputs.programs.codex =
+      {
+        enable = true;
+        inherit (cfg) package;
+        inherit settings;
+      }
+      // passthrough;
   }
