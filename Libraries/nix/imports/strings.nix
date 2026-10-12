@@ -69,7 +69,7 @@
       toUpper
       trim
       ;
-    inherit (trivial) toHexString;
+    inherit (trivial) pipe toHexString;
   };
 
   predicates = {

@@ -2,10 +2,10 @@
   config,
   host,
   lix,
+  inputs,
   names,
   paths,
   pkgs,
-  tree,
   ...
 }: let
   context = mkContext {
@@ -18,23 +18,8 @@
   inherit (lix.modules.construction) mkConfig mkContext mkMerge;
   inherit (lix.lists.construction) optionals;
   inherit (lix.options.construction) literalExpression mkEnable mkOption;
-  inherit
-    (lix.types.combinators)
-    attrsOf
-    either
-    listOf
-    nullOr
-    submodule
-    ;
-  inherit
-    (lix.types.primitives)
-    anything
-    bool
-    int
-    ints
-    path
-    str
-    ;
+  inherit (lix.types.combinators) attrsOf either listOf nullOr submodule;
+  inherit (lix.types.primitives) anything bool int ints path str;
   inherit (lix.modules.core.software) mkNix mkMaintenance;
 
   packagePolicy = host.settings.forNixpkgs or {};
@@ -251,16 +236,14 @@ in
         };
       }
       (mkNix {
-        inherit host pkgs;
+        inherit host pkgs inputs;
         inherit
           (cfg)
-          repo
           kernel
           caches
           max-jobs
           stateVersion
           ;
-        store = tree.store.default;
       })
       (mkMaintenance {
         inherit pkgs paths;

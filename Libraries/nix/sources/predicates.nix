@@ -23,6 +23,7 @@
   inherit (_.attrsets.access) attrValues;
   inherit (_.strings.predicates) hasInfix;
   inherit (_.strings.construction) fromJSON;
+  inherit (_.content.emptiness) isNotEmpty;
 
   /**
   Checks whether any input in a flake lock file matches a given field/value.
@@ -48,12 +49,16 @@
   ```
   */
   lockFileHas = {
-    path ? _default.paths.repo.src.store,
+    path ? null,
     field,
     value,
     fuzzy ? false,
   }: let
-    lock = fromJSON (readFile (path + "/flake.lock"));
+    store =
+      if isNotEmpty path
+      then path
+      else _default.paths.repo.src.store;
+    lock = fromJSON (readFile (store + "/flake.lock"));
     nodes = attrValues lock.nodes;
     matches = v:
       if fuzzy

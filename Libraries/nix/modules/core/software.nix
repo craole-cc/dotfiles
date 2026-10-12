@@ -54,16 +54,13 @@
   };
 
   inherit (_.attrsets.access) attrValues;
-  inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.transformation) filterAttrs;
-  inherit (_.attrsets.predicates) hasAttr;
   inherit (_.filesystem.access) readFile;
+  inherit (_.lists.predicates) all;
+  inherit (_.lists.transformation) uniqueStrings;
   inherit (_.modules.construction) mkForce;
-  inherit (_.sources.predicates) lockFileHas;
   inherit (_.strings.construction) concat;
-  inherit (_.strings.predicates) hasInfix;
-
   /**
     Build a NixOS configuration fragment for the Nix daemon and system state.
 
@@ -94,7 +91,7 @@
   mkNix = {
     host,
     pkgs,
-    repo,
+    inputs,
     kernel ? (host.packages.kernel or null),
     caches ? (host.caches or {}),
     max-jobs ? (host.specs.cpu.cores or "auto"),
@@ -102,48 +99,44 @@
     system ? host.system,
     ...
   }: let
-    requiresNyx = (kernel != null) && (hasInfix "cachyos" kernel || hasAttr kernel pkgs);
-    requiresNumtide = lockFileHas {
-      inherit (repo) path;
-      field = "owner";
-      value = "numtide";
-    };
-
     caches' = let
-      # TODO: Move this to API/global
-      common =
-        optionalAttrs requiresNumtide {
-          numtide = {
-            sub = "https://cache.numtide.com";
-            key = "cache.numtide.com-1:dGZlQILjUw6nfhbyU3aRjVm4iklknCKEIh5+OR2TXVY=";
-          };
-        }
-        // optionalAttrs requiresNyx {
-          nyx = {
-            sub = "https://nyx-cache.chaotic.cx/";
-            key = "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=";
-          };
-        };
-      custom = caches;
+      context = {inherit host pkgs kernel;};
+      active = cache:
+        cache.enable or (
+          (cache.when or (_: true)) context
+        );
+      result = attrValues (
+        filterAttrs (_: active)
+        (recursiveUpdate (inputs.caches or {}) caches)
+      );
     in
-      attrValues (filterAttrs (_: cache: cache.enable or true) (recursiveUpdate common custom));
+      assert all (cache: cache ? sub && cache ? key) result; result;
   in {
-    nixpkgs.hostPlatform = system;
-    system = {inherit stateVersion;};
-
-    nix.settings = {
-      inherit max-jobs;
-      experimental-features = [
-        "nix-command"
-        "flakes"
-        "pipe-operators"
-      ];
-      trusted-users = ["@wheel"];
-      substituters = map (cache: cache.sub) caches';
-      trusted-public-keys = map (cache: cache.key) caches';
+    nixpkgs = {
+      hostPlatform = system;
     };
 
-    systemd.services.nix-daemon.serviceConfig.LimitNOFILE = mkForce "65536 1048576";
+    system = {
+      inherit stateVersion;
+    };
+
+    nix = {
+      settings = {
+        inherit max-jobs;
+        experimental-features = [
+          "nix-command"
+          "flakes"
+          "pipe-operators"
+        ];
+        trusted-users = ["@wheel"];
+        substituters = uniqueStrings (map (cache: cache.sub) caches');
+        trusted-public-keys = uniqueStrings (map (cache: cache.key) caches');
+      };
+    };
+
+    systemd = {
+      services.nix-daemon.serviceConfig.LimitNOFILE = mkForce "65536 1048576";
+    };
   };
 
   mkFetch = {

@@ -29,8 +29,8 @@
   tools = pkgsFrom {
     inherit inputs pkgs;
     sources = let
-      source = "codex";
-      # source = "llm-agents";
+      # source = "codex";
+      source = "llm-agents";
     in {${mod} = source;};
   };
   meta = tools.${mod};

@@ -34,10 +34,14 @@
 
   inherit (_.attrsets.access) attrNames;
   inherit (_.attrsets.construction) listToAttrs optionalAttrs;
+  inherit (_.attrsets.predicates) hasAttr;
   inherit (_.attrsets.resolution) byPaths;
-  inherit (_.debug.assertions) withContext;
+  inherit (_.attrsets.transformation) filterAttrs mapAttrs;
   inherit (_.content.emptiness) isNotEmpty;
-  inherit (_.strings.transformation) toLowerCase;
+  inherit (_.debug.assertions) withContext;
+  inherit (_.sources.predicates) lockFileHas;
+  inherit (_.strings.predicates) hasInfix;
+  inherit (_.strings.transformation) toLowerCase pipe;
   inherit (_.types.predicates) isAttrs isPath isString;
 
   /**
@@ -207,6 +211,7 @@
     # path = args.home or (args.path or (args.src or null));
     # inputs = args.inputs or((getFlake {inherit flake path;}).inputs or {});
     inherit (args) inputs;
+    raw = inputs;
 
     tryNames = names: byNames {inherit inputs names;};
 
@@ -262,227 +267,311 @@
       // optionalAttrs (differentRev unstable nixpkgs) {nixpkgs-unstable = unstable;}
       // optionalAttrs (differentRev stable nixpkgs) {nixpkgs-stable = stable;};
 
-    home = {
-      nix-darwin = tryNames [
-        "darwin"
-        "nixDarwin"
-        "darwinNix"
-        "nix-darwin"
-      ];
+    specs = {
+      nix-darwin = {
+        names = [
+          "darwin"
+          "nixDarwin"
+          "darwinNix"
+          "nix-darwin"
+        ];
+      };
 
-      home-manager = tryNames [
-        "nixHomeManager"
-        "nixosHome"
-        "nixHome"
-        "homeManager"
-        "home"
-        "home-manager"
-      ];
+      home-manager = {
+        names = [
+          "nixHomeManager"
+          "nixosHome"
+          "nixHome"
+          "homeManager"
+          "home"
+          "home-manager"
+        ];
+      };
 
-      age = tryNames [
-        "secretsManager"
-        "secretManager"
-        "age"
-        "agenix"
-      ];
+      age = {
+        names = [
+          "secretsManager"
+          "secretManager"
+          "age"
+          "agenix"
+        ];
+      };
 
-      catppuccin = tryNames [
-        "styleCatppuccin"
-        "catppuccinStyle"
-        "catppuccin"
-      ];
+      catppuccin = {
+        names = [
+          "styleCatppuccin"
+          "catppuccinStyle"
+          "catppuccin"
+        ];
+      };
 
-      chaotic = tryNames [
-        "nixChaotic"
-        "kernelChaotic"
-        "chaoticKernel"
-        "chaoticNyx"
-        "chaotic"
-      ];
+      chaotic = {
+        names = [
+          "nixChaotic"
+          "kernelChaotic"
+          "chaoticKernel"
+          "chaoticNyx"
+          "chaotic"
+        ];
+        cache = {
+          sub = "https://nyx-cache.chaotic.cx/";
+          key = "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=";
+          when = {
+            kernel ? null,
+            pkgs,
+            ...
+          }:
+            kernel != null && (hasInfix "cachyos" kernel || hasAttr kernel pkgs);
+        };
+      };
 
-      caelestia = tryNames [
-        "shellCaelestia"
-        "caelestiaShell"
-        "caelestia-shell"
-        "caelestia"
-      ];
+      caelestia = {
+        names = [
+          "shellCaelestia"
+          "caelestiaShell"
+          "caelestia-shell"
+          "caelestia"
+        ];
+      };
 
-      codex = tryNames [
-        "codex-community"
-        "openai-codex"
-        "codex-cli"
-        "codex"
-      ];
-      codex-plugins = tryNames [
-        "codex-plugins"
-        "openai-plugins"
-      ];
-      codex-skills = tryNames [
-        "codex-skills"
-        "openai-skills"
-      ];
+      codex = {
+        names = [
+          "codex-community"
+          "openai-codex"
+          "codex-cli"
+          "codex"
+        ];
+      };
+      codex-plugins = {
+        names = [
+          "codex-plugins"
+          "openai-plugins"
+        ];
+      };
+      codex-skills = {
+        names = [
+          "codex-skills"
+          "openai-skills"
+        ];
+      };
 
-      dank-greeter = tryNames [
-        "greeterDankMaterial"
-        "shellDank"
-        "dank-material-greeter"
-        "dms-greeter"
-        "greeterDankMaterial"
-        "dank-greeter"
-      ];
+      dank-greeter = {
+        names = [
+          "greeterDankMaterial"
+          "shellDank"
+          "dank-material-greeter"
+          "dms-greeter"
+          "greeterDankMaterial"
+          "dank-greeter"
+        ];
+      };
 
-      dank-material-shell = tryNames [
-        "shellDankMaterial"
-        "dankMaterialShell"
-        "shellDank"
-        "dank-material"
-        "dank-material-shell"
-        "dank"
-        "dms"
-      ];
+      dank-material-shell = {
+        names = [
+          "shellDankMaterial"
+          "dankMaterialShell"
+          "shellDank"
+          "dank-material"
+          "dank-material-shell"
+          "dank"
+          "dms"
+        ];
+      };
 
-      dms-plugin-registry = tryNames [
-        "shellDankMaterialPlugins"
-        "dankMaterialShellPlugins"
-        "shellDankPlugins"
-        "dankMaterialPlugins"
-        "dank-plugins"
-        "dank-plugin-registry"
-        "dms-plugins"
-        "dmsp"
-      ];
+      dms-plugin-registry = {
+        names = [
+          "shellDankMaterialPlugins"
+          "dankMaterialShellPlugins"
+          "shellDankPlugins"
+          "dankMaterialPlugins"
+          "dank-plugins"
+          "dank-plugin-registry"
+          "dms-plugins"
+          "dmsp"
+        ];
+      };
 
-      fresh-editor = tryNames [
-        "fresh"
-        "freshEditor"
-        "editorFresh"
-        "fresh-editor"
-      ];
+      fresh-editor = {
+        names = [
+          "fresh"
+          "freshEditor"
+          "editorFresh"
+          "fresh-editor"
+        ];
+      };
 
-      helix = tryNames [
-        "helix-editor"
-        "helixEditor"
-        "editorHelix"
-        "editorHX"
-        "hx"
-        "helix"
-      ];
+      helix = {
+        names = [
+          "helix-editor"
+          "helixEditor"
+          "editorHelix"
+          "editorHX"
+          "hx"
+          "helix"
+        ];
+      };
 
-      llm-agents = tryNames [
-        "ai"
-        "aiAgents"
-        "ai-agents"
-        "llm"
-        "llmAgents"
-        "llm-agents"
-      ];
+      llm-agents = {
+        names = [
+          "ai"
+          "aiAgents"
+          "ai-agents"
+          "llm"
+          "llmAgents"
+          "llm-agents"
+        ];
+      };
 
-      hermes-agent = tryNames [
-        "hermes"
-        "hermes-agent"
-        "nous"
-      ];
+      hermes-agent = {
+        names = [
+          "hermes"
+          "hermes-agent"
+          "nous"
+        ];
+      };
 
-      rust-overlay = tryNames [
-        "rustOverlay"
-        "rust-overlay"
-        "oxalica"
-      ];
+      rust-overlay = {
+        names = [
+          "rustOverlay"
+          "rust-overlay"
+          "oxalica"
+        ];
+      };
 
-      noctalia-shell = tryNames [
-        "shellNoctalia"
-        "noctaliaShell"
-        "noctalia-dev"
-        "noctalia"
-        "noctalia-shell"
-      ];
+      noctalia-shell = {
+        names = [
+          "shellNoctalia"
+          "noctaliaShell"
+          "noctalia-dev"
+          "noctalia"
+          "noctalia-shell"
+        ];
+      };
 
-      nvf = tryNames [
-        "editorNeovim"
-        "neovim"
-        "nvim"
-        "neovimFlake"
-        "neoVim"
-        "nvf"
-      ];
+      nvf = {
+        names = [
+          "editorNeovim"
+          "neovim"
+          "nvim"
+          "neovimFlake"
+          "neoVim"
+          "nvf"
+        ];
+      };
 
-      plasma = tryNames [
-        "shellPlasma"
-        "plasma-manager"
-        "plasmaManager"
-        "kde"
-        "plasma"
-      ];
+      plasma = {
+        names = [
+          "shellPlasma"
+          "plasma-manager"
+          "plasmaManager"
+          "kde"
+          "plasma"
+        ];
+      };
 
-      quickshell = tryNames [
-        "shellQuick"
-        "quickShell"
-        "qtshell"
-        "qmlshell"
-        "quick"
-        "quickshell"
-      ];
+      quickshell = {
+        names = [
+          "shellQuick"
+          "quickShell"
+          "qtshell"
+          "qmlshell"
+          "quick"
+          "quickshell"
+        ];
+      };
 
-      stylix = tryNames [
-        "nixStyle"
-        "styleManager"
-        "stylix"
-      ];
+      stylix = {
+        names = [
+          "nixStyle"
+          "styleManager"
+          "stylix"
+        ];
+      };
 
-      treefmt = tryNames [
-        "treeFormatter"
-        "treefmtNix"
-        "fmtree"
-        "treefmt-nix"
-        "treefmt"
-      ];
+      treefmt = {
+        names = [
+          "treeFormatter"
+          "treefmtNix"
+          "fmtree"
+          "treefmt-nix"
+          "treefmt"
+        ];
+      };
 
-      typix = tryNames [
-        "docTypix"
-        "editorTypix"
-        "typst"
-        "typ"
-        "typix"
-      ];
+      typix = {
+        names = [
+          "docTypix"
+          "editorTypix"
+          "typst"
+          "typ"
+          "typix"
+        ];
+      };
 
-      vscode-insiders = tryNames [
-        "vscode"
-        "vscodeInsiders"
-        "vsCode"
-        "vsCodeInsiders"
-        "code"
-        "code-insiders"
-        "vsc"
-        "editorVSCode"
-        "editorVscode"
-        "editorVscodeInsiders"
-        "vscode-insiders-nix"
-        "vscode-insiders"
-      ];
+      vscode-insiders = {
+        names = [
+          "vscode"
+          "vscodeInsiders"
+          "vsCode"
+          "vsCodeInsiders"
+          "code"
+          "code-insiders"
+          "vsc"
+          "editorVSCode"
+          "editorVscode"
+          "editorVscodeInsiders"
+          "vscode-insiders-nix"
+          "vscode-insiders"
+        ];
+      };
 
-      nix-vscode-extensions = tryNames [
-        "editorVSCodeExtensions"
-        "editorVSCodeMarketplace"
-        "editorVscodeMarketplace"
-        "vscodeMarketplace"
-        "vscode-marketplace"
-        "vscodeExtensions"
-        "vscode-extensions"
-        "nix-vscode-extensions"
-      ];
+      nix-vscode-extensions = {
+        names = [
+          "editorVSCodeExtensions"
+          "editorVSCodeMarketplace"
+          "editorVscodeMarketplace"
+          "vscodeMarketplace"
+          "vscode-marketplace"
+          "vscodeExtensions"
+          "vscode-extensions"
+          "nix-vscode-extensions"
+        ];
+      };
 
-      zen-browser = tryNames [
-        "browserZen"
-        "firefoxZen"
-        "zen"
-        "zenBrowser"
-        "zenFirefox"
-        "twilight"
-        "zen-browser"
-      ];
+      zen-browser = {
+        names = [
+          "browserZen"
+          "firefoxZen"
+          "zen"
+          "zenBrowser"
+          "zenFirefox"
+          "twilight"
+          "zen-browser"
+        ];
+      };
     };
+
+    home = mapAttrs (_: spec: tryNames spec.names) specs;
+
+    caches =
+      (pipe specs [
+        (filterAttrs (name: spec: spec ? cache && isNotEmpty home.${name}))
+        (mapAttrs (_: spec: spec.cache))
+      ])
+      // {
+        numtide = {
+          when = {path ? null, ...}:
+            lockFileHas {
+              inherit path;
+              field = "owner";
+              value = "numtide";
+            };
+          sub = "https://cache.numtide.com";
+          key = "cache.numtide.com-1:dGZlQILjUw6nfhbyU3aRjVm4iklknCKEIh5+OR2TXVY=";
+        };
+      };
   in
-    {raw = inputs;} // core // home;
+    {inherit raw caches;} // core // home;
 in
   with meta.exports;
     internal
