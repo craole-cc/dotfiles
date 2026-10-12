@@ -349,13 +349,13 @@
   # (e.g. a host-specific runtime path), rather than the build-time `src`
   # projections above, which are fixed once `mkTree` is called.
   mkLocal = {
-    base,
+    roots,
     stems,
   }: let
     root =
-      if isAttrs base
-      then base.root
-      else base;
+      if isAttrs roots
+      then roots.root
+      else roots;
 
     resolveAt = value:
       if isAttrs value

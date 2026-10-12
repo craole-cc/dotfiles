@@ -95,6 +95,35 @@
     };
     # inherit (cfg) debug;
   };
+  # include = let
+  #   dirs = {
+  #     config = with host.paths; {
+  #       local = mkPath local.cfg "foot";
+  #       store = mkPath store.cfg "foot";
+  #     };
+  #     themes = {
+  #       pkgs = mkPath pkgs.foot.themes ["share" "foot" "themes"];
+  #       dots = mkPath dirs.config.store "themes";
+  #     };
+  #   };
+  #   mkThemePath = {
+  #     from ? "pkgs",
+  #     name,
+  #   }:
+  #     mkPath dirs.themes.${from} [name];
+  # in [
+  #   (mkThemePath {name = "catppuccin-frappe";})
+  #   (mkThemePath {name = "catppuccin-latte";})
+  #   (mkThemePath {
+  #     name = "dark.ini";
+  #     from = "dots";
+  #   })
+  #   (mkThemePath {
+  #     name = "light.ini";
+  #     from = "dots";
+  #   })
+  #   (mkPath dirs.config.store "config.ini")
+  # ];
 in
   mkConfig {
     inherit context;

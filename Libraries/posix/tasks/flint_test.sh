@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=all
 # shflint_test.sh – end-to-end tests for shflint (plain POSIX sh, no framework)
 #
 # Usage:

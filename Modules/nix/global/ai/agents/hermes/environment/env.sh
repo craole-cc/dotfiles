@@ -13,7 +13,7 @@ elif [ -e "${env_file}" ]; then
 
   owner="$(stat -c '%u' "${env_file}")"
   mode="$(stat -c '%a' "${env_file}")"
-  if [ "${owner}" != "$(id -u)" ] || [ $((0${mode} & 077)) -ne 0 ]; then
+  if [ "${owner}" != "$(id -u || true)" ] || [ $((0${mode} & 077)) -ne 0 ]; then
     printf '%s\n' "Refusing Hermes environment file not owned and private to this user: ${env_file}" >&2
     exit 1
   fi

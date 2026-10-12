@@ -70,88 +70,88 @@ print_version() {
 parse_arguments() {
   while [ "${#}" -gt 0 ]; do
     case "${1}" in
-    -t | --target)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --target requires a value\n" >&2
+      -t | --target)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --target requires a value\n" >&2
+          exit 2
+        }
+        target_root="${2}"
+        shift
+        ;;
+      -e | --exclude)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --exclude requires a value\n" >&2
+          exit 2
+        }
+        case "${exclude_patterns}" in
+          "") exclude_patterns="${2}" ;;
+          *) exclude_patterns="${exclude_patterns} ${2}" ;;
+        esac
+        shift
+        ;;
+      -i | --ignore-file)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --ignore-file requires a value\n" >&2
+          exit 2
+        }
+        ignore_file="${2}"
+        shift
+        ;;
+      -s | --sort)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --sort requires a value\n" >&2
+          exit 2
+        }
+        sort_type="${2}"
+        shift
+        ;;
+      -d | --depth)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --depth requires a value\n" >&2
+          exit 2
+        }
+        max_depth="${2}"
+        shift
+        ;;
+      -o | --output)
+        [ "${#}" -lt 2 ] && {
+          printf "Error: --output requires a value\n" >&2
+          exit 2
+        }
+        output_format="${2}"
+        shift
+        ;;
+      --relative)
+        relative_paths="1"
+        ;;
+      --absolute)
+        relative_paths=""
+        ;;
+      --follow-symlinks)
+        follow_symlinks="1"
+        ;;
+      --dry-run)
+        dry_run="1"
+        ;;
+      --stats)
+        show_stats="1"
+        ;;
+      --verbose)
+        verbose="1"
+        ;;
+      -h | --help)
+        print_usage
+        exit 0
+        ;;
+      -V | --version)
+        print_version
+        exit 0
+        ;;
+      *)
+        printf "Error: Unknown argument: %s\n" "${1}" >&2
+        print_usage >&2
         exit 2
-      }
-      target_root="${2}"
-      shift
-      ;;
-    -e | --exclude)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --exclude requires a value\n" >&2
-        exit 2
-      }
-      case "${exclude_patterns}" in
-      "") exclude_patterns="${2}" ;;
-      *) exclude_patterns="${exclude_patterns} ${2}" ;;
-      esac
-      shift
-      ;;
-    -i | --ignore-file)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --ignore-file requires a value\n" >&2
-        exit 2
-      }
-      ignore_file="${2}"
-      shift
-      ;;
-    -s | --sort)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --sort requires a value\n" >&2
-        exit 2
-      }
-      sort_type="${2}"
-      shift
-      ;;
-    -d | --depth)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --depth requires a value\n" >&2
-        exit 2
-      }
-      max_depth="${2}"
-      shift
-      ;;
-    -o | --output)
-      [ "${#}" -lt 2 ] && {
-        printf "Error: --output requires a value\n" >&2
-        exit 2
-      }
-      output_format="${2}"
-      shift
-      ;;
-    --relative)
-      relative_paths="1"
-      ;;
-    --absolute)
-      relative_paths=""
-      ;;
-    --follow-symlinks)
-      follow_symlinks="1"
-      ;;
-    --dry-run)
-      dry_run="1"
-      ;;
-    --stats)
-      show_stats="1"
-      ;;
-    --verbose)
-      verbose="1"
-      ;;
-    -h | --help)
-      print_usage
-      exit 0
-      ;;
-    -V | --version)
-      print_version
-      exit 0
-      ;;
-    *)
-      printf "Error: Unknown argument: %s\n" "${1}" >&2
-      print_usage >&2
-      exit 2
-      ;;
+        ;;
     esac
     shift
   done
@@ -161,12 +161,12 @@ parse_arguments() {
 validate_arguments() {
   #{ Validate required arguments
   case "${target_root}" in
-  "")
-    printf "Error: --target is required\n" >&2
-    print_usage >&2
-    exit 2
-    ;;
-  *) ;;
+    "")
+      printf "Error: --target is required\n" >&2
+      print_usage >&2
+      exit 2
+      ;;
+    *) ;;
   esac
 
   #{ Check if target directory exists
@@ -177,55 +177,55 @@ validate_arguments() {
 
   #{ Validate sort type
   case "${sort_type}" in
-  alphabetical | alphabetical-reverse | size | size-reverse | modified | modified-reverse | depth | depth-reverse | none) ;;
-  *)
-    printf "Error: Invalid sort type: %s\n" "${sort_type}" >&2
-    printf "Valid options: alphabetical, size, modified, depth, none (add -reverse for reverse order)\n" >&2
-    exit 2
-    ;;
+    alphabetical | alphabetical-reverse | size | size-reverse | modified | modified-reverse | depth | depth-reverse | none) ;;
+    *)
+      printf "Error: Invalid sort type: %s\n" "${sort_type}" >&2
+      printf "Valid options: alphabetical, size, modified, depth, none (add -reverse for reverse order)\n" >&2
+      exit 2
+      ;;
   esac
 
   #{ Validate output format
   case "${output_format}" in
-  colon | newline | json) ;;
-  *)
-    printf "Error: Invalid output format: %s\n" "${output_format}" >&2
-    printf "Valid options: colon, newline, json\n" >&2
-    exit 2
-    ;;
+    colon | newline | json) ;;
+    *)
+      printf "Error: Invalid output format: %s\n" "${output_format}" >&2
+      printf "Valid options: colon, newline, json\n" >&2
+      exit 2
+      ;;
   esac
 
   #{ Validate depth if specified
   case "${max_depth}" in
-  "" | *[!0-9]*)
-    case "${max_depth}" in
-    "") ;;
-    *)
-      printf "Error: Depth must be a non-negative integer: %s\n" "${max_depth}" >&2
-      exit 2
+    "" | *[!0-9]*)
+      case "${max_depth}" in
+        "") ;;
+        *)
+          printf "Error: Depth must be a non-negative integer: %s\n" "${max_depth}" >&2
+          exit 2
+          ;;
+        *) ;;
+      esac
       ;;
     *) ;;
-    esac
-    ;;
-  *) ;;
   esac
 
   #{ Convert target to absolute path if needed
   case "${relative_paths}" in
-  "")
-    #{ Make target_root absolute
-    case "${target_root}" in
-    /*) ;;
-    *) target_root="$(cd "${target_root}" && pwd)" ;; *) ;;
-    esac
-    ;;
-  *) ;;
+    "")
+      #{ Make target_root absolute
+      case "${target_root}" in
+        /*) ;;
+        *) target_root="$(cd "${target_root}" && pwd)" ;; *) ;;
+      esac
+      ;;
+    *) ;;
   esac
 }
 
 #DOC: Check if fd command is available
 check_fd_available() {
-  command -v fd >/dev/null 2>&1 && use_fd="1"
+  command -v fd > /dev/null 2>&1 && use_fd="1"
 }
 
 #DOC: Read patterns from a single ignore file and store with context
@@ -239,16 +239,16 @@ read_single_ignore_file() {
     while IFS= read -r line || [ -n "${line}" ]; do
       #{ Skip empty lines and comments
       case "${line}" in
-      "" | \#*) continue ;;
-      *)
-        #{ Store pattern with its directory context
-        case "${ignore_patterns}" in
-        "") ignore_patterns="${ignore_dir}:${line}" ;;
-        *) ignore_patterns="${ignore_patterns}|${ignore_dir}:${line}" ;;
-        esac
-        ;;
+        "" | \#*) continue ;;
+        *)
+          #{ Store pattern with its directory context
+          case "${ignore_patterns}" in
+            "") ignore_patterns="${ignore_dir}:${line}" ;;
+            *) ignore_patterns="${ignore_patterns}|${ignore_dir}:${line}" ;;
+          esac
+          ;;
       esac
-    done <"${ignore_file_path}"
+    done < "${ignore_file_path}"
   }
 }
 
@@ -264,20 +264,20 @@ read_ignore_files() {
     [ -f "${ignore_file}" ] && {
       while IFS= read -r line || [ -n "${line}" ]; do
         case "${line}" in
-        "" | \#*) continue ;;
-        *)
-          case "${exclude_patterns}" in
-          "") exclude_patterns="${line}" ;;
-          *) exclude_patterns="${exclude_patterns} ${line}" ;;
-          esac
-          ;;
+          "" | \#*) continue ;;
+          *)
+            case "${exclude_patterns}" in
+              "") exclude_patterns="${line}" ;;
+              *) exclude_patterns="${exclude_patterns} ${line}" ;;
+            esac
+            ;;
         esac
-      done <"${ignore_file}"
+      done < "${ignore_file}"
     }
   }
 
   #{ Find and read all .ignore files in the directory tree
-  find "${target_root}" -name ".ignore" -type f 2>/dev/null | while IFS= read -r ignore_path; do
+  find "${target_root}" -name ".ignore" -type f 2> /dev/null | while IFS= read -r ignore_path; do
     read_single_ignore_file "${ignore_path}"
   done
 }
@@ -288,7 +288,7 @@ update_ignore_file() {
     #{ Create ignore file directory if it doesn't exist
     ignore_dir="${ignore_file%/*}"
     case "${ignore_dir}" in
-    "${ignore_file}") ignore_dir="." ;; *) ;;
+      "${ignore_file}") ignore_dir="." ;; *) ;;
     esac
     [ ! -d "${ignore_dir}" ] && mkdir -p "${ignore_dir}"
 
@@ -301,14 +301,14 @@ update_ignore_file() {
       if [ -f "${ignore_file}" ]; then
         grep -Fxq "${pattern}" "${ignore_file}" || {
           case "${cli_patterns}" in
-          "") cli_patterns="${pattern}" ;;
-          *) cli_patterns="${cli_patterns} ${pattern}" ;;
+            "") cli_patterns="${pattern}" ;;
+            *) cli_patterns="${cli_patterns} ${pattern}" ;;
           esac
         }
       else
         case "${cli_patterns}" in
-        "") cli_patterns="${pattern}" ;;
-        *) cli_patterns="${cli_patterns} ${pattern}" ;;
+          "") cli_patterns="${pattern}" ;;
+          *) cli_patterns="${cli_patterns} ${pattern}" ;;
         esac
       fi
     done
@@ -316,7 +316,7 @@ update_ignore_file() {
     #{ Write new patterns to ignore file
     for pattern in ${cli_patterns}; do
       [ -n "${verbose}" ] && printf "Adding pattern to ignore file: %s\n" "${pattern}" >&2
-      printf "%s\n" "${pattern}" >>"${ignore_file}"
+      printf "%s\n" "${pattern}" >> "${ignore_file}"
     done
   }
 }
@@ -328,17 +328,17 @@ should_exclude_directory() {
   #{ Check CLI exclude patterns (apply globally)
   for pattern in ${exclude_patterns}; do
     case "${dir_to_check}" in
-    *"${pattern}"*)
-      [ -n "${verbose}" ] && printf "Excluded by CLI pattern '%s': %s\n" "${pattern}" "${dir_to_check}" >&2
-      return 0
-      ;;
-    *) ;;
+      *"${pattern}"*)
+        [ -n "${verbose}" ] && printf "Excluded by CLI pattern '%s': %s\n" "${pattern}" "${dir_to_check}" >&2
+        return 0
+        ;;
+      *) ;;
     esac
   done
 
   #{ Check hierarchical ignore patterns
   case "${ignore_patterns}" in
-  "") return 1 ;; *) ;;
+    "") return 1 ;; *) ;;
   esac
 
   #{ Parse ignore patterns (format: dir:pattern|dir:pattern|...)
@@ -354,16 +354,16 @@ should_exclude_directory() {
 
     #{ Check if directory is under the ignore file's influence
     case "${dir_to_check}" in
-    "${ignore_dir}"/* | "${ignore_dir}")
-      case "${dir_to_check}" in
-      *"${pattern}"*)
-        [ -n "${verbose}" ] && printf "Excluded by hierarchical pattern '%s' from %s: %s\n" "${pattern}" "${ignore_dir}" "${dir_to_check}" >&2
-        return 0
+      "${ignore_dir}"/* | "${ignore_dir}")
+        case "${dir_to_check}" in
+          *"${pattern}"*)
+            [ -n "${verbose}" ] && printf "Excluded by hierarchical pattern '%s' from %s: %s\n" "${pattern}" "${ignore_dir}" "${dir_to_check}" >&2
+            return 0
+            ;;
+          *) ;;
+        esac
         ;;
       *) ;;
-      esac
-      ;;
-    *) ;;
     esac
     IFS="|"
   done
@@ -378,35 +378,35 @@ get_directory_depth() {
   #{ Remove target root from path and count remaining slashes
   relative_path="${dir_path#"${target_root}"}"
   case "${relative_path}" in
-  "") printf "0\n" ;;
-  /*)
-    #{ Count slashes in relative path
-    depth=0
-    remaining="${relative_path#/}"
-    while [ "${remaining}" != "${remaining%/*}" ]; do
-      depth=$((depth + 1))
-      remaining="${remaining#*/}"
-    done
-    case "${remaining}" in
-    "") ;;
-    *) depth=$((depth + 1)) ;;
-    esac
-    printf "%d\n" "${depth}"
-    ;;
-  *) printf "0\n" ;;
+    "") printf "0\n" ;;
+    /*)
+      #{ Count slashes in relative path
+      depth=0
+      remaining="${relative_path#/}"
+      while [ "${remaining}" != "${remaining%/*}" ]; do
+        depth=$((depth + 1))
+        remaining="${remaining#*/}"
+      done
+      case "${remaining}" in
+        "") ;;
+        *) depth=$((depth + 1)) ;;
+      esac
+      printf "%d\n" "${depth}"
+      ;;
+    *) printf "0\n" ;;
   esac
 }
 
 #DOC: Get directory size (number of files and subdirectories)
 get_directory_size() {
   dir_path="${1}"
-  [ -d "${dir_path}" ] && find "${dir_path}" -mindepth 1 2>/dev/null | wc -l || printf "0\n"
+  [ -d "${dir_path}" ] && find "${dir_path}" -mindepth 1 2> /dev/null | wc -l || printf "0\n"
 }
 
 #DOC: Get directory modification time as timestamp
 get_directory_mtime() {
   dir_path="${1}"
-  [ -d "${dir_path}" ] && stat -c %Y "${dir_path}" 2>/dev/null || printf "0\n"
+  [ -d "${dir_path}" ] && stat -c %Y "${dir_path}" 2> /dev/null || printf "0\n"
 }
 
 #DOC: Sort directories according to specified sort type
@@ -415,47 +415,47 @@ sort_directories() {
   temp_file="/tmp/pathbuilder_sort_$$"
 
   case "${sort_method}" in
-  alphabetical)
-    sort
-    ;;
-  alphabetical-reverse)
-    sort -r
-    ;;
-  none)
-    cat
-    ;;
-  size | size-reverse | modified | modified-reverse | depth | depth-reverse)
-    #{ Create temporary file with sort keys
-    while IFS= read -r dir; do
+    alphabetical)
+      sort
+      ;;
+    alphabetical-reverse)
+      sort -r
+      ;;
+    none)
+      cat
+      ;;
+    size | size-reverse | modified | modified-reverse | depth | depth-reverse)
+      #{ Create temporary file with sort keys
+      while IFS= read -r dir; do
+        case "${sort_method}" in
+          size | size-reverse)
+            size=$(get_directory_size "${dir}")
+            printf "%010d %s\n" "${size}" "${dir}"
+            ;;
+          modified | modified-reverse)
+            mtime=$(get_directory_mtime "${dir}")
+            printf "%010d %s\n" "${mtime}" "${dir}"
+            ;;
+          depth | depth-reverse)
+            depth=$(get_directory_depth "${dir}")
+            printf "%03d %s\n" "${depth}" "${dir}"
+            ;;
+        esac
+      done > "${temp_file}"
+
+      #{ Sort and extract directory paths
       case "${sort_method}" in
-      size | size-reverse)
-        size=$(get_directory_size "${dir}")
-        printf "%010d %s\n" "${size}" "${dir}"
-        ;;
-      modified | modified-reverse)
-        mtime=$(get_directory_mtime "${dir}")
-        printf "%010d %s\n" "${mtime}" "${dir}"
-        ;;
-      depth | depth-reverse)
-        depth=$(get_directory_depth "${dir}")
-        printf "%03d %s\n" "${depth}" "${dir}"
-        ;;
+        *-reverse) sort_flags="-rn" ;;
+        *) sort_flags="-n" ;;
       esac
-    done >"${temp_file}"
 
-    #{ Sort and extract directory paths
-    case "${sort_method}" in
-    *-reverse) sort_flags="-rn" ;;
-    *) sort_flags="-n" ;;
-    esac
+      sort ${sort_flags} "${temp_file}" | while IFS= read -r line; do
+        printf "%s\n" "${line#* }"
+      done
 
-    sort ${sort_flags} "${temp_file}" | while IFS= read -r line; do
-      printf "%s\n" "${line#* }"
-    done
-
-    rm -f "${temp_file}"
-    ;;
-  *) ;;
+      rm -f "${temp_file}"
+      ;;
+    *) ;;
   esac
 }
 
@@ -468,13 +468,13 @@ build_fd_excludes() {
 
   #{ Add depth limit if specified
   case "${max_depth}" in
-  "") ;;
-  *) fd_excludes="${fd_excludes} --max-depth ${max_depth}" ;;
+    "") ;;
+    *) fd_excludes="${fd_excludes} --max-depth ${max_depth}" ;;
   esac
 
   #{ Add symlink handling
   case "${follow_symlinks}" in
-  "1") fd_excludes="${fd_excludes} --follow" ;; *) ;;
+    "1") fd_excludes="${fd_excludes} --follow" ;; *) ;;
   esac
 }
 
@@ -483,21 +483,21 @@ build_find_excludes() {
   find_excludes=""
   for pattern in ${exclude_patterns}; do
     case "${find_excludes}" in
-    "") find_excludes="-name ${pattern} -prune -o" ;;
-    *) find_excludes="${find_excludes} -name ${pattern} -prune -o" ;;
+      "") find_excludes="-name ${pattern} -prune -o" ;;
+      *) find_excludes="${find_excludes} -name ${pattern} -prune -o" ;;
     esac
   done
 
   #{ Add depth limit if specified
   case "${max_depth}" in
-  "") find_depth="" ;;
-  *) find_depth="-maxdepth ${max_depth}" ;;
+    "") find_depth="" ;;
+    *) find_depth="-maxdepth ${max_depth}" ;;
   esac
 
   #{ Add symlink handling
   case "${follow_symlinks}" in
-  "1") find_symlinks="-follow" ;;
-  *) find_symlinks="" ;;
+    "1") find_symlinks="-follow" ;;
+    *) find_symlinks="" ;;
   esac
 }
 
@@ -505,63 +505,63 @@ build_find_excludes() {
 format_path() {
   path="${1}"
   case "${relative_paths}" in
-  "1")
-    case "${path}" in
-    "${target_root}") printf ".\n" ;;
-    "${target_root}/"*) printf "%s\n" "${path#"${target_root}"/}" ;;
+    "1")
+      case "${path}" in
+        "${target_root}") printf ".\n" ;;
+        "${target_root}/"*) printf "%s\n" "${path#"${target_root}"/}" ;;
+        *) printf "%s\n" "${path}" ;;
+      esac
+      ;;
     *) printf "%s\n" "${path}" ;;
-    esac
-    ;;
-  *) printf "%s\n" "${path}" ;;
   esac
 }
 
 #DOC: Output results in specified format
 output_results() {
   case "${output_format}" in
-  colon)
-    first="1"
-    while IFS= read -r dir; do
-      formatted_path=$(format_path "${dir}")
-      case "${first}" in
-      "1")
-        printf "%s" "${formatted_path}"
-        first=""
-        ;;
-      *) printf ":%s" "${formatted_path}" ;;
-      esac
-    done
-    printf "\n"
-    ;;
-  newline)
-    while IFS= read -r dir; do
-      format_path "${dir}"
-    done
-    ;;
-  json)
-    printf "{\n"
-    printf "  \"target\": \"%s\",\n" "${target_root}"
-    printf "  \"paths\": [\n"
-    first="1"
-    while IFS= read -r dir; do
-      formatted_path=$(format_path "${dir}")
-      case "${first}" in
-      "1")
-        printf "    \"%s\"" "${formatted_path}"
-        first=""
-        ;;
-      *) printf ",\n    \"%s\"" "${formatted_path}" ;;
-      esac
-    done
-    printf "\n  ]\n}\n"
-    ;;
-  *) ;;
+    colon)
+      first="1"
+      while IFS= read -r dir; do
+        formatted_path=$(format_path "${dir}")
+        case "${first}" in
+          "1")
+            printf "%s" "${formatted_path}"
+            first=""
+            ;;
+          *) printf ":%s" "${formatted_path}" ;;
+        esac
+      done
+      printf "\n"
+      ;;
+    newline)
+      while IFS= read -r dir; do
+        format_path "${dir}"
+      done
+      ;;
+    json)
+      printf "{\n"
+      printf "  \"target\": \"%s\",\n" "${target_root}"
+      printf "  \"paths\": [\n"
+      first="1"
+      while IFS= read -r dir; do
+        formatted_path=$(format_path "${dir}")
+        case "${first}" in
+          "1")
+            printf "    \"%s\"" "${formatted_path}"
+            first=""
+            ;;
+          *) printf ",\n    \"%s\"" "${formatted_path}" ;;
+        esac
+      done
+      printf "\n  ]\n}\n"
+      ;;
+    *) ;;
   esac
 }
 
 #DOC: Execute the main process to find directories and build path string
 execute_process() {
-  start_time=$(date +%s 2>/dev/null || echo "0")
+  start_time=$(date +%s 2> /dev/null || echo "0")
   dir_count=0
   excluded_count=0
 
@@ -576,21 +576,21 @@ execute_process() {
     #{ Use fd for initial directory discovery (CLI excludes only)
     build_fd_excludes
     case "${fd_excludes}" in
-    "") eval "fd --type d . '${target_root}'" >"${temp_dirs}" ;;
-    *) eval "fd --type d ${fd_excludes} . '${target_root}'" >"${temp_dirs}" ;;
+      "") eval "fd --type d . '${target_root}'" > "${temp_dirs}" ;;
+      *) eval "fd --type d ${fd_excludes} . '${target_root}'" > "${temp_dirs}" ;;
     esac
   else
     #{ Use find as fallback (CLI excludes only)
     build_find_excludes
     case "${find_excludes}" in
-    "")
-      #{ No CLI excludes, simple find
-      eval "find '${target_root}' ${find_symlinks} ${find_depth} -type d" >"${temp_dirs}"
-      ;;
-    *)
-      #{ With CLI excludes
-      eval "find '${target_root}' ${find_symlinks} ${find_depth} ${find_excludes} -type d -print" >"${temp_dirs}"
-      ;;
+      "")
+        #{ No CLI excludes, simple find
+        eval "find '${target_root}' ${find_symlinks} ${find_depth} -type d" > "${temp_dirs}"
+        ;;
+      *)
+        #{ With CLI excludes
+        eval "find '${target_root}' ${find_symlinks} ${find_depth} ${find_excludes} -type d -print" > "${temp_dirs}"
+        ;;
     esac
   fi
 
@@ -605,23 +605,23 @@ execute_process() {
         printf "INCLUDE: %s\n" "${dir}" >&2
         dir_count=$((dir_count + 1))
       fi
-    done <"${temp_dirs}"
+    done < "${temp_dirs}"
   else
     #{ Filter and collect results
     final_dirs="/tmp/pathbuilder_final_$$"
 
     while IFS= read -r dir; do
       if ! should_exclude_directory "${dir}"; then
-        printf "%s\n" "${dir}" >>"${final_dirs}"
+        printf "%s\n" "${dir}" >> "${final_dirs}"
         dir_count=$((dir_count + 1))
       else
         excluded_count=$((excluded_count + 1))
       fi
-    done <"${temp_dirs}"
+    done < "${temp_dirs}"
 
     #{ Sort and output results
     [ -f "${final_dirs}" ] && {
-      sort_directories "${sort_type}" <"${final_dirs}" | output_results
+      sort_directories "${sort_type}" < "${final_dirs}" | output_results
     }
 
     rm -f "${final_dirs}"
@@ -631,7 +631,7 @@ execute_process() {
 
   #{ Show statistics if requested
   if [ -n "${show_stats}" ]; then
-    end_time=$(date +%s 2>/dev/null || echo "0")
+    end_time=$(date +%s 2> /dev/null || echo "0")
     duration=$((end_time - start_time))
 
     printf "\nStatistics:\n" >&2
@@ -641,8 +641,8 @@ execute_process() {
     printf "  Sort method: %s\n" "${sort_type}" >&2
     printf "  Output format: %s\n" "${output_format}" >&2
     case "${max_depth}" in
-    "") printf "  Max depth: unlimited\n" >&2 ;;
-    *) printf "  Max depth: %s\n" "${max_depth}" >&2 ;;
+      "") printf "  Max depth: unlimited\n" >&2 ;;
+      *) printf "  Max depth: %s\n" "${max_depth}" >&2 ;;
     esac
   fi
 }

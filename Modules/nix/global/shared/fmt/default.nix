@@ -69,10 +69,6 @@
       imports = (importAllPaths ./.).value;
       projectRootFile = "flake.nix";
       programs = {
-        # alejandra.enable = mkForce false;
-        # statix.enable = mkForce false;
-        # shellcheck.enable = mkForce false;
-        # shfmt.enable = mkForce false;
       };
       settings = {
         global.excludes = [
@@ -90,6 +86,8 @@
           "*.diff"
           "*.patch"
           "AGENTS.md"
+          "secrets.yaml"
+          "**/secrets.yaml"
           "**/dump.nix"
           "**/.bin/**"
           "**/.config/**"
@@ -196,7 +194,7 @@
       package = pkgs.dprint;
       formatter.dprint = {
         command = "${package}/bin/dprint";
-        options = [
+        options = mkForce [
           "fmt"
           "--allow-no-files"
           "--config"
@@ -206,7 +204,15 @@
     in {inherit package formatter;};
   in {
     # packages = dprint.package // flint.packages;
-    formatters = dprint.formatter // flint.formatters;
+    formatters =
+      dprint.formatter
+      // flint.formatters
+      // {
+        statix.priority = mkForce 1;
+        alejandra.priority = mkForce 2;
+        shellcheck.priority = mkForce 3;
+        shfmt.priority = mkForce 4;
+      };
     inherit (flint) packages dependencies;
   };
 

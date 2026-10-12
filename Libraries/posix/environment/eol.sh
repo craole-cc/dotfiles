@@ -2,7 +2,7 @@
 #shellcheck enable=all
 scr_PATH="$(pathof "$0")"
 scr_NAME="$(basename "${scr_PATH}")"
-scr_DIR="$(dirname "${scr_PATH}")"
+# scr_DIR="$(dirname "${scr_PATH}")"
 scr_VERSION="1.0"
 scr_DEPENDENCIES="coreutils, perl, dos2unix & unix2dos"
 scr_DESCRIPTION="converts between CRLF (DOS) and LF (*nix) text file formats"
@@ -90,7 +90,8 @@ parse_arguments() {
       -q | --quiet) unset verbose ;;
       -c | --cr) target_eol="cr" ;;
       -l | --lf) target_eol="lf" ;;
-    esac
+      *) ;; esac
+
     shift
   done
 
@@ -126,7 +127,7 @@ process_core() {
           convert_to_lf "${file}"
           printf "| %s | CRLF to LF |\n" "${file}"
           ;;
-      esac
+        *) ;; esac
 
       files_processed=$((files_processed + 1))
     else

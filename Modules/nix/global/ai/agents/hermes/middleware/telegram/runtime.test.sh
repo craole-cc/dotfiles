@@ -21,6 +21,7 @@ HERMES_HOME="${fixture}/home"
 HERMES_ENV_SH="${env_sh}"
 HERMES_ENV_PY=/bin/false
 export HERMES_HOME HERMES_ENV_SH HERMES_ENV_PY
+# shellcheck disable=SC1090
 . "${runtime}"
 
 [ "${HERMES_TELEGRAM_BOT_TOKEN:?}" = 'redacted-token' ]

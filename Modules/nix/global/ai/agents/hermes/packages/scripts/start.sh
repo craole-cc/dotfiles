@@ -6,7 +6,7 @@ no_confirm=0
 for arg in "$@"; do
   case "${arg}" in
     --no-confirm | -y) no_confirm=1 ;;
-  esac
+    *) ;; esac
 done
 
 if [ -n "${HERMES_ENV_SH:-}" ] && [ -f "${HERMES_ENV_SH}" ]; then

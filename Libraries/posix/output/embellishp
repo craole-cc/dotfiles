@@ -3,18 +3,18 @@
 parse_arguments() {
   for arg in "$@"; do
     case ${arg} in
-    -d | --simulate | --verbose) simulate=true ;;
-    -h | --help) printf "%s" "USAGE" ;;
-    -v | --version) printf "%s" "VERSION" ;;
-    *)
-      #{ Reset variables
-      unset \
-        attribute attribute_cmd \
-        color_name color_type color_cmd color_code
+      -d | --simulate | --verbose) simulate=true ;;
+      -h | --help) printf "%s" "USAGE" ;;
+      -v | --version) printf "%s" "VERSION" ;;
+      *)
+        #{ Reset variables
+        unset \
+          attribute attribute_cmd \
+          color_name color_type color_cmd color_code
 
-      #{ Set default alignment
-      alignment="left"
-      ;;
+        #{ Set default alignment
+        alignment="left"
+        ;;
     esac
   done
 
@@ -22,123 +22,123 @@ parse_arguments() {
     unset attribute attribute_cmd tput_code ansi_code class
 
     case $1 in
-    --reset)
-      attribute="reset"
-      tput_code="sgr0"
-      ansi_code="0"
-      stylise
-      ;;
-    --bold)
-      attribute="bold"
-      tput_code="bold"
-      ansi_code="1"
-      stylise
-      ;;
-    --dim)
-      attribute="dim"
-      tput_code="dim"
-      ansi_code="2"
-      stylise
-      ;;
-    --italic)
-      attribute="italic"
-      tput_code="sitm"
-      ansi_code="3"
-      stylise
-      ;;
-    --underline)
-      attribute="underline"
-      tput_code="smul"
-      ansi_code="4"
-      stylise
-      ;;
-    --blink)
-      attribute="blink"
-      tput_code="blink"
-      ansi_code="5"
-      stylise
-      ;;
-    --double-underline | --double*)
-      attribute="double underline"
-      tput_code=""
-      ansi_code="6"
-      stylise
-      ;;
-    --invert | --highlight | --standout)
-      attribute="invert"
-      tput_code="smso"
-      ansi_code="7"
-      stylise
-      ;;
-    --hidden)
-      attribute="hidden"
-      tput_code="invis"
-      ansi_code="8"
-      stylise
-      ;;
-    --strikethrough | --strike*)
-      attribute="strikethrough"
-      tput_code=""
-      ansi_code="9"
-      stylise
-      ;;
-
-    -*black | -*red | -*green | -*yellow | -*blue | -*magenta | -*cyan | -*white)
-      attribute="color"
-
-      #{ Set the color name and code
-      case "$1" in
-      *black) color_name="black" color_code=0 ;;
-      *red) color_name="red" color_code=1 ;;
-      *green) color_name="green" color_code=2 ;;
-      *yellow) color_name="yellow" color_code=3 ;;
-      *blue) color_name="blue" color_code=4 ;;
-      *magenta) color_name="magenta" color_code=5 ;;
-      *cyan) color_name="cyan" color_code=6 ;;
-      *white) color_name="white" color_code=7 ;;
-      esac
-
-      #{ Set the color type
-      case "$1" in
-      *bg*)
-        class="background"
-        tput_code="setab ${color_code}"
-        ansi_code="4${color_code}"
+      --reset)
+        attribute="reset"
+        tput_code="sgr0"
+        ansi_code="0"
+        stylise
         ;;
-      *fg* | *)
-        class="foreground"
-        tput_code="setaf ${color_code}"
-        ansi_code="3${color_code}"
+      --bold)
+        attribute="bold"
+        tput_code="bold"
+        ansi_code="1"
+        stylise
         ;;
-      esac
+      --dim)
+        attribute="dim"
+        tput_code="dim"
+        ansi_code="2"
+        stylise
+        ;;
+      --italic)
+        attribute="italic"
+        tput_code="sitm"
+        ansi_code="3"
+        stylise
+        ;;
+      --underline)
+        attribute="underline"
+        tput_code="smul"
+        ansi_code="4"
+        stylise
+        ;;
+      --blink)
+        attribute="blink"
+        tput_code="blink"
+        ansi_code="5"
+        stylise
+        ;;
+      --double-underline | --double*)
+        attribute="double underline"
+        tput_code=""
+        ansi_code="6"
+        stylise
+        ;;
+      --invert | --highlight | --standout)
+        attribute="invert"
+        tput_code="smso"
+        ansi_code="7"
+        stylise
+        ;;
+      --hidden)
+        attribute="hidden"
+        tput_code="invis"
+        ansi_code="8"
+        stylise
+        ;;
+      --strikethrough | --strike*)
+        attribute="strikethrough"
+        tput_code=""
+        ansi_code="9"
+        stylise
+        ;;
 
-      stylise
-      ;;
-    -l | --new-line)
-      attribute="position"
-      attribute_cmd="printf \"\n"\"
-      stylise
-      ;;
-    -s | --space)
-      attribute="position"
-      attribute_cmd='printf " '\"
-      stylise
-      ;;
-    --center)
-      alignment="center"
-      ;;
-    --right)
-      alignment="right"
-      ;;
-    --left)
-      alignment="left"
-      ;;
-    -*) ;;
-    *)
-      attribute="text"
-      attribute_cmd="printf \"$1\""
-      stylise
-      ;;
+      -*black | -*red | -*green | -*yellow | -*blue | -*magenta | -*cyan | -*white)
+        attribute="color"
+
+        #{ Set the color name and code
+        case "$1" in
+          *black) color_name="black" color_code=0 ;;
+          *red) color_name="red" color_code=1 ;;
+          *green) color_name="green" color_code=2 ;;
+          *yellow) color_name="yellow" color_code=3 ;;
+          *blue) color_name="blue" color_code=4 ;;
+          *magenta) color_name="magenta" color_code=5 ;;
+          *cyan) color_name="cyan" color_code=6 ;;
+          *white) color_name="white" color_code=7 ;;
+        esac
+
+        #{ Set the color type
+        case "$1" in
+          *bg*)
+            class="background"
+            tput_code="setab ${color_code}"
+            ansi_code="4${color_code}"
+            ;;
+          *fg* | *)
+            class="foreground"
+            tput_code="setaf ${color_code}"
+            ansi_code="3${color_code}"
+            ;;
+        esac
+
+        stylise
+        ;;
+      -l | --new-line)
+        attribute="position"
+        attribute_cmd="printf \"\n"\"
+        stylise
+        ;;
+      -s | --space)
+        attribute="position"
+        attribute_cmd='printf " '\"
+        stylise
+        ;;
+      --center)
+        alignment="center"
+        ;;
+      --right)
+        alignment="right"
+        ;;
+      --left)
+        alignment="left"
+        ;;
+      -*) ;;
+      *)
+        attribute="text"
+        attribute_cmd="printf \"$1\""
+        stylise
+        ;;
     esac
     shift
   done
@@ -146,11 +146,11 @@ parse_arguments() {
 
 stylise() {
   #{ Set the styling system [TPUT vs ANSI]
-  if type tput >/dev/null 2>&1 && [ -n "${tput_code}" ]; then
+  if type tput > /dev/null 2>&1 && [ -n "${tput_code}" ]; then
     attribute_cmd="tput ${tput_code}"
   else
-    [ -n "${attribute_cmd}" ] ||
-      attribute_cmd="printf \"\033[${ansi_code}m\""
+    [ -n "${attribute_cmd}" ] \
+      || attribute_cmd="printf \"\033[${ansi_code}m\""
   fi
 
   if [ -n "${simulate}" ]; then

@@ -15,7 +15,7 @@ main() {
 set_defaults() {
   #| Script Information
   scr_name="pathof.sh"
-  scr_desc="Find the path of a file or directory in the current or parent directories"
+  # scr_desc="Find the path of a file or directory in the current or parent directories"
   scr_usage="Usage: ${scr_name} --base <path> --direction <up|down|both> --items <item1 item2 ...>"
   scr_version="0.1.0"
 
@@ -50,7 +50,7 @@ parse_arguments() {
         exit 0
         ;;
       -V | --debug)
-        debug=1
+        # debug=1
         ;;
       --type)
         type="$2"
@@ -619,8 +619,9 @@ execute_output() {
 
         if [ -f "${temp_file}" ]; then
           echo "${formatted_output}" > "${temp_file}"
+          contents="$(cat "${temp_file}")"
           # Use stat to sort by modification time
-          formatted_output="$(ls -t "$(cat "${temp_file}")" 2> /dev/null || cat "${temp_file}")"
+          formatted_output="$(ls -t "${contents}" 2> /dev/null || echo "${contents}")"
           rm -f "${temp_file}"
           pout_debug "Sorted results by modification time"
         fi

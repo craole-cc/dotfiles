@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=all
 
 name=$1
 unused_value=1

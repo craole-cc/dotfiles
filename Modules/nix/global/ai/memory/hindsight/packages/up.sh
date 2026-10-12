@@ -84,7 +84,7 @@ case "${HINDSIGHT_RUNTIME_KIND}" in
         gum log --level error "Hindsight Compose manifest must be a packaged store artefact: ${HINDSIGHT_COMPOSE_FILE}"
         exit 1
         ;;
-    esac
+      *) ;; esac
 
     if [ ! -f "${HINDSIGHT_COMPOSE_FILE}" ]; then
       gum log --level error "Hindsight Compose manifest is missing: ${HINDSIGHT_COMPOSE_FILE}"

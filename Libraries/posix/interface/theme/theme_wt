@@ -7,16 +7,16 @@ DARK_THEME="One Half Dark"
 LIGHT_THEME="Solarized Light"
 
 # Check if a command exists
-cmd_exists() {
-  command -v "$1" >/dev/null 2>&1
-}
+has() { command -v "$1" > /dev/null 2>&1; }
 
 # Install jq using available package manager
 install_jq() {
-  if cmd_exists "winget"; then
+  has_winget="$(has "winget")"
+  has_choco="$(has "choco")"
+  if "${has_winget}"; then
     printf "Installing jq using winget...\n"
     winget install jqlang.jq
-  elif cmd_exists "choco"; then
+  elif "${has_choco}"; then
     printf "Installing jq using chocolatey...\n"
     choco install jq --yes
   else
@@ -28,9 +28,9 @@ install_jq() {
 
 # Check for Windows Terminal (including preview)
 check_windows_terminal() {
-  if cmd_exists "wt.exe"; then
-    return 0
-  elif cmd_exists "wtpreview.exe"; then
+  has_wt="$(has "wt.exe")"
+  has_wtp="$(has "wtpreview.exe")"
+  if "${has_wt}" || "${has_wtp}"; then
     return 0
   else
     printf "Error: Neither Windows Terminal nor Windows Terminal Preview is installed\n" >&2
@@ -41,17 +41,23 @@ check_windows_terminal() {
 # Check dependencies
 check_dependencies() {
   # First check for Windows Terminal
-  if ! check_windows_terminal; then
-    return 1
-  fi
+  check_windows_terminal
+  has_jaq="$(has "jaq")"
+  has_jq="$(has "jq")"
+  has_parser="$(
+    if "${has_jaq}" || "${has_jq}"; then return 0; else return 1; fi
+  )"
 
-  #{ Only check for jq if Terminal exists
-  if ! cmd_exists "jq"; then
-    printf "jq is not installed. Attempting to install...\n"
-    install_jq
-    if ! cmd_exists "jq"; then
-      printf "Error: Failed to install jq\n" >&2
-      return 1
+  if "${has_parser}"; then :; else
+    printf "jaq is not installed. Attempting to install...\n"
+    install_jaq
+    if "${has_parser}"; then :; else
+      printf "jq is not installed. Attempting to install...\n"
+      install_jq
+      if "${has_parser}"; then :; else
+        printf "Error: Failed to install jaq or jq\n" >&2
+        return 1
+      fi
     fi
   fi
 }
@@ -59,12 +65,13 @@ check_dependencies() {
 # Function to find files using fd or find
 find_files() {
   base_path="$1"
-  if cmd_exists "fd"; then
-    fd --no-ignore --absolute-path "^Microsoft\.WindowsTerminal.*$" "${base_path}" --type d 2>/dev/null
+  has_fd="$(has "fd")"
+  if "${has_fd}"; then
+    fd --no-ignore --absolute-path "^Microsoft\.WindowsTerminal.*$" "${base_path}" --type d 2> /dev/null
   else
     find "${base_path}" \
       -name "Microsoft.WindowsTerminal*" \
-      -type d 2>/dev/null
+      -type d 2> /dev/null
   fi
 }
 
@@ -72,8 +79,8 @@ find_settings_paths() {
   #{ Find both regular and preview settings
   find "${LOCALAPPDATA:?}/Packages" \
     -name "Microsoft.WindowsTerminal*" \
-    -type d 2>/dev/null |
-    while read -r dir; do
+    -type d 2> /dev/null \
+    | while read -r dir; do
       settings_path="${dir}/LocalState/settings.json"
       if [ -f "${settings_path}" ]; then
         printf "%s" "${settings_path}"
@@ -103,7 +110,7 @@ toggle_theme() {
   #{ Update the theme
   if ! jq --arg theme "${new_theme}" \
     '.profiles.defaults.colorScheme = $theme' \
-    "${settings_file}" >"${settings_file}.tmp"; then
+    "${settings_file}" > "${settings_file}.tmp"; then
     printf "Error: Failed to update theme in: %s\n" "${settings_file}" >&2
     mv "${settings_file}.bac" "${settings_file}"
     rm -f "${settings_file}.tmp"

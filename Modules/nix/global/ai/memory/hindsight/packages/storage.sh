@@ -25,7 +25,8 @@ case "${HINDSIGHT_RUNTIME_KIND}" in
 
     printf '%s\n' "Hindsight image: ${HINDSIGHT_IMAGE}"
     if size=$("${runtime}" image inspect --format '{{.Size}}' "${HINDSIGHT_IMAGE}" 2> /dev/null); then
-      printf 'Image size: %s\n' "$(numfmt --to=iec "${size}" 2> /dev/null || printf '%s bytes' "${size}")"
+      numfmt="$(numfmt --to=iec "${size}" 2> /dev/null || printf '%s bytes' "${size}")"
+      printf 'Image size: %s\n' "${numfmt}"
     else
       printf '%s\n' 'Image is not currently present locally.'
     fi

@@ -187,7 +187,7 @@ __in_term__() {
 }
 
 __cmd_active__() {
-  [ ! "$(pgrep --count "$@")" -eq 0 ]
+  [ "$(pgrep --count "$@")" -ne 0 ]
 }
 
 __cmd_kill__() {

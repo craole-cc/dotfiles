@@ -25,7 +25,7 @@ initialise_defaults() {
   script_desc="Interactive sops wrapper for editing secrets across any host/user"
 
   log_level="info" # debug | info | warn | error | quiet
-  if command -v gum >/dev/null 2>&1; then
+  if command -v gum > /dev/null 2>&1; then
     has_gum=1
   else
     has_gum=0
@@ -34,13 +34,13 @@ initialise_defaults() {
   #> Capture SOP_FILE now, before any cd, and make it absolute so it still
   #> points where the caller meant afterwards.
   case "${SOP_FILE:-}" in
-  '' | /*) sops_file="${SOP_FILE:-}" ;;
-  *) sops_file="${PWD}/${SOP_FILE}" ;;
+    '' | /*) sops_file="${SOP_FILE:-}" ;;
+    *) sops_file="${PWD}/${SOP_FILE}" ;;
   esac
 
   #> Script-specific variables take precedence over generic ones.
-  host="${DOTS_HOST:-${HOST:-$(hostname 2>/dev/null || printf 'unknown')}}"
-  user="${DOTS_USER:-${USER:-$(whoami 2>/dev/null || printf 'unknown')}}"
+  host="${DOTS_HOST:-${HOST:-$(hostname 2> /dev/null || printf 'unknown')}}"
+  user="${DOTS_USER:-${USER:-$(whoami 2> /dev/null || printf 'unknown')}}"
 
   scope=""
   scope_class=""
@@ -55,7 +55,7 @@ initialise_defaults() {
 initialise_workspace() {
   #DOC initialise_workspace => Enter the workspace root and pin it to an absolute path
   #> Enter the workspace root; exit if it can't be entered.
-  workspace="${DOTS:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+  workspace="${DOTS:-$(git rev-parse --show-toplevel 2> /dev/null || pwd)}"
   cd -- "${workspace}" || {
     print error "Cannot enter workspace: ${workspace}"
     exit 1
@@ -78,81 +78,81 @@ parse_arguments() {
   #> collides with one.
   while [ $# -gt 0 ]; do
     case "$1" in
-    #~@ Selectors
-    host | -H | --host)
-      wants_host=1
-      _name=$(next_name "${2:-}")
-      if [ -n "${_name}" ]; then
-        host="${_name}"
+      #~@ Selectors
+      host | -H | --host)
+        wants_host=1
+        _name=$(next_name "${2:-}")
+        if [ -n "${_name}" ]; then
+          host="${_name}"
+          shift
+        fi
+        ;;
+      host=* | --host=*)
+        wants_host=1
+        host="${1#*=}"
+        ;;
+      user | -U | --user)
+        wants_user=1
+        _name=$(next_name "${2:-}")
+        if [ -n "${_name}" ]; then
+          user="${_name}"
+          shift
+        fi
+        ;;
+      user=* | --user=*)
+        wants_user=1
+        user="${1#*=}"
+        ;;
+      global | -G | --global)
+        wants_global=1
+        _name=$(next_name "${2:-}")
+        if [ -n "${_name}" ]; then
+          user="${_name}"
+          shift
+        fi
+        ;;
+      global=* | --global=*)
+        wants_global=1
+        user="${1#*=}"
+        ;;
+      #~@ Ownership class
+      #> Only meaningful with --user: picks which of a user's files to edit.
+      #> Takes a value rather than being a bare word, so a third class can be
+      #> added without inventing another flag. `--scope=host` also works.
+      scope | -S | --scope)
+        #> Not next_name: the class values are deliberately the same words as the
+        #> selectors (`host`, `user`), and next_name exists to refuse those.
+        scope_class="${2:-}"
+        case "${scope_class}" in
+          '' | -*)
+            print error "--scope needs a class: host or user"
+            exit 2
+            ;;
+          #> Any other word is accepted here and validated against the files on
+          #> disk when the path is resolved.
+          *) ;;
+        esac
         shift
-      fi
-      ;;
-    host=* | --host=*)
-      wants_host=1
-      host="${1#*=}"
-      ;;
-    user | -U | --user)
-      wants_user=1
-      _name=$(next_name "${2:-}")
-      if [ -n "${_name}" ]; then
-        user="${_name}"
-        shift
-      fi
-      ;;
-    user=* | --user=*)
-      wants_user=1
-      user="${1#*=}"
-      ;;
-    global | -G | --global)
-      wants_global=1
-      _name=$(next_name "${2:-}")
-      if [ -n "${_name}" ]; then
-        user="${_name}"
-        shift
-      fi
-      ;;
-    global=* | --global=*)
-      wants_global=1
-      user="${1#*=}"
-      ;;
-    #~@ Ownership class
-    #> Only meaningful with --user: picks which of a user's files to edit.
-    #> Takes a value rather than being a bare word, so a third class can be
-    #> added without inventing another flag. `--scope=host` also works.
-    scope | -S | --scope)
-      #> Not next_name: the class values are deliberately the same words as the
-      #> selectors (`host`, `user`), and next_name exists to refuse those.
-      scope_class="${2:-}"
-      case "${scope_class}" in
-      '' | -*)
-        print error "--scope needs a class: host or user"
+        ;;
+      scope=* | --scope=*)
+        scope_class="${1#*=}"
+        ;;
+      #~@ Logging
+      debug | verbose | -d | --debug | --verbose) log_level="debug" ;;
+      info | -i | --info) log_level="info" ;;
+      warn | -w | --warn) log_level="warn" ;;
+      error | -x | --error) log_level="error" ;;
+      quiet | -q | --quiet) log_level="quiet" ;;
+      #~@ Help
+      help | -h | --help)
+        show_help
+        exit 0
+        ;;
+      *)
+        print error "Unknown argument: $1"
+        print error "Run '${script_name} --help' for more information"
         exit 2
         ;;
-      #> Any other word is accepted here and validated against the files on
-      #> disk when the path is resolved.
-      *) ;;
-      esac
-      shift
-      ;;
-    scope=* | --scope=*)
-      scope_class="${1#*=}"
-      ;;
-    #~@ Logging
-    debug | verbose | -d | --debug | --verbose) log_level="debug" ;;
-    info | -i | --info) log_level="info" ;;
-    warn | -w | --warn) log_level="warn" ;;
-    error | -x | --error) log_level="error" ;;
-    quiet | -q | --quiet) log_level="quiet" ;;
-    #~@ Help
-    help | -h | --help)
-      show_help
-      exit 0
-      ;;
-    *)
-      print error "Unknown argument: $1"
-      print error "Run '${script_name} --help' for more information"
-      exit 2
-      ;;
     esac
     shift
   done
@@ -199,11 +199,11 @@ determine_secret_type() {
   fi
 
   case "${scope}" in
-  host | user | global) ;;
-  *)
-    print error "No choice made"
-    exit 1
-    ;;
+    host | user | global) ;;
+    *)
+      print error "No choice made"
+      exit 1
+      ;;
   esac
 }
 
@@ -219,23 +219,23 @@ determine_secret_path() {
   #> to the account. Which one is meant is taken from --scope; without it, and
   #> when more than one exists, the choice is offered rather than guessed.
   case "${scope}" in
-  host)
-    #? `secrets/secrets.yaml`, discovered rather than assumed: the encrypted file
-    #? lives with the host's declarations, so this is a starting point for the
-    #? search rather than the expected location.
-    secret_path="$(find_host_secret_file "${host_base}/secrets.yaml")"
-    print info "Using host: ${host}"
-    ;;
-  user)
-    print info "Using host: ${host}"
-    print info "Using user: ${user}"
-    secret_path="$(select_user_secret_file "${host_base}/specs/users/${user}/secrets")"
-    ;;
-  global)
-    secret_path="${workspace}/API/nix/users/${user}/secrets.yaml"
-    print info "Using user: ${user}"
-    ;;
-  *) ;;
+    host)
+      #? `secrets/secrets.yaml`, discovered rather than assumed: the encrypted file
+      #? lives with the host's declarations, so this is a starting point for the
+      #? search rather than the expected location.
+      secret_path="$(find_host_secret_file "${host_base}/secrets.yaml")"
+      print info "Using host: ${host}"
+      ;;
+    user)
+      print info "Using host: ${host}"
+      print info "Using user: ${user}"
+      secret_path="$(select_user_secret_file "${host_base}/specs/users/${user}/secrets")"
+      ;;
+    global)
+      secret_path="${workspace}/API/nix/users/${user}/secrets.yaml"
+      print info "Using user: ${user}"
+      ;;
+    *) ;;
   esac
 
   print info "Editing: ${secret_path}"
@@ -301,19 +301,19 @@ determine_sops_file() {
 validate_names() {
   #DOC validate_names => Reject host/user names that could escape the expected directories
   case "${scope}" in
-  host)
-    require_name host "${host}"
-    require_host_dir
-    ;;
-  user)
-    require_name host "${host}"
-    require_name user "${user}"
-    require_host_dir
-    ;;
-  global)
-    require_name user "${user}"
-    ;;
-  *) ;;
+    host)
+      require_name host "${host}"
+      require_host_dir
+      ;;
+    user)
+      require_name host "${host}"
+      require_name user "${user}"
+      require_host_dir
+      ;;
+    global)
+      require_name user "${user}"
+      ;;
+    *) ;;
   esac
 }
 
@@ -335,7 +335,7 @@ validate_files() {
 
 run_sops() {
   #DOC run_sops => Invoke sops with the resolved config and secret path
-  if ! command -v sops >/dev/null 2>&1; then
+  if ! command -v sops > /dev/null 2>&1; then
     print error "sops not found in PATH"
     exit 1
   fi
@@ -367,34 +367,34 @@ select_user_secret_file() {
   fi
 
   #> Filenames directly under the directory, in a stable order.
-  _found=$(find "${_dir}" -maxdepth 1 -type f -name '*.yaml' 2>/dev/null | sort)
+  _found=$(find "${_dir}" -maxdepth 1 -type f -name '*.yaml' 2> /dev/null | sort)
 
   case "$(printf '%s\n' "${_found}" | grep -c .)" in
-  0)
-    #> Nothing yet: start with the user-scoped file, the more common of the two.
-    printf '%s\n' "${_dir}/user.yaml"
-    ;;
-  1)
-    printf '%s\n' "${_found}"
-    ;;
-  *)
-    #> Offer the basenames without their extension. Built with a shell loop
-    #> rather than `basename -a`, which is a GNU extension and not in POSIX. The
-    #> extension is stripped per entry, since `${var%.yaml}` would only remove
-    #> the last one.
-    _options=""
-    for _path in ${_found}; do
-      _name="${_path##*/}"
-      _options="${_options} ${_name%.yaml}"
-    done
-    # shellcheck disable=SC2086
-    _pick=$(choose "Which secrets?" ${_options})
-    if [ -z "${_pick}" ]; then
-      print error "No choice made"
-      exit 1
-    fi
-    printf '%s\n' "${_dir}/${_pick}.yaml"
-    ;;
+    0)
+      #> Nothing yet: start with the user-scoped file, the more common of the two.
+      printf '%s\n' "${_dir}/user.yaml"
+      ;;
+    1)
+      printf '%s\n' "${_found}"
+      ;;
+    *)
+      #> Offer the basenames without their extension. Built with a shell loop
+      #> rather than `basename -a`, which is a GNU extension and not in POSIX. The
+      #> extension is stripped per entry, since `${var%.yaml}` would only remove
+      #> the last one.
+      _options=""
+      for _path in ${_found}; do
+        _name="${_path##*/}"
+        _options="${_options} ${_name%.yaml}"
+      done
+      # shellcheck disable=SC2086
+      _pick=$(choose "Which secrets?" ${_options})
+      if [ -z "${_pick}" ]; then
+        print error "No choice made"
+        exit 1
+      fi
+      printf '%s\n' "${_dir}/${_pick}.yaml"
+      ;;
   esac
 }
 
@@ -409,8 +409,8 @@ find_host_secret_file() {
   _name="${_legacy##*/}"
 
   _found=$(
-    find "${host_base}" -type f -name "${_name}" 2>/dev/null |
-      while IFS= read -r _candidate; do
+    find "${host_base}" -type f -name "${_name}" 2> /dev/null \
+      | while IFS= read -r _candidate; do
         #> A path containing a users/ segment belongs to a principal. The host
         #> request skips those; a user request keeps only the one under a
         #> directory named for that user, so two principals never collide.
@@ -431,9 +431,9 @@ find_host_secret_file() {
             fi
             ;;
         esac
-      done |
-      sort |
-      head -n 1
+      done \
+      | sort \
+      | head -n 1
   )
 
   if [ -n "${_found}" ]; then
@@ -453,21 +453,21 @@ next_name() {
   #> with one of these would be parsed as a flag, so `next_name` refuses it and
   #> the caller falls back to the explicit `name=value` form.
   case "$1" in
-  '' | -*) ;;
-  host | user | global | debug | verbose | info | warn | error | quiet | help) ;;
-  *) printf '%s\n' "$1" ;;
+    '' | -*) ;;
+    host | user | global | debug | verbose | info | warn | error | quiet | help) ;;
+    *) printf '%s\n' "$1" ;;
   esac
 }
 
 require_name() {
   #DOC require_name => Exit unless $2 is a safe name; $1 is the label for the error message
   case "$2" in
-  '' | .* | *[!A-Za-z0-9._-]*)
-    print error "Invalid $1 name: '$2'"
-    print error "Use only letters, digits, '.', '_' and '-', and don't start with '.'"
-    exit 2
-    ;;
-  *) ;;
+    '' | .* | *[!A-Za-z0-9._-]*)
+      print error "Invalid $1 name: '$2'"
+      print error "Use only letters, digits, '.', '_' and '-', and don't start with '.'"
+      exit 2
+      ;;
+    *) ;;
   esac
 }
 
@@ -503,8 +503,8 @@ confirm_or_exit() {
     printf '%s [y/N] ' "$1" >&2
     read -r _answer || _answer=""
     case "${_answer}" in
-    y | Y | yes | YES) return 0 ;;
-    *) ;;
+      y | Y | yes | YES) return 0 ;;
+      *) ;;
     esac
   fi
 
@@ -515,12 +515,12 @@ confirm_or_exit() {
 level_num() {
   #DOC level_num => Map log level name -> numeric rank (lower = more verbose)
   case "$1" in
-  debug) printf 0 ;;
-  info) printf 1 ;;
-  warn) printf 2 ;;
-  error) printf 3 ;;
-  quiet) printf 4 ;;
-  *) printf 1 ;; # default to info
+    debug) printf 0 ;;
+    info) printf 1 ;;
+    warn) printf 2 ;;
+    error) printf 3 ;;
+    quiet) printf 4 ;;
+    *) printf 1 ;; # default to info
   esac
 }
 
@@ -540,41 +540,41 @@ print() {
 
   #? error / style / box / plain are never filtered
   case "${_level}" in
-  error | style | box | plain) ;;
-  *)
-    _cur=$(level_num "${log_level}")
-    _msg_n=$(level_num "${_level}")
-    #> skip if message is more verbose than current setting
-    if [ "${_msg_n}" -lt "${_cur}" ]; then
-      return 0
-    fi
-    ;;
+    error | style | box | plain) ;;
+    *)
+      _cur=$(level_num "${log_level}")
+      _msg_n=$(level_num "${_level}")
+      #> skip if message is more verbose than current setting
+      if [ "${_msg_n}" -lt "${_cur}" ]; then
+        return 0
+      fi
+      ;;
   esac
 
   if [ "${has_gum}" -eq 1 ]; then
     case "${_level}" in
-    debug) gum log --level debug "${_msg}" ;;
-    info) gum log --level info "${_msg}" ;;
-    warn) gum log --level warn "${_msg}" ;;
-    error) gum log --level error "${_msg}" >&2 ;;
-    style) gum style --foreground 212 "${_msg}" ;;
-    box)
-      gum style \
-        --border normal \
-        --margin "1" \
-        --padding "1 2" \
-        --border-foreground 212 \
-        --foreground 212 "${_msg}"
-      ;;
-    *) printf '%s\n' "${_msg}" ;;
+      debug) gum log --level debug "${_msg}" ;;
+      info) gum log --level info "${_msg}" ;;
+      warn) gum log --level warn "${_msg}" ;;
+      error) gum log --level error "${_msg}" >&2 ;;
+      style) gum style --foreground 212 "${_msg}" ;;
+      box)
+        gum style \
+          --border normal \
+          --margin "1" \
+          --padding "1 2" \
+          --border-foreground 212 \
+          --foreground 212 "${_msg}"
+        ;;
+      *) printf '%s\n' "${_msg}" ;;
     esac
   else
     case "${_level}" in
-    debug) printf '[DEBUG] %s\n' "${_msg}" ;;
-    info) printf '[INFO]  %s\n' "${_msg}" ;;
-    warn) printf '[WARN]  %s\n' "${_msg}" ;;
-    error) printf '[ERROR] %s\n' "${_msg}" >&2 ;;
-    *) printf '%s\n' "${_msg}" ;;
+      debug) printf '[DEBUG] %s\n' "${_msg}" ;;
+      info) printf '[INFO]  %s\n' "${_msg}" ;;
+      warn) printf '[WARN]  %s\n' "${_msg}" ;;
+      error) printf '[ERROR] %s\n' "${_msg}" >&2 ;;
+      *) printf '%s\n' "${_msg}" ;;
     esac
   fi
 }
@@ -613,7 +613,7 @@ show_help() {
   #DOC show_help => Display help information
   # shellcheck disable=SC2312
   print box "$(
-    cat <<EOF
+    cat << EOF
 ${script_desc}
 
 Usage: ${script_name} [options]

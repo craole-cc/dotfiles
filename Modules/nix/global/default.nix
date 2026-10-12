@@ -16,22 +16,18 @@ global: let
     (importAllNamed {
       inherit args;
       dir = ./.;
-      exclude = ["shared" "fmt"];
+      exclude = ["shared" "fmt" "ai"];
     }).value;
 
   inherit (args) fetch mkName print;
   inherit (shells) core;
 
-  ai = import ./ai {
-    inherit args;
-    inherit core;
-  };
-
-  shellsWithAi =
-    shells
-    // {
-      inherit ai;
-    };
+  # ai = import ./ai {
+  #   inherit args;
+  #   inherit core;
+  # };
+  # shellsWithAi = shells // {inherit ai;};
+  shellsWithAi = shells;
 
   build =
     mapAttrs (
@@ -44,7 +40,12 @@ global: let
             then cfg.shellHook or ""
             else core.runtimeHook + (cfg.shellHook or "");
           packages =
-            (cfg.packages or []) ++ (optionals ((name != "minimal") && (name != "media")) core.packages);
+            (cfg.packages or [])
+            ++ (
+              optionals
+              ((name != "minimal") && (name != "media"))
+              core.packages
+            );
         }
     )
     shells;
@@ -54,22 +55,22 @@ global: let
     // {
       default = build.core;
 
-      inherit
-        (ai.devShells)
-        ai
-        "ai-headroom"
-        "ai-hermes"
-        "ai-hermes-hindsight"
-        "ai-hermes-hindsight-headroom-9router"
-        "ai-hermes-hindsight-headroom-omniroute"
-        "ai-hermes-hindsight-9router"
-        "ai-hermes-hindsight-omniroute"
-        "ai-hermes-mem0"
-        "ai-hindsight"
-        "ai-mem0"
-        "ai-9router"
-        "ai-omniroute"
-        ;
+      # inherit
+      # (ai.devShells)
+      # ai
+      # "ai-headroom"
+      # "ai-hermes"
+      # "ai-hermes-hindsight"
+      # "ai-hermes-hindsight-headroom-9router"
+      # "ai-hermes-hindsight-headroom-omniroute"
+      # "ai-hermes-hindsight-9router"
+      # "ai-hermes-hindsight-omniroute"
+      # "ai-hermes-mem0"
+      # "ai-hindsight"
+      # "ai-mem0"
+      # "ai-9router"
+      # "ai-omniroute"
+      # ;
 
       fmt = args.treefmt.devShell;
 

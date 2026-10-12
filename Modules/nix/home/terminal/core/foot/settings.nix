@@ -4,7 +4,7 @@ in {
   main = {
     app-id = "foot";
     dpi-aware = mkForce "yes";
-    font = mkDefault "monospace:size=12";
+    font = mkDefault "monospace:size=8";
     pad = "24x24";
     bold-text-in-bright = "yes";
 

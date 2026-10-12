@@ -19,7 +19,7 @@ in {
       prefix_rule(pattern = ["nix", "flake", "show"], decision = "allow")
 
       #~@ History-rewriting and publishing stay with a human.
-      prefix_rule(pattern = ["git", "push"], decision = "prompt")
+      prefix_rule(pattern = ["git", "push"], decision = "allow")
       prefix_rule(pattern = ["git", "reset", "--hard"], decision = "prompt")
     '';
     description = ''

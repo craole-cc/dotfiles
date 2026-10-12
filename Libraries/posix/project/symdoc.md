@@ -5,9 +5,9 @@ files from a library directory.
 
 ## Usage
 
-``$(sh
+`$(sh
 symdoc [OPTIONS]
-)``
+)`
 
 ## Options
 

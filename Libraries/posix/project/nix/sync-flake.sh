@@ -12,7 +12,7 @@ set_defaults() {
   set -eu
 
   #{ Check if flakes enabled
-  msg="Flake Update"
+  # msg="Flake Update"
   flakes="$(nix flake --help 2> /dev/null)"
   delimiter=" "
   args=""

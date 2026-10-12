@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck enable=all
+# shellcheck disable=all
 #DOC SSH Git Setup Script
 #DOC Automatically configure SSH for Git profiles based on dotfiles
 
@@ -67,39 +67,39 @@ cleanup() {
 parse_arguments() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    -h | --help)
-      show_help
-      exit 0
-      ;;
-    -v | --version)
-      show_version
-      exit 0
-      ;;
-    -d | --dots)
-      DOTS="$2"
-      shift
-      ;;
-    -p | --profiles)
-      GIT_PROFILES_DIR="$2"
-      shift
-      ;;
-    -f | --force)
-      force="true"
-      shift
-      ;;
-    -l | --list)
-      list_profiles
-      exit 0
-      ;;
-    -y | --yes)
-      non_interactive="true"
-      shift
-      ;;
-    *)
-      pout --error "Unknown option:" "$1"
-      pout --help
-      exit 1
-      ;;
+      -h | --help)
+        show_help
+        exit 0
+        ;;
+      -v | --version)
+        show_version
+        exit 0
+        ;;
+      -d | --dots)
+        DOTS="$2"
+        shift
+        ;;
+      -p | --profiles)
+        GIT_PROFILES_DIR="$2"
+        shift
+        ;;
+      -f | --force)
+        force="true"
+        shift
+        ;;
+      -l | --list)
+        list_profiles
+        exit 0
+        ;;
+      -y | --yes)
+        non_interactive="true"
+        shift
+        ;;
+      *)
+        pout --error "Unknown option:" "$1"
+        pout --help
+        exit 1
+        ;;
     esac
     shift
   done
@@ -111,10 +111,10 @@ parse_arguments() {
   pout --debug-or error "non_interactive" "${non_interactive}"
 
   if
-    false ||
-      [[ -n ${GIT_PROFILES_DIR} ]] ||
-      [[ -n ${SSH_DIR} ]] ||
-      [[ -n ${SSH_CONFIG} ]]
+    false \
+      || [[ -n ${GIT_PROFILES_DIR} ]] \
+      || [[ -n ${SSH_DIR} ]] \
+      || [[ -n ${SSH_CONFIG} ]]
   then :; else
     pout --error "GIT_PROFILES_DIR, SSH_DIR, and SSH_CONFIG must be set"
     exit 1
@@ -176,17 +176,17 @@ execute_process() {
 fetch_info() {
   # Load release + system info once
   local release_info system_info
-  release_info="$(cat /etc/os-release 2>/dev/null || printf '')"
-  system_info="$(cat /proc/version 2>/dev/null || uname -a 2>/dev/null || printf '')"
-  [[ -n "${system_info}" ]] && system_info="$(printf '%s' "${system_info}" | tr '[:upper:]' '[:lower:]')"
+  release_info="$(cat /etc/os-release 2> /dev/null || printf '')"
+  system_info="$(cat /proc/version 2> /dev/null || uname -a 2> /dev/null || printf '')"
+  [[ -n ${system_info} ]] && system_info="$(printf '%s' "${system_info}" | tr '[:upper:]' '[:lower:]')"
 
   #DOC fetch_release_info FIELD
   #DOC   Extract a single field from the already-loaded $release_info string.
   #DOC   Example:  os_version=$(fetch_release_info VERSION)
   fetch_release_info() {
     local field="$1"
-    [[ -z "${release_info}" || -z "${field}" ]] && return
-    grep -E "^${field}=" <<<"${release_info}" | cut -d= -f2 | tr -d '"'
+    [[ -z ${release_info} || -z ${field} ]] && return
+    grep -E "^${field}=" <<< "${release_info}" | cut -d= -f2 | tr -d '"'
   }
 
   #DOC short_ver VERSION
@@ -201,87 +201,87 @@ fetch_info() {
   distro="${os_name:-${os_id:-}}" #?prefer pretty name, fall back to ID
 
   case "${system_info}" in
-  *microsoft* | *wsl*)
-    os_type="WSL"
-    [[ -n "${distro}" ]] && os_type="${distro}${os_type}"
-    ;;
-  *msys* | *mingw* | *cygwin*) os_type="Windows" ;;
-  *darwin*) os_type="MacOS" ;;
-  *linux*) os_type="${distro:-Linux}" ;;
-  *) os_type="${os_id:-}" ;;
+    *microsoft* | *wsl*)
+      os_type="WSL"
+      [[ -n ${distro} ]] && os_type="${distro}${os_type}"
+      ;;
+    *msys* | *mingw* | *cygwin*) os_type="Windows" ;;
+    *darwin*) os_type="MacOS" ;;
+    *linux*) os_type="${distro:-Linux}" ;;
+    *) os_type="${os_id:-}" ;;
   esac
 
   #~@ OS Version / Release
   local darwin_version nixos_version nixos_wsl_version vr3n
-  darwin_version="$(sw_vers -productVersion 2>/dev/null || true)"
-  nixos_version="$(nixos-version 2>/dev/null | awk '{print $1}' || true)"
-  nixos_wsl_version="$(nixos-wsl-version 2>/dev/null || true)"
+  darwin_version="$(sw_vers -productVersion 2> /dev/null || true)"
+  nixos_version="$(nixos-version 2> /dev/null | awk '{print $1}' || true)"
+  nixos_wsl_version="$(nixos-wsl-version 2> /dev/null || true)"
 
   os_version=$(fetch_release_info VERSION)
   os_release=$(fetch_release_info BUILD_ID)
 
-  if [[ -n "${darwin_version}" ]]; then
+  if [[ -n ${darwin_version} ]]; then
     vr3n="$(short_ver "${darwin_version}")"
     os_version="${os_version:-${vr3n}}"
     os_release="${os_release:-${darwin_version}}"
-  elif [[ -n "${nixos_version}" ]]; then
+  elif [[ -n ${nixos_version} ]]; then
     vr3n="$(short_ver "${nixos_version}")"
     os_version="${os_version:-${vr3n}}"
     os_release="${os_release:-${nixos_version}}"
-  elif [[ -n "${nixos_wsl_version}" ]]; then
+  elif [[ -n ${nixos_wsl_version} ]]; then
     vr3n="$(short_ver "${nixos_wsl_version}")"
     os_version="${os_version:-${vr3n}}"
     os_release="${os_release:-${nixos_wsl_version}}"
   fi
 
   #? Fallbacks when BUILD_ID is missing
-  if [[ -z "${os_release:-}" ]]; then os_release=$(fetch_release_info VERSION_ID); fi
+  if [[ -z ${os_release:-} ]]; then os_release=$(fetch_release_info VERSION_ID); fi
   os_release="${os_release:-${os_version}}"
 
   #~@ Host & User
   local host_name user_name user_group user_id
-  host_name="$(uname -n 2>/dev/null || hostname 2>/dev/null || printf '')"
+  host_name="$(uname -n 2> /dev/null || hostname 2> /dev/null || printf '')"
   user_name="${USER:-${USERNAME:-}}"
-  user_group="$(id -gn 2>/dev/null || printf '')"
-  user_id="$(id -u 2>/dev/null || printf '')"
+  user_group="$(id -gn 2> /dev/null || printf '')"
+  user_id="$(id -u 2> /dev/null || printf '')"
 
   #~@ Output
   if [[ $# -eq 0 ]]; then
-    [[ -n "${os_type}" ]] && pout --debug "OS Type" "${os_type}"
-    [[ -n "${os_version}" ]] && pout --debug "OS Version" "${os_version}"
-    [[ -n "${os_release}" ]] && pout --debug "OS Release" "${os_release}"
-    [[ -n "${host_name}" ]] && pout --debug "Host Name" "${host_name}"
-    [[ -n "${user_name}" ]] && pout --debug "User Name" "${user_name}"
-    [[ -n "${user_id}" ]] && pout --debug "User ID" "${user_id}"
-    [[ -n "${user_group}" ]] && pout --debug "User Group" "${user_group}"
-    if [[ -n "${host_name}" && -n "${user_name}" && -n "${os_type}" ]]; then
+    [[ -n ${os_type} ]] && pout --debug "OS Type" "${os_type}"
+    [[ -n ${os_version} ]] && pout --debug "OS Version" "${os_version}"
+    [[ -n ${os_release} ]] && pout --debug "OS Release" "${os_release}"
+    [[ -n ${host_name} ]] && pout --debug "Host Name" "${host_name}"
+    [[ -n ${user_name} ]] && pout --debug "User Name" "${user_name}"
+    [[ -n ${user_id} ]] && pout --debug "User ID" "${user_id}"
+    [[ -n ${user_group} ]] && pout --debug "User Group" "${user_group}"
+    if [[ -n ${host_name} && -n ${user_name} && -n ${os_type} ]]; then
       pout --debug "tag" "${user_name}@${host_name} on ${os_type}"
     fi
   else
     while [[ $# -gt 0 ]]; do
       case "$1" in
-      --os)
-        if [[ -n "${os_type}" ]]; then
-          printf '%s' "${os_type}"
-        else
-          pout --error "Unable to determine the type of operating system"
-        fi
-        ;;
-      --user)
-        if [[ -n "${user_name}" ]]; then
-          printf '%s' "${user_name}"
-        else
-          pout --error "Unable to determine name of the current user"
-        fi
-        ;;
-      --tag)
-        if [[ -n "${os_type}" && -n "${host_name}" && -n "${user_name}" ]]; then
-          printf '%s@%s [%s]' "${user_name}" "${host_name}" "${os_type}"
-        else
-          pout --error "Unable to build the tag due to missing info: os_type or hostname or user_name"
-        fi
-        ;;
-      *) ;; esac
+        --os)
+          if [[ -n ${os_type} ]]; then
+            printf '%s' "${os_type}"
+          else
+            pout --error "Unable to determine the type of operating system"
+          fi
+          ;;
+        --user)
+          if [[ -n ${user_name} ]]; then
+            printf '%s' "${user_name}"
+          else
+            pout --error "Unable to determine name of the current user"
+          fi
+          ;;
+        --tag)
+          if [[ -n ${os_type} && -n ${host_name} && -n ${user_name} ]]; then
+            printf '%s@%s [%s]' "${user_name}" "${host_name}" "${os_type}"
+          else
+            pout --error "Unable to build the tag due to missing info: os_type or hostname or user_name"
+          fi
+          ;;
+        *) ;; esac
       shift
     done
   fi
@@ -314,8 +314,8 @@ get_git_profiles() {
 
   #> Find all gitconfig files - handle separately to avoid masking
   GIT_PROFILES="$(
-    find "${GIT_PROFILES_DIR}" -type f -name "*.gitconfig" |
-      tr '\n' "${DELIMITER}" || true
+    find "${GIT_PROFILES_DIR}" -type f -name "*.gitconfig" \
+      | tr '\n' "${DELIMITER}" || true
   )"
   GIT_PROFILES="${GIT_PROFILES%"${DELIMITER}"}" #? Remove the trailing delimiter
 
@@ -323,9 +323,9 @@ get_git_profiles() {
     local _configs _sep
     _sep=", "
     _configs="$(
-      printf "%s" "${GIT_PROFILES}" |
-        sed "s|.gitconfig||g" |
-        sed "s|${GIT_PROFILES_DIR}/|${_sep}|g"
+      printf "%s" "${GIT_PROFILES}" \
+        | sed "s|.gitconfig||g" \
+        | sed "s|${GIT_PROFILES_DIR}/|${_sep}|g"
     )"
     _configs="${_configs#"${_sep}"}" #? Remove the leading delimiter
     pout --trace "Found possible git profiles: " "${_configs}"
@@ -356,9 +356,9 @@ process_git_profiles() {
 
     #> Attempt to parse the host from the filename
     case "$(printf "%s" "${_path}" | tr '[:upper:]' '[:lower:]')" in
-    *github*) host="github.com" ;;
-    *gitlab*) host="gitlab.com" ;;
-    *) host="" ;;
+      *github*) host="github.com" ;;
+      *gitlab*) host="gitlab.com" ;;
+      *) host="" ;;
     esac
     pout --debug-or warn "Host" "${host}" "Parsed host from filename: ${host}"
 
@@ -366,16 +366,16 @@ process_git_profiles() {
     if [[ ! -f ${_env} ]]; then
       pout --trace "Generating .env file for ${_name}"
       generate_ssh_env
-      parse_ssh_info_from_file "${_path}" >"${_env}"
+      parse_ssh_info_from_file "${_path}" > "${_env}"
     else
       case "${force:-}" in
-      1 | true | on)
-        pout --warn "Overriding existing .env file for ${_name}"
-        generate_ssh_env
-        ;;
-      *)
-        pout --trace "Proceeding with existing .env file for ${_name}"
-        ;;
+        1 | true | on)
+          pout --warn "Overriding existing .env file for ${_name}"
+          generate_ssh_env
+          ;;
+        *)
+          pout --trace "Proceeding with existing .env file for ${_name}"
+          ;;
       esac
     fi
 
@@ -383,17 +383,17 @@ process_git_profiles() {
     if [[ -s ${_env} ]]; then
       #> Read uncommented lines as key-value pairs and assign to shell variables
       _tmp="${_env}.tmp.$$"
-      grep -v '^[[:space:]]*#' "${_env}" >"${_tmp}"
+      grep -v '^[[:space:]]*#' "${_env}" > "${_tmp}"
       while IFS='=' read -r key value; do
         case "${key}" in
-        name) user_name="${value}" ;;
-        email) user_email="${value}" ;;
-        ssh_cmd) ssh_cmd="${value}" ;;
-        ssh_path) ssh_path="${value}" ;;
-        host) host="${value}" ;;
-        *) ;;
+          name) user_name="${value}" ;;
+          email) user_email="${value}" ;;
+          ssh_cmd) ssh_cmd="${value}" ;;
+          ssh_path) ssh_path="${value}" ;;
+          host) host="${value}" ;;
+          *) ;;
         esac
-      done <"${_tmp}"
+      done < "${_tmp}"
       rm -f "${_tmp}"
 
       #> Check for required variables
@@ -472,9 +472,9 @@ parse_gitconfig() {
 
   #> Attempt to parse the host from the filename
   case "$(printf "%s" "${_path}" | tr '[:upper:]' '[:lower:]')" in
-  *github*) host="github.com" ;;
-  *gitlab*) host="gitlab.com" ;;
-  *) host="" ;;
+    *github*) host="github.com" ;;
+    *gitlab*) host="gitlab.com" ;;
+    *) host="" ;;
   esac
   pout --debug-or warn "Host" "${host}" "Parsed host from filename: ${host}"
 
@@ -485,31 +485,31 @@ parse_gitconfig() {
       -P "${_path}" -E "${_env}" -N "${_name}" -H "${host}"
   else
     case "${force:-}" in
-    1 | true | on)
-      pout --warn "Overriding existing .env file for ${_name}"
-      generate_ssh_env \
-        -P "${_path}" -E "${_env}" -N "${_name}" -H "${host}"
-      ;;
-    *)
-      pout --trace "Proceeding with existing .env file for ${_name}"
-      ;;
+      1 | true | on)
+        pout --warn "Overriding existing .env file for ${_name}"
+        generate_ssh_env \
+          -P "${_path}" -E "${_env}" -N "${_name}" -H "${host}"
+        ;;
+      *)
+        pout --trace "Proceeding with existing .env file for ${_name}"
+        ;;
     esac
   fi
 
   #> Read uncommented lines as key-value pairs and assign to shell variables
   if [[ -s ${_env} ]]; then
     _tmp="${_env}.tmp.$$"
-    grep -v '^[[:space:]]*#' "${_env}" >"${_tmp}"
+    grep -v '^[[:space:]]*#' "${_env}" > "${_tmp}"
     while IFS='=' read -r key value; do
       case "${key}" in
-      name) user_name="${value}" ;;
-      email) user_email="${value}" ;;
-      ssh_cmd) ssh_cmd="${value}" ;;
-      ssh_path) ssh_path="${value}" ;;
-      host) host="${value}" ;;
-      *) ;;
+        name) user_name="${value}" ;;
+        email) user_email="${value}" ;;
+        ssh_cmd) ssh_cmd="${value}" ;;
+        ssh_path) ssh_path="${value}" ;;
+        host) host="${value}" ;;
+        *) ;;
       esac
-    done <"${_tmp}"
+    done < "${_tmp}"
     rm -f "${_tmp}"
 
     #> Check for required variables
@@ -549,9 +549,9 @@ parse_gitconfig() {
   #> Attempt to extract the host from the filename
   local host
   case "$(printf "%s" "${_path}" | tr '[:upper:]' '[:lower:]')" in
-  *github*) host="github.com" ;;
-  *gitlab*) host="gitlab.com" ;;
-  *) ;;
+    *github*) host="github.com" ;;
+    *gitlab*) host="gitlab.com" ;;
+    *) ;;
   esac
 
   #> Attempt to extract the ssh_cmd from the profile
@@ -572,22 +572,22 @@ parse_gitconfig() {
     if [[ -n ${host:-} ]]; then :; else
       #> Attempt to extract the host from the ssh command
       case "$(printf "%s" "${ssh_cmd}" | tr '[:upper:]' '[:lower:]')" in
-      *github*) host="github.com" ;;
-      *gitlab*) host="gitlab.com" ;;
-      *)
-        pout --warn \
-          "Skipping profile due to unknown host: " \
-          "${_name}"
-        return
-        ;;
+        *github*) host="github.com" ;;
+        *gitlab*) host="gitlab.com" ;;
+        *)
+          pout --warn \
+            "Skipping profile due to unknown host: " \
+            "${_name}"
+          return
+          ;;
       esac
       pout --trace "    Host: " "${host}"
     fi
     #> Extract the path from the ssh_cmd
     ssh_path="$(
-      printf "%s" "${ssh_cmd}" |
-        awk -F'-i ' '{if (NF>1) {split($2,a,"\""); print a[1]}}' |
-        sed "s|~|${HOME}|g"
+      printf "%s" "${ssh_cmd}" \
+        | awk -F'-i ' '{if (NF>1) {split($2,a,"\""); print a[1]}}' \
+        | sed "s|~|${HOME}|g"
     )"
     pout --trace "SSH Path: " "${ssh_path}"
     pout --trace " SSH Cmd: " "${ssh_cmd}"
@@ -680,11 +680,11 @@ generate_ssh_env() {
   #> Parse arguments
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    -P | --path) _path="$2" ;;
-    -N | --name) _name="$2" ;;
-    -E | --env) _env="$2" ;;
-    -H | --host) _host="$2" ;;
-    *) ;;
+      -P | --path) _path="$2" ;;
+      -N | --name) _name="$2" ;;
+      -E | --env) _env="$2" ;;
+      -H | --host) _host="$2" ;;
+      *) ;;
     esac
     shift
   done
@@ -719,12 +719,12 @@ generate_ssh_key() {
   #> Parse command-line options
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    -h | --host) _host="$2" ;;
-    -u | --username) _user_name="$2" ;;
-    -e | --email) _user_email="$2" ;;
-    -p | --path) _ssh_path="$2" ;;
-    -c | --cmd) _ssh_cmd="$2" ;;
-    *) ;;
+      -h | --host) _host="$2" ;;
+      -u | --username) _user_name="$2" ;;
+      -e | --email) _user_email="$2" ;;
+      -p | --path) _ssh_path="$2" ;;
+      -c | --cmd) _ssh_cmd="$2" ;;
+      *) ;;
     esac
     shift
   done
@@ -782,18 +782,18 @@ generate_ssh_key() {
 
   #> Add to SSH config
   printf "\nHost %s\n  User %s\n  HostName %s\n  IdentityFile %s\n" \
-    "${host}" "${username}" "${host}" "${key_path}" >>"${SSH_CONFIG}"
+    "${host}" "${username}" "${host}" "${key_path}" >> "${SSH_CONFIG}"
   pout --info "Updated SSH config: ${SSH_CONFIG}"
 
   #> Add key to SSH agent - handle commands separately
   #> Start ssh-agent
   local agent_output
   agent_output=$(ssh-agent -s)
-  eval "${agent_output}" >/dev/null
+  eval "${agent_output}" > /dev/null
   pout --info "Started SSH agent"
 
   #> Add key to agent
-  ssh-add "${key_path}" >/dev/null || true
+  ssh-add "${key_path}" > /dev/null || true
   pout --info "Added key to SSH agent"
 
   show_success "SSH key generated for ${username}@${host}"
@@ -831,16 +831,16 @@ copy_to_clipboard() {
   local success=false
 
   #> Try different clipboard commands based on available tools
-  if command -v xclip &>/dev/null; then
+  if command -v xclip &> /dev/null; then
     echo -n "${text}" | xclip -selection clipboard && success=true
-  elif command -v xsel &>/dev/null; then
+  elif command -v xsel &> /dev/null; then
     echo -n "${text}" | xsel --clipboard --input && success=true
-  elif command -v pbcopy &>/dev/null; then
+  elif command -v pbcopy &> /dev/null; then
     echo -n "${text}" | pbcopy && success=true
-  elif command -v clip.exe &>/dev/null; then
+  elif command -v clip.exe &> /dev/null; then
     #> For Windows/WSL
     echo -n "${text}" | clip.exe && success=true
-  elif [[ -n ${WAYLAND_DISPLAY} ]] && command -v wl-copy &>/dev/null; then
+  elif [[ -n ${WAYLAND_DISPLAY} ]] && command -v wl-copy &> /dev/null; then
     echo -n "${text}" | wl-copy && success=true
   fi
 
@@ -861,7 +861,7 @@ parse_git_config() {
 
   #> Extract host and username from filename (format: host_username.gitconfig)
   local host username
-  IFS='_' read -r host username <<<"$(basename "${filename}" .gitconfig)"
+  IFS='_' read -r host username <<< "$(basename "${filename}" .gitconfig)"
 
   #> Read git user information from config - avoid command substitution masking
   local git_name git_email ssh_path
@@ -952,7 +952,7 @@ list_profiles() {
   fi
 
   #> Read find output into array
-  mapfile -t configs <<<"${find_output}"
+  mapfile -t configs <<< "${find_output}"
 
   for config_file in "${configs[@]}"; do
     local filename
@@ -978,122 +978,122 @@ pout() {
   case "${error:-0}" in 1 | on | true) verbosity=1 ;; *) ;; esac
   case "${quiet:-0}" in 1 | on | true) verbosity=0 ;; *) ;; esac
   case "${verbosity:-0}" in
-  quiet | 0) verbosity=0 ;;
-  error | 1) verbosity=1 ;;
-  warn | 2) verbosity=2 ;;
-  info | 3) verbosity=3 ;;
-  debug | 4) verbosity=4 ;;
-  trace | 5) verbosity=5 ;;
-  *) ;;
+    quiet | 0) verbosity=0 ;;
+    error | 1) verbosity=1 ;;
+    warn | 2) verbosity=2 ;;
+    info | 3) verbosity=3 ;;
+    debug | 4) verbosity=4 ;;
+    trace | 5) verbosity=5 ;;
+    *) ;;
   esac
 
   #> Parse arguments
   case "$1" in
-  --trim)
-    shift
-    _msg="$(printf "%s" "$*" | awk '{$1=$1; print}')"
-    ;;
-  -t | --trace)
-    if [[ ${verbosity} -lt 5 ]]; then :; else
-      _clr="${MAGENTA}"
-      _opt="TRACE"
+    --trim)
       shift
-      _msg="$*"
-    fi
-    ;;
-  --debug)
-    if [[ ${verbosity} -lt 4 ]]; then return; else
-      _clr="${CYAN}"
-      _opt="DEBUG"
-      shift
-    fi
-
-    _key="$1"
-    if [[ -z $2 ]]; then _val="undefined"; else
-      shift
-      _val="$*"
-    fi
-    _msg="${_key}: ${_val}"
-    ;;
-  --debug-or)
-    #TODO: Add error handling
-    shift
-    _opt_arg="--${1}"
-    shift
-    _key="$1"
-    _val="$2"
-
-    if [[ -n ${_val} ]]; then
-      pout --debug "${_key}" "${_val}"
-    else
-      if [[ $# -le 2 ]]; then :; else
+      _msg="$(printf "%s" "$*" | awk '{$1=$1; print}')"
+      ;;
+    -t | --trace)
+      if [[ ${verbosity} -lt 5 ]]; then :; else
+        _clr="${MAGENTA}"
+        _opt="TRACE"
         shift
-        pout "${_opt_arg}" "$*"
+        _msg="$*"
       fi
-    fi
-    ;;
-  -i | --info)
-    if [[ ${verbosity} -lt 3 ]]; then :; else
-      _clr="${BLUE}"
-      _opt=" INFO"
+      ;;
+    --debug)
+      if [[ ${verbosity} -lt 4 ]]; then return; else
+        _clr="${CYAN}"
+        _opt="DEBUG"
+        shift
+      fi
+
+      _key="$1"
+      if [[ -z $2 ]]; then _val="undefined"; else
+        shift
+        _val="$*"
+      fi
+      _msg="${_key}: ${_val}"
+      ;;
+    --debug-or)
+      #TODO: Add error handling
+      shift
+      _opt_arg="--${1}"
+      shift
+      _key="$1"
+      _val="$2"
+
+      if [[ -n ${_val} ]]; then
+        pout --debug "${_key}" "${_val}"
+      else
+        if [[ $# -le 2 ]]; then :; else
+          shift
+          pout "${_opt_arg}" "$*"
+        fi
+      fi
+      ;;
+    -i | --info)
+      if [[ ${verbosity} -lt 3 ]]; then :; else
+        _clr="${BLUE}"
+        _opt=" INFO"
+        shift
+        _msg="$*"
+      fi
+      ;;
+    -w | --warn*)
+      if [[ ${verbosity} -lt 1 ]]; then :; else
+        _clr="${YELLOW}"
+        _opt=" WARN"
+        shift
+        _msg="$*"
+      fi
+      ;;
+    -e | --error)
+      if [[ ${verbosity} -lt 1 ]]; then :; else
+        _clr="${RED}"
+        _opt="ERROR"
+        shift
+        _msg="$*"
+      fi
+      ;;
+    -s | --success)
+      _clr="${GREEN}"
+      _opt="Success"
       shift
       _msg="$*"
-    fi
-    ;;
-  -w | --warn*)
-    if [[ ${verbosity} -lt 1 ]]; then :; else
-      _clr="${YELLOW}"
-      _opt=" WARN"
+      ;;
+    -p | --prompt)
+      _clr="${MAGENTA}"
+      _opt="Prompt"
       shift
       _msg="$*"
-    fi
-    ;;
-  -e | --error)
-    if [[ ${verbosity} -lt 1 ]]; then :; else
-      _clr="${RED}"
-      _opt="ERROR"
+      ;;
+    -v | --version)
       shift
+      _msg="$(printf "%s v%s\n" "${APP_NAME}" "${APP_VERSION}")"
+      ;;
+    -h | --help)
+      _msg="$(
+        printf "%s v%s\n\n" "${APP_NAME}" "${APP_VERSION}"
+        printf "Usage: %s [OPTIONS]\n\n" "${APP_NAME}"
+        printf "Automatically configures SSH for Git based on your dotfiles.\n\n"
+        printf "Options:\n"
+        printf "  -h, --help      Show this help message and exit\n"
+        printf "  -v, --version   Show version information and exit\n"
+        printf "  -d, --dir DIR   Set custom dotfiles directory (default: %s)\n" "${DOTS}"
+        printf "  -f, --force     Force regeneration of existing keys\n"
+        printf "  -l, --list      List available profiles\n"
+        printf "  -y, --yes       Non-interactive mode (no prompts)\n\n"
+        printf "Examples:\n"
+        printf "  %s\n" "${APP_NAME}"
+        printf "  %s --dir ~/my-dotfiles\n" "${APP_NAME}"
+        printf "  %s --force\n" "${APP_NAME}"
+        printf "  %s --yes\n" "${APP_NAME}"
+      )"
+      ;;
+    *)
       _msg="$*"
-    fi
-    ;;
-  -s | --success)
-    _clr="${GREEN}"
-    _opt="Success"
-    shift
-    _msg="$*"
-    ;;
-  -p | --prompt)
-    _clr="${MAGENTA}"
-    _opt="Prompt"
-    shift
-    _msg="$*"
-    ;;
-  -v | --version)
-    shift
-    _msg="$(printf "%s v%s\n" "${APP_NAME}" "${APP_VERSION}")"
-    ;;
-  -h | --help)
-    _msg="$(
-      printf "%s v%s\n\n" "${APP_NAME}" "${APP_VERSION}"
-      printf "Usage: %s [OPTIONS]\n\n" "${APP_NAME}"
-      printf "Automatically configures SSH for Git based on your dotfiles.\n\n"
-      printf "Options:\n"
-      printf "  -h, --help      Show this help message and exit\n"
-      printf "  -v, --version   Show version information and exit\n"
-      printf "  -d, --dir DIR   Set custom dotfiles directory (default: %s)\n" "${DOTS}"
-      printf "  -f, --force     Force regeneration of existing keys\n"
-      printf "  -l, --list      List available profiles\n"
-      printf "  -y, --yes       Non-interactive mode (no prompts)\n\n"
-      printf "Examples:\n"
-      printf "  %s\n" "${APP_NAME}"
-      printf "  %s --dir ~/my-dotfiles\n" "${APP_NAME}"
-      printf "  %s --force\n" "${APP_NAME}"
-      printf "  %s --yes\n" "${APP_NAME}"
-    )"
-    ;;
-  *)
-    _msg="$*"
-    ;;
+      ;;
   esac
 
   #> Print message

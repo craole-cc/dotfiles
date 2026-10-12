@@ -8,22 +8,22 @@ description: Styleguide for Nix modules and expressions. Use whenever writing or
 - Include `inherit (lix)` at the top of every file as the primary extended replacement for standard `lib`.
 - Prefer `lix.<domain>.<function>` over `builtins.<function>`. Most builtins are wrapped in lix:
 
-  | Domain | Covers |
-  | --- | --- |
-  | `attrsets` | `filterAttrs`, `mapAttrs`, `mergeAttrs`, etc. |
-  | `lists` | `filter`, `map`, `foldl'`, `groupBy`, etc. |
-  | `strings` | `split`, `replace`, `hasPrefix`, `toUpper`, etc. |
-  | `types` | `str`, `attrsOf`, etc. |
-  | `filesets` | `filterSource`, `followSymlinks`, `sourceFileBySaneExtension`, etc. |
-  | `trivial` | `flip`, `const`, `id`, `optionalString`, etc. |
-  | `fetchers` | `fetchurl`, `fetchFromGitHub`, `fetchTarball`, etc. |
-  | `meta` | `isPackage`, `hasType`, `isDerivation`, etc. |
-  | `modules` | `mkOverride`, `mkForce`, `mkMerge`, `mkOption`, etc. |
-  | `options` | `mkOption`, `mkEnableOption`, `mkPackageOption`, etc. |
-  | `generators` | `toYaml`, `toJSON`, `toINI`, `toToml`, etc. |
-  | `systems` | `isLinux`, `isAarch64`, `is64bit`, etc. |
-  | `versions` | `shortVersion`, `versionAtLeast`, `compareVersions`, etc. |
-  | `debug` | `traceVal`, `traceSeq`, `unsafeGetAttrPos`, etc. |
+  | Domain       | Covers                                                              |
+  | ------------ | ------------------------------------------------------------------- |
+  | `attrsets`   | `filterAttrs`, `mapAttrs`, `mergeAttrs`, etc.                       |
+  | `lists`      | `filter`, `map`, `foldl'`, `groupBy`, etc.                          |
+  | `strings`    | `split`, `replace`, `hasPrefix`, `toUpper`, etc.                    |
+  | `types`      | `str`, `attrsOf`, etc.                                              |
+  | `filesets`   | `filterSource`, `followSymlinks`, `sourceFileBySaneExtension`, etc. |
+  | `trivial`    | `flip`, `const`, `id`, `optionalString`, etc.                       |
+  | `fetchers`   | `fetchurl`, `fetchFromGitHub`, `fetchTarball`, etc.                 |
+  | `meta`       | `isPackage`, `hasType`, `isDerivation`, etc.                        |
+  | `modules`    | `mkOverride`, `mkForce`, `mkMerge`, `mkOption`, etc.                |
+  | `options`    | `mkOption`, `mkEnableOption`, `mkPackageOption`, etc.               |
+  | `generators` | `toYaml`, `toJSON`, `toINI`, `toToml`, etc.                         |
+  | `systems`    | `isLinux`, `isAarch64`, `is64bit`, etc.                             |
+  | `versions`   | `shortVersion`, `versionAtLeast`, `compareVersions`, etc.           |
+  | `debug`      | `traceVal`, `traceSeq`, `unsafeGetAttrPos`, etc.                    |
 
 - Check <https://noogle.dev> if unsure whether an equivalent helper exists before defaulting to `builtins`.
 - Use descriptive variable names, never single-letter ones, including lambda arguments.

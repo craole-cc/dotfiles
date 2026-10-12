@@ -45,94 +45,94 @@ parse_arguments() {
   #TODO: Define the options and set the help messages
   while [ "$#" -gt 0 ]; do
     case "$1" in
-    -h)
-      printf "%s\n" "${SCR_USAGE_BASIC:?}"
-      return 0
-      ;;
-    --help)
-      printf "%s\n" "${SCR_USAGE_GUIDE:?}"
-      return 0
-      ;;
-    --version)
-      printf "%s\n" "${SCR_VERSION:?}"
-      return 0
-      ;;
-    -d | --verbose) verbose=1 ;;
-    --cmd | --tool)
-      [ -n "${2:-}" ] || {
-        printf \
-          "Option '%s' requires an argument: %s (Default: %s)\n" \
-          "$1" "[ls, eza, lsd, pls]" "${cmd}"
-        return 1
-      }
-      cmd="$2"
-      shift
-      ;;
-    -a | --all) all=true ;;
-    -c | --color) color=true ;;
-    --no-color) color=false ;;
-    --*dir*first) priority="directories" ;;
-    --*dir*last) priority="files" ;;
-    --no-group) priority="none" ;;
-    --depth)
-      if [ -z "${2:-}" ] || [ "${2:-}" -ne "${2:-}" ] >/dev/null 2>&1; then
-        printf "Option '%s' requires an integer argument.\n" "$1" >&2
-        return 1
-      else
-        depth="$2"
-        shift
-      fi
-      ;;
-    -D | --dir-only | --directories | --directory) target="directory" ;;
-    # -e | --exclude) exclude=true ;; #TODO: This goes into the realm of find
-    -g | --git) git=true ;;
-    --no-git) git=false ;;
-    -I | --git-ignore) git_ignore=true ;;
-    -G | --header) header=true ;;
-    -H | --hyperlink) hyperlink=true ;;
-    --no-hyperlink) hyperlink=false ;;
-    -i | --icons) icons=true ;;
-    --no-icons) icons=false ;;
-    -l | --long) long=true ;;
-    -L | --link | --sym*) target="link" ;;
-    -o | --octal) octal=true ;;
-    --pag*) pagination=true ;;
-    -P | --pretty) color=true icons=true ;;
-    -p | --permission)
-      case "${2:-}" in "") ;;
-      attributes | rwx | octal | none)
-        permission="$2"
+      -h)
+        printf "%s\n" "${SCR_USAGE_BASIC:?}"
+        return 0
+        ;;
+      --help)
+        printf "%s\n" "${SCR_USAGE_GUIDE:?}"
+        return 0
+        ;;
+      --version)
+        printf "%s\n" "${SCR_VERSION:?}"
+        return 0
+        ;;
+      -d | --verbose) verbose=1 ;;
+      --cmd | --tool)
+        [ -n "${2:-}" ] || {
+          printf \
+            "Option '%s' requires an argument: %s (Default: %s)\n" \
+            "$1" "[ls, eza, lsd, pls]" "${cmd}"
+          return 1
+        }
+        cmd="$2"
         shift
         ;;
-      -*) ;;
-      *)
-        printf "Available permission options (%s): %s\n" "$1" \
-          "$(printf '%s\n' "${permission_options}" | sed 's/|/, /g')"
-        return 1
+      -a | --all) all=true ;;
+      -c | --color) color=true ;;
+      --no-color) color=false ;;
+      --*dir*first) priority="directories" ;;
+      --*dir*last) priority="files" ;;
+      --no-group) priority="none" ;;
+      --depth)
+        if [ -z "${2:-}" ] || [ "${2:-}" -ne "${2:-}" ] > /dev/null 2>&1; then
+          printf "Option '%s' requires an integer argument.\n" "$1" >&2
+          return 1
+        else
+          depth="$2"
+          shift
+        fi
         ;;
-      esac
-      ;;
-    -R | --recurs*) recursion="flat" ;;
-    -s | --sort)
-      case "${2:-}" in
-      size | time | version | extension | git | none)
-        sort="$2"
-        shift
+      -D | --dir-only | --directories | --directory) target="directory" ;;
+      # -e | --exclude) exclude=true ;; #TODO: This goes into the realm of find
+      -g | --git) git=true ;;
+      --no-git) git=false ;;
+      -I | --git-ignore) git_ignore=true ;;
+      -G | --header) header=true ;;
+      -H | --hyperlink) hyperlink=true ;;
+      --no-hyperlink) hyperlink=false ;;
+      -i | --icons) icons=true ;;
+      --no-icons) icons=false ;;
+      -l | --long) long=true ;;
+      -L | --link | --sym*) target="link" ;;
+      -o | --octal) octal=true ;;
+      --pag*) pagination=true ;;
+      -P | --pretty) color=true icons=true ;;
+      -p | --permission)
+        case "${2:-}" in "") ;;
+        attributes | rwx | octal | none)
+          permission="$2"
+          shift
+          ;;
+        -*) ;;
+        *)
+          printf "Available permission options (%s): %s\n" "$1" \
+            "$(printf '%s\n' "${permission_options}" | sed 's/|/, /g')"
+          return 1
+          ;;
+        esac
         ;;
-      *)
-        printf "Available sort options (%s): [ %s ]\n" "$1" \
-          "$(printf '%s\n' "${sort_options}" | sed 's/|/, /g')"
-        return 1
+      -R | --recurs*) recursion="flat" ;;
+      -s | --sort)
+        case "${2:-}" in
+          size | time | version | extension | git | none)
+            sort="$2"
+            shift
+            ;;
+          *)
+            printf "Available sort options (%s): [ %s ]\n" "$1" \
+              "$(printf '%s\n' "${sort_options}" | sed 's/|/, /g')"
+            return 1
+            ;;
+        esac
         ;;
-      esac
-      ;;
-    -S | --sort-size) sort="size" ;;
-    -N | --sort-none) sort="none" ;;
-    -T | --sort-time) sort="time" ;;
-    -V | --sort-version) sort="version" ;;
-    -X | --sort-extension) sort="extension" ;;
-    -t | --tree) recursion="tree" ;;
-    *) args="${args:+${args}"${delimiter:?}"}\"$1\"" ;;
+      -S | --sort-size) sort="size" ;;
+      -N | --sort-none) sort="none" ;;
+      -T | --sort-time) sort="time" ;;
+      -V | --sort-version) sort="version" ;;
+      -X | --sort-extension) sort="extension" ;;
+      -t | --tree) recursion="tree" ;;
+      *) args="${args:+${args}"${delimiter:?}"}\"$1\"" ;;
     esac
     shift
   done
@@ -200,11 +200,11 @@ set_environment() {
 
   if [ -z "${depth:-}" ]; then
     :
-  elif [ "${depth:-0}" -le 0 ] >/dev/null 2>&1; then
+  elif [ "${depth:-0}" -le 0 ] > /dev/null 2>&1; then
     depth=$((depth * -1))
-  elif [ "${depth:-0}" -eq 0 ] >/dev/null 2>&1; then
+  elif [ "${depth:-0}" -eq 0 ] > /dev/null 2>&1; then
     unset depth
-  elif [ "${depth:-0}" -ne "${depth:-}" ] >/dev/null 2>&1; then
+  elif [ "${depth:-0}" -ne "${depth:-}" ] > /dev/null 2>&1; then
     printf "Depth must be an integer.\n"
     return 1
   else
@@ -240,8 +240,8 @@ check_command() {
   #{ Get the path to the command
   _env="$(eval "printf '%s' \$${1:?}")"
   _bin="$(
-    unalias "${2:?}" 2>/dev/null || true
-    command -v "${2:?}" 2>/dev/null || true
+    unalias "${2:?}" 2> /dev/null || true
+    command -v "${2:?}" 2> /dev/null || true
   )"
   _val="${_env:-"${_bin}"}"
 
@@ -266,9 +266,9 @@ use_eza() {
   fi
 
   case "${priority}" in
-  dir*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-directories-first" ;;
-  file*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-directories-last" ;;
-  *) ;;
+    dir*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-directories-first" ;;
+    file*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-directories-last" ;;
+    *) ;;
   esac
 
   if [ -z "${icons:-}" ]; then :; else
@@ -292,32 +292,32 @@ use_eza() {
   fi
 
   case "${permission:-}" in
-  none)
-    _cmd="${_cmd:+${_cmd}${delimiter}}--no-permissions"
-    ;;
-  *)
-    _cmd="${_cmd:+${_cmd}${delimiter}}--octal-permissions"
-    ;;
+    none)
+      _cmd="${_cmd:+${_cmd}${delimiter}}--no-permissions"
+      ;;
+    *)
+      _cmd="${_cmd:+${_cmd}${delimiter}}--octal-permissions"
+      ;;
   esac
 
   case "${target}" in
-  file) _cmd="${_cmd:+${_cmd}${delimiter}}--only-files" ;;
-  dir) _cmd="${_cmd:+${_cmd}${delimiter}}--only-dirs" ;;
-  all | *) ;;
+    file) _cmd="${_cmd:+${_cmd}${delimiter}}--only-files" ;;
+    dir) _cmd="${_cmd:+${_cmd}${delimiter}}--only-dirs" ;;
+    all | *) ;;
   esac
 
   case "${recursion}" in
-  flat | tree)
-    case "${recursion}" in
-    flat) _cmd="${_cmd:+${_cmd}${delimiter}}--recurse" ;;
-    tree | *) _cmd="${_cmd:+${_cmd}${delimiter}}--tree" ;;
-    esac
+    flat | tree)
+      case "${recursion}" in
+        flat) _cmd="${_cmd:+${_cmd}${delimiter}}--recurse" ;;
+        tree | *) _cmd="${_cmd:+${_cmd}${delimiter}}--tree" ;;
+      esac
 
-    if [ -z "${depth:-}" ]; then :; else
-      _cmd="${_cmd:+${_cmd}${delimiter}}--level ${depth}"
-    fi
-    ;;
-  *) ;;
+      if [ -z "${depth:-}" ]; then :; else
+        _cmd="${_cmd:+${_cmd}${delimiter}}--level ${depth}"
+      fi
+      ;;
+    *) ;;
   esac
 
   case "${sort:-}" in size | time | version | extension | git | none)
@@ -343,9 +343,9 @@ use_lsd() {
   fi
 
   case "${priority}" in
-  dir*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs first" ;;
-  file*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs last" ;;
-  *) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs none" ;;
+    dir*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs first" ;;
+    file*) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs last" ;;
+    *) _cmd="${_cmd:+${_cmd}${delimiter}}--group-dirs none" ;;
   esac
 
   if [ -z "${icons:-}" ]; then :; else
@@ -371,9 +371,9 @@ use_lsd() {
   esac
 
   case "${target}" in
-  dir) _cmd="${_cmd:+${_cmd}${delimiter}}--directory-only" ;;
-  recursive) _cmd="${_cmd:+${_cmd}${delimiter}}--recursive" ;;
-  all | *) ;;
+    dir) _cmd="${_cmd:+${_cmd}${delimiter}}--directory-only" ;;
+    recursive) _cmd="${_cmd:+${_cmd}${delimiter}}--recursive" ;;
+    all | *) ;;
   esac
 
   if [ -z "${tree:-}" ]; then :; else
@@ -407,9 +407,9 @@ get_options_lsd_old() {
   fi
 
   case "${priority}" in
-  dir*) opts="${opts:+${opts}${delimiter}}--group-dirs first" ;;
-  file*) opts="${opts:+${opts}${delimiter}}--group-dirs last" ;;
-  *) opts="${opts:+${opts}${delimiter}}--group-dirs none" ;;
+    dir*) opts="${opts:+${opts}${delimiter}}--group-dirs first" ;;
+    file*) opts="${opts:+${opts}${delimiter}}--group-dirs last" ;;
+    *) opts="${opts:+${opts}${delimiter}}--group-dirs none" ;;
   esac
 
   if [ -z "${icons:-}" ]; then :; else
@@ -435,9 +435,9 @@ get_options_lsd_old() {
   esac
 
   case "${target}" in
-  dir) opts="${opts:+${opts}${delimiter}}--directory-only" ;;
-  recursive) opts="${opts:+${opts}${delimiter}}--recursive" ;;
-  all | *) ;;
+    dir) opts="${opts:+${opts}${delimiter}}--directory-only" ;;
+    recursive) opts="${opts:+${opts}${delimiter}}--recursive" ;;
+    all | *) ;;
   esac
 
   if [ -z "${tree:-}" ]; then :; else
@@ -459,20 +459,20 @@ get_options_lsd_old() {
 
 execute_process() {
   case "${debug:-0}" in
-  1 | true | yes | on) printf "%s\n" "${cmd}" ;;
-  *)
-    #{ Print the command if in verbose mode
-    case "${verbose:-0}" in
     1 | true | yes | on) printf "%s\n" "${cmd}" ;;
-    *) ;; esac
+    *)
+      #{ Print the command if in verbose mode
+      case "${verbose:-0}" in
+        1 | true | yes | on) printf "%s\n" "${cmd}" ;;
+        *) ;; esac
 
-    #{ Execute the command
-    eval "${cmd}"
-    ;;
+      #{ Execute the command
+      eval "${cmd}"
+      ;;
   esac
 }
 
-: <<LSD
+: << LSD
 	DESCRIPTION:
 		An ls command with a lot of pretty colors and some other stuff.
 
@@ -529,7 +529,7 @@ execute_process() {
 			<FILE>...     [default: .]
 LSD
 
-: <<EZA
+: << EZA
 	DESCRIPTION:
 		An improved file lister with more features and better defaults.
 
@@ -591,7 +591,7 @@ LSD
 		-@, --extended       list each file's extended attributes and sizes
 EZA
 
-: <<PLS
+: << PLS
 	DESCRIPTION:
 		A powerful 'ls' for the pros.
 
@@ -660,7 +660,7 @@ EZA
 		-@, --extended       list each file's extended attributes and sizes
 PLS
 
-: <<LS
+: << LS
 	DESCRIPTION:
 		List information about the FILEs (the current directory by default).
 		Sort entries alphabetically if none of -cftuvSUX nor --sort is specified.
