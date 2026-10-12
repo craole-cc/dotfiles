@@ -68,16 +68,16 @@ cleanup() {
 #~@ Tool Discovery & Parallel Config
 init_bin() {
   for _tool in shellcheck shfmt patch; do
-    command -v "${_tool}" >/dev/null 2>&1 || die "required tool not found: ${_tool}"
+    command -v "${_tool}" > /dev/null 2>&1 || die "required tool not found: ${_tool}"
   done
 
   # CPU threads for parallel processing (POSIX fallback to 2)
-  NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
+  NPROC=$(getconf _NPROCESSORS_ONLN 2> /dev/null || echo 2)
 
   # Fast finder with a plain find(1) fallback
-  if command -v fd >/dev/null 2>&1; then
+  if command -v fd > /dev/null 2>&1; then
     FINDER="fd"
-  elif command -v fdfind >/dev/null 2>&1; then
+  elif command -v fdfind > /dev/null 2>&1; then
     FINDER="fdfind"
   else
     FINDER="find"
@@ -90,13 +90,13 @@ init_bin() {
 
   # Absolute path to ourselves, for the parallel workers
   case $0 in
-  /*) SCRIPT_PATH=$0 ;;
-  */*)
-    _ib_dir=$(dirname -- "$0")
-    _ib_dir=$(cd -- "${_ib_dir}" && pwd)
-    SCRIPT_PATH="${_ib_dir}/${0##*/}"
-    ;;
-  *) SCRIPT_PATH=$(command -v -- "$0" || readlink -f -- "$0") ;;
+    /*) SCRIPT_PATH=$0 ;;
+    */*)
+      _ib_dir=$(dirname -- "$0")
+      _ib_dir=$(cd -- "${_ib_dir}" && pwd)
+      SCRIPT_PATH="${_ib_dir}/${0##*/}"
+      ;;
+    *) SCRIPT_PATH=$(command -v -- "$0" || readlink -f -- "$0") ;;
   esac
 }
 
@@ -105,18 +105,18 @@ init_bin() {
 is_shell_file() {
   IS_SHELL=0
   case $1 in
-  *.sh | *.bash | *.ksh | *.bats)
-    IS_SHELL=1
-    return 0
-    ;;
-  *) ;;
+    *.sh | *.bash | *.ksh | *.bats)
+      IS_SHELL=1
+      return 0
+      ;;
+    *) ;;
   esac
 
   # First 256 bytes, NULs stripped so binaries can't upset the shell; no
   # early-exiting reader, so this stays safe under pipefail.
   _isf_nl='
 '
-  _isf_line=$(dd if="$1" bs=256 count=1 2>/dev/null | tr -d '\000') || return 0
+  _isf_line=$(dd if="$1" bs=256 count=1 2> /dev/null | tr -d '\000') || return 0
   _isf_line=${_isf_line%%"${_isf_nl}"*}
   case ${_isf_line} in "#!"*) ;; *) return 0 ;; esac
 
@@ -132,8 +132,8 @@ is_shell_file() {
     if [ $# -gt 0 ]; then shift; fi
     while [ $# -gt 0 ]; do
       case $1 in
-      -* | *=*) shift ;;
-      *) break ;;
+        -* | *=*) shift ;;
+        *) break ;;
       esac
     done
     _isf_prog=${1:-}
@@ -141,7 +141,7 @@ is_shell_file() {
   fi
 
   case ${_isf_prog} in
-  sh | bash | dash | ash | ksh | mksh | oksh) IS_SHELL=1 ;; *) ;;
+    sh | bash | dash | ash | ksh | mksh | oksh) IS_SHELL=1 ;; *) ;;
   esac
 }
 
@@ -154,22 +154,22 @@ run_shfmt() {
     --case-indent \
     --indent "${INDENT_SIZE}" \
     --write \
-    "$1" 2>/dev/null
+    "$1" 2> /dev/null
 }
 
 # Apply ShellCheck's own fixes. The target is passed to patch explicitly, so
 # the paths in the diff header (absolute or relative) don't matter.
 apply_shellcheck_diff() {
-  _asd_diff=$(shellcheck -f diff "$1" 2>/dev/null) || true
+  _asd_diff=$(shellcheck -f diff "$1" 2> /dev/null) || true
   [ -n "${_asd_diff}" ] || return 0
-  printf '%s\n' "${_asd_diff}" | patch -s "$1" >/dev/null 2>&1 || true
+  printf '%s\n' "${_asd_diff}" | patch -s "$1" > /dev/null 2>&1 || true
   rm -f "$1.orig" "$1.rej"
 }
 
 # sed_line FILE LINE EXPR – run a sed expression on one line, in place
 sed_line() {
   _sl_tmp="$1.sedtmp"
-  sed "$2$3" "$1" >"${_sl_tmp}" && cat "${_sl_tmp}" >"$1"
+  sed "$2$3" "$1" > "${_sl_tmp}" && cat "${_sl_tmp}" > "$1"
   rm -f "${_sl_tmp}"
 }
 
@@ -181,8 +181,8 @@ fix_sc2166() {
   _f_text=$(sed -n "${_f_line}p" "${_f_file}")
 
   case ${_f_text} in
-  *'!'* | *'[['* | *'\('*) return 0 ;;
-  *) ;;
+    *'!'* | *'[['* | *'\('*) return 0 ;;
+    *) ;;
   esac
 
   _f_brackets=$(printf '%s' "${_f_text}" | tr -cd '[' | wc -c)
@@ -214,10 +214,10 @@ fix_sc2249() {
 '
 
   _dc_hits=$(
-    shellcheck -f json "${_dc_file}" 2>/dev/null |
-      tr '{' '\n' |
-      sed -n 's/.*"endLine":\([0-9][0-9]*\),"column":[0-9][0-9]*,"endColumn":\([0-9][0-9]*\),.*"code":2249,.*/\1 \2/p' |
-      sort -k1,1nr -k2,2nr
+    shellcheck -f json "${_dc_file}" 2> /dev/null \
+      | tr '{' '\n' \
+      | sed -n 's/.*"endLine":\([0-9][0-9]*\),"column":[0-9][0-9]*,"endColumn":\([0-9][0-9]*\),.*"code":2249,.*/\1 \2/p' \
+      | sort -k1,1nr -k2,2nr
   ) || true
   [ -n "${_dc_hits}" ] || return 0
 
@@ -228,25 +228,25 @@ fix_sc2249() {
     cp -- "${_dc_file}" "${_dc_bak}"
 
     case ${_dc_lead} in
-    'esac' | 'esac'[!A-Za-z0-9_]*)
-      # esac opens its line: add the clause on its own line above it
-      sed "${_dc_line}i\\${_dc_nl}*) ;;" "${_dc_file}" >"${_dc_tmp}" &&
-        cat "${_dc_tmp}" >"${_dc_file}"
-      ;;
-    *)
-      # one-liner (... ;; esac): splice in front of the esac using its column.
-      # ShellCheck expands tabs in columns, so leave tabbed lines alone.
-      case ${_dc_text} in *"${_dc_tab}"*) continue ;; *) ;; esac
-      _dc_pre=$((_dc_col - 5))
-      [ "${_dc_pre}" -ge 0 ] || continue
-      sed "${_dc_line}s/^\\(.\\{${_dc_pre}\\}\\)esac/\\1*) ;; esac/" "${_dc_file}" >"${_dc_tmp}" &&
-        cat "${_dc_tmp}" >"${_dc_file}"
-      ;;
+      'esac' | 'esac'[!A-Za-z0-9_]*)
+        # esac opens its line: add the clause on its own line above it
+        sed "${_dc_line}i\\${_dc_nl}*) ;;" "${_dc_file}" > "${_dc_tmp}" \
+          && cat "${_dc_tmp}" > "${_dc_file}"
+        ;;
+      *)
+        # one-liner (... ;; esac): splice in front of the esac using its column.
+        # ShellCheck expands tabs in columns, so leave tabbed lines alone.
+        case ${_dc_text} in *"${_dc_tab}"*) continue ;; *) ;; esac
+        _dc_pre=$((_dc_col - 5))
+        [ "${_dc_pre}" -ge 0 ] || continue
+        sed "${_dc_line}s/^\\(.\\{${_dc_pre}\\}\\)esac/\\1*) ;; esac/" "${_dc_file}" > "${_dc_tmp}" \
+          && cat "${_dc_tmp}" > "${_dc_file}"
+        ;;
     esac
     rm -f "${_dc_tmp}"
 
     # Roll back if the result no longer parses (e.g. last clause lacked its ;;)
-    shfmt "${_dc_file}" >/dev/null 2>&1 || cp -- "${_dc_bak}" "${_dc_file}"
+    shfmt "${_dc_file}" > /dev/null 2>&1 || cp -- "${_dc_bak}" "${_dc_file}"
   done
   rm -f "${_dc_bak}"
 }
@@ -255,9 +255,9 @@ fix_sc2249() {
 guard_unassigned_vars() {
   _gv_file=$1
   _gv_vars=$(
-    shellcheck -f gcc "${_gv_file}" 2>/dev/null |
-      sed -n 's/^.*warning: \([A-Za-z_][A-Za-z0-9_]*\) is referenced but not assigned.*$/\1/p' |
-      sort -u
+    shellcheck -f gcc "${_gv_file}" 2> /dev/null \
+      | sed -n 's/^.*warning: \([A-Za-z_][A-Za-z0-9_]*\) is referenced but not assigned.*$/\1/p' \
+      | sort -u
   ) || true
 
   for _gv_var in ${_gv_vars}; do
@@ -266,7 +266,7 @@ guard_unassigned_vars() {
       -e 's/[$][{]'"${_gv_var}"'[}]/${'"${_gv_var}"':?}/g' \
       -e 's/[$]'"${_gv_var}"'\([^A-Za-z0-9_]\)/${'"${_gv_var}"':?}\1/g' \
       -e 's/[$]'"${_gv_var}"'$/${'"${_gv_var}"':?}/' \
-      "${_gv_file}" >"${_gv_tmp}" && cat "${_gv_tmp}" >"${_gv_file}"
+      "${_gv_file}" > "${_gv_tmp}" && cat "${_gv_tmp}" > "${_gv_file}"
     rm -f "${_gv_tmp}"
   done
 }
@@ -274,17 +274,17 @@ guard_unassigned_vars() {
 fix_extra() {
   _fx_file=$1
   _fx_hits=$(
-    shellcheck -f gcc "${_fx_file}" 2>/dev/null |
-      sed -n 's/^.*:\([0-9][0-9]*\):[0-9][0-9]*: [a-z]*: .*\[\(SC[0-9]*\)\]$/\1 \2/p' |
-      sort -u
+    shellcheck -f gcc "${_fx_file}" 2> /dev/null \
+      | sed -n 's/^.*:\([0-9][0-9]*\):[0-9][0-9]*: [a-z]*: .*\[\(SC[0-9]*\)\]$/\1 \2/p' \
+      | sort -u
   ) || true
 
   if [ -n "${_fx_hits}" ]; then
     printf '%s\n' "${_fx_hits}" | while read -r _fx_line _fx_code; do
       case ${_fx_code} in
-      SC3014) sed_line "${_fx_file}" "${_fx_line}" 's/ == / = /' ;;
-      SC2166) fix_sc2166 "${_fx_file}" "${_fx_line}" ;;
-      *) ;;
+        SC3014) sed_line "${_fx_file}" "${_fx_line}" 's/ == / = /' ;;
+        SC2166) fix_sc2166 "${_fx_file}" "${_fx_line}" ;;
+        *) ;;
       esac
     done
   fi
@@ -303,7 +303,7 @@ fix_file() {
   _ff_file=$1
   _ff_pass=0
   while [ "${_ff_pass}" -lt "${MAX_PASSES}" ]; do
-    _ff_before=$(cksum <"${_ff_file}")
+    _ff_before=$(cksum < "${_ff_file}")
     set +e
     run_shfmt "${_ff_file}"
     _ff_rc=$?
@@ -311,7 +311,7 @@ fix_file() {
     [ "${_ff_rc}" -eq 0 ] || return 1
     apply_shellcheck_diff "${_ff_file}"
     fix_extra "${_ff_file}"
-    _ff_after=$(cksum <"${_ff_file}")
+    _ff_after=$(cksum < "${_ff_file}")
     [ "${_ff_before}" != "${_ff_after}" ] || break
     _ff_pass=$((_ff_pass + 1))
   done
@@ -332,7 +332,7 @@ process_file() {
   TMP_DIR="${_pf_dir}/flint-sh-tmp.$$"
   TMP_FILE="${TMP_DIR}/${_pf_base}"
 
-  if ! mkdir -p -- "${TMP_DIR}" 2>/dev/null || ! cp -p -- "${_pf_orig}" "${TMP_FILE}" 2>/dev/null; then
+  if ! mkdir -p -- "${TMP_DIR}" 2> /dev/null || ! cp -p -- "${_pf_orig}" "${TMP_FILE}" 2> /dev/null; then
     printf '%s: cannot create scratch copy next to %s\n' "${_scr_name}" "${_pf_orig}" >&2
     cleanup
     return 1
@@ -358,7 +358,7 @@ process_file() {
       diff -u -L "${_pf_orig}" -L "${_pf_orig} (fixed)" "${_pf_orig}" "${TMP_FILE}" || true
       _pf_status=1
     fi
-    _pf_left=$(shellcheck -f gcc "${TMP_FILE}" 2>/dev/null || true)
+    _pf_left=$(shellcheck -f gcc "${TMP_FILE}" 2> /dev/null || true)
     if [ -n "${_pf_left}" ]; then
       printf 'flint-sh [dry-run]: issues that would remain in %s:\n' "${_pf_orig}"
       printf '%s\n' "${_pf_left}" | sed "s|^[^:]*|${_pf_orig}|"
@@ -366,7 +366,7 @@ process_file() {
     fi
   else
     if [ "${_pf_changed}" -eq 1 ]; then
-      cat "${TMP_FILE}" >"${_pf_orig}"
+      cat "${TMP_FILE}" > "${_pf_orig}"
       printf 'flint-sh: fixed %s\n' "${_pf_orig}"
     fi
     shellcheck --color="${COLOR}" "${_pf_orig}" || _pf_status=1
@@ -393,12 +393,12 @@ run_finder() {
   set -- "$@" --internal-process
 
   case ${FINDER} in
-  fd | fdfind)
-    "${FINDER}" --type f --print0 . "${_rf_dir}" | "$@"
-    ;;
-  *)
-    find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -print0 | "$@"
-    ;;
+    fd | fdfind)
+      "${FINDER}" --type f --print0 . "${_rf_dir}" | "$@"
+      ;;
+    *)
+      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -print0 | "$@"
+      ;;
   esac
 }
 
@@ -411,47 +411,47 @@ main() {
 
   while [ $# -gt 0 ]; do
     case $1 in
-    --internal-process)
-      INTERNAL_MODE=1
-      shift
-      break
-      ;;
-    -i | --indent)
-      [ $# -ge 2 ] || die "option requires a value: $1"
-      INDENT_SIZE=$2
-      shift 2
-      ;;
-    -d | --dry-run)
-      DRY_RUN=1
-      shift
-      ;;
-    -s | --detect-shell)
-      DETECT_SHELL=1
-      shift
-      ;;
-    -g | --guard-vars)
-      GUARD_VARS=1
-      shift
-      ;;
-    -D | --no-default-case)
-      DEFAULT_CASE=0
-      shift
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -?*) die "unknown option: $1" ;;
-    *) break ;;
+      --internal-process)
+        INTERNAL_MODE=1
+        shift
+        break
+        ;;
+      -i | --indent)
+        [ $# -ge 2 ] || die "option requires a value: $1"
+        INDENT_SIZE=$2
+        shift 2
+        ;;
+      -d | --dry-run)
+        DRY_RUN=1
+        shift
+        ;;
+      -s | --detect-shell)
+        DETECT_SHELL=1
+        shift
+        ;;
+      -g | --guard-vars)
+        GUARD_VARS=1
+        shift
+        ;;
+      -D | --no-default-case)
+        DEFAULT_CASE=0
+        shift
+        ;;
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -?*) die "unknown option: $1" ;;
+      *) break ;;
     esac
   done
 
   case ${INDENT_SIZE} in
-  '' | *[!0-9]*) die "indent must be a number, got: ${INDENT_SIZE}" ;; *) ;;
+    '' | *[!0-9]*) die "indent must be a number, got: ${INDENT_SIZE}" ;; *) ;;
   esac
 
   _main_rc=0

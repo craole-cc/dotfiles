@@ -36,11 +36,10 @@ jot_init() {
               backup_type="$2"
               ;;
             *)
-              if [ ! -n "$2" ] || [ "$2" = "-*" ]; then
-                pout "Backup file name is missing after '--backup' option."
-              else
-                backup_file_path="$2"
-              fi
+              case "${2:-}" in
+                '' | '-*') pout "Backup file name is missing after '--backup' option." ;;
+                *) backup_file_path="$2" ;;
+              esac
               break
               ;;
           esac

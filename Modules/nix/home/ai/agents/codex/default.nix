@@ -26,7 +26,7 @@
   inherit (context) cfg;
 
   collect = field:
-    foldl' mergeSafe {} (map (part: part.${field} or {}) (map
+    mergeSafe (map (part: part.${field} or {}) (map
       (file: import file {inherit cfg dom host lix pkgs inputs user;})
       [
         ./hooks

@@ -62,16 +62,16 @@ cleanup() {
 #~@ Tool Discovery & Parallel Config
 init_bin() {
   for _tool in alejandra statix; do
-    command -v "${_tool}" >/dev/null 2>&1 || die "required tool not found: ${_tool}"
+    command -v "${_tool}" > /dev/null 2>&1 || die "required tool not found: ${_tool}"
   done
 
   # CPU threads for parallel processing (POSIX fallback to 2)
-  NPROC=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)
+  NPROC=$(getconf _NPROCESSORS_ONLN 2> /dev/null || echo 2)
 
   # Fast finder with a plain find(1) fallback
-  if command -v fd >/dev/null 2>&1; then
+  if command -v fd > /dev/null 2>&1; then
     FINDER="fd"
-  elif command -v fdfind >/dev/null 2>&1; then
+  elif command -v fdfind > /dev/null 2>&1; then
     FINDER="fdfind"
   else
     FINDER="find"
@@ -79,13 +79,13 @@ init_bin() {
 
   # Absolute path to ourselves, for the parallel workers
   case $0 in
-  /*) SCRIPT_PATH=$0 ;;
-  */*)
-    _ib_dir=$(dirname -- "$0")
-    _ib_dir=$(cd -- "${_ib_dir}" && pwd)
-    SCRIPT_PATH="${_ib_dir}/${0##*/}"
-    ;;
-  *) SCRIPT_PATH=$(command -v -- "$0" || readlink -f -- "$0") ;;
+    /*) SCRIPT_PATH=$0 ;;
+    */*)
+      _ib_dir=$(dirname -- "$0")
+      _ib_dir=$(cd -- "${_ib_dir}" && pwd)
+      SCRIPT_PATH="${_ib_dir}/${0##*/}"
+      ;;
+    *) SCRIPT_PATH=$(command -v -- "$0" || readlink -f -- "$0") ;;
   esac
 }
 
@@ -127,7 +127,7 @@ fix_file() {
   FIX_ERR=""
 
   while [ "${_ff_pass}" -lt "${MAX_PASSES}" ]; do
-    _ff_before=$(cksum <"${_ff_file}")
+    _ff_before=$(cksum < "${_ff_file}")
 
     _ff_rc=0
     FIX_ERR=$(alejandra -q "${_ff_file}" 2>&1) || _ff_rc=$?
@@ -136,9 +136,9 @@ fix_file() {
       return 0
     fi
 
-    statix fix --config "${STATIX_DIR}" "${_ff_file}" >/dev/null 2>&1 || true
+    statix fix --config "${STATIX_DIR}" "${_ff_file}" > /dev/null 2>&1 || true
 
-    _ff_after=$(cksum <"${_ff_file}")
+    _ff_after=$(cksum < "${_ff_file}")
     [ "${_ff_before}" != "${_ff_after}" ] || break
     _ff_pass=$((_ff_pass + 1))
   done
@@ -159,7 +159,7 @@ process_file() {
   TMP_DIR="${_pf_dir}/flint-nix-tmp.$$"
   TMP_FILE="${TMP_DIR}/${_pf_base}"
 
-  if ! mkdir -p -- "${TMP_DIR}" 2>/dev/null || ! cp -p -- "${_pf_orig}" "${TMP_FILE}" 2>/dev/null; then
+  if ! mkdir -p -- "${TMP_DIR}" 2> /dev/null || ! cp -p -- "${_pf_orig}" "${TMP_FILE}" 2> /dev/null; then
     printf '%s: cannot create scratch copy next to %s\n' "${_scr_name}" "${_pf_orig}" >&2
     EXIT_CODE=1
     cleanup
@@ -199,7 +199,7 @@ process_file() {
     fi
   else
     if [ "${_pf_changed}" -eq 1 ]; then
-      cat "${TMP_FILE}" >"${_pf_orig}"
+      cat "${TMP_FILE}" > "${_pf_orig}"
       printf 'flint-nix: fixed %s\n' "${_pf_orig}"
     fi
     statix_check "${_pf_orig}"
@@ -227,12 +227,12 @@ run_finder() {
   set -- "$@" --internal-process
 
   case ${FINDER} in
-  fd | fdfind)
-    "${FINDER}" --type f --extension nix --print0 . "${_rf_dir}" | "$@" || EXIT_CODE=1
-    ;;
-  *)
-    find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -name '*.nix' -print0 | "$@" || EXIT_CODE=1
-    ;;
+    fd | fdfind)
+      "${FINDER}" --type f --extension nix --print0 . "${_rf_dir}" | "$@" || EXIT_CODE=1
+      ;;
+    *)
+      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -name '*.nix' -print0 | "$@" || EXIT_CODE=1
+      ;;
   esac
 }
 
@@ -245,30 +245,30 @@ main() {
 
   while [ $# -gt 0 ]; do
     case $1 in
-    --internal-process)
-      INTERNAL_MODE=1
-      shift
-      break
-      ;;
-    -d | --dry-run)
-      DRY_RUN=1
-      shift
-      ;;
-    -c | --config)
-      [ $# -ge 2 ] || die "option requires a value: $1"
-      USER_CONFIG=$2
-      shift 2
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -?*) die "unknown option: $1" ;;
-    *) break ;;
+      --internal-process)
+        INTERNAL_MODE=1
+        shift
+        break
+        ;;
+      -d | --dry-run)
+        DRY_RUN=1
+        shift
+        ;;
+      -c | --config)
+        [ $# -ge 2 ] || die "option requires a value: $1"
+        USER_CONFIG=$2
+        shift 2
+        ;;
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -?*) die "unknown option: $1" ;;
+      *) break ;;
     esac
   done
 
@@ -276,10 +276,10 @@ main() {
   if [ "${INTERNAL_MODE}" -eq 1 ]; then
     for _file in "$@"; do
       case /${_file} in
-      # skip our own scratch dirs if the finder raced with a worker
-      */flint-nix-tmp.*/*) continue ;;
-      *.nix) process_file "${_file}" ;;
-      *) ;;
+        # skip our own scratch dirs if the finder raced with a worker
+        */flint-nix-tmp.*/*) continue ;;
+        *.nix) process_file "${_file}" ;;
+        *) ;;
       esac
     done
     exit "${EXIT_CODE}"

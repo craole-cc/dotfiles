@@ -61,7 +61,7 @@ die() {
 #==============================================================================
 
 print_usage() {
-  cat <<EOF
+  cat << EOF
 Usage: ${_cmd_name} [OPTIONS]
 
 Options:
@@ -90,45 +90,45 @@ EOF
 parse_arguments() {
   while [ $# -gt 0 ]; do
     case "$1" in
-    -l | --src | --lib-dir)
-      [ -z "$2" ] && die "Option $1 requires a value"
-      lib_dir="$2"
-      shift 2
-      ;;
-    -d | --lnk | --doc-dir)
-      [ -z "$2" ] && die "Option $1 requires a value"
-      doc_dir="$2"
-      shift 2
-      ;;
-    -v | --verbose)
-      verbose=1
-      shift
-      ;;
-    -n | --dry-run)
-      dry_run=1
-      verbose=1 # Dry-run implies verbose
-      shift
-      ;;
-    -c | --clean)
-      force_cleanup=1
-      shift
-      ;;
-    -q | --quiet)
-      quiet=1
-      verbose=0
-      shift
-      ;;
-    -V | --version)
-      printf "%s v%s\n" "${_cmd_name}" "${_version}"
-      exit 0
-      ;;
-    -h | --help)
-      print_usage
-      exit 0
-      ;;
-    *)
-      die "Unknown option: $1\nRun '${_cmd_name} --help' for usage."
-      ;;
+      -l | --src | --lib-dir)
+        [ -z "$2" ] && die "Option $1 requires a value"
+        lib_dir="$2"
+        shift 2
+        ;;
+      -d | --lnk | --doc-dir)
+        [ -z "$2" ] && die "Option $1 requires a value"
+        doc_dir="$2"
+        shift 2
+        ;;
+      -v | --verbose)
+        verbose=1
+        shift
+        ;;
+      -n | --dry-run)
+        dry_run=1
+        verbose=1 # Dry-run implies verbose
+        shift
+        ;;
+      -c | --clean)
+        force_cleanup=1
+        shift
+        ;;
+      -q | --quiet)
+        quiet=1
+        verbose=0
+        shift
+        ;;
+      -V | --version)
+        printf "%s v%s\n" "${_cmd_name}" "${_version}"
+        exit 0
+        ;;
+      -h | --help)
+        print_usage
+        exit 0
+        ;;
+      *)
+        die "Unknown option: $1\nRun '${_cmd_name} --help' for usage."
+        ;;
     esac
   done
 }
@@ -140,8 +140,8 @@ parse_arguments() {
 get_script_dir() {
   # Get absolute path to script directory (POSIX safe)
   case "$0" in
-  /*) script_path="$0" ;;
-  *) script_path="$PWD/$0" ;;
+    /*) script_path="$0" ;;
+    *) script_path="$PWD/$0" ;;
   esac
 
   script_dir=$(dirname "$script_path")
@@ -154,10 +154,10 @@ find_project_root() {
 
   # Walk up directory tree looking for project markers
   while [ "$current" != "/" ]; do
-    if [ -d "$current/.git" ] ||
-      [ -f "$current/flake.nix" ] ||
-      [ -f "$current/Cargo.toml" ] ||
-      [ -f "$current/pyproject.toml" ]; then
+    if [ -d "$current/.git" ] \
+      || [ -f "$current/flake.nix" ] \
+      || [ -f "$current/Cargo.toml" ] \
+      || [ -f "$current/pyproject.toml" ]; then
       project_root="$current"
       break
     fi
@@ -183,15 +183,15 @@ validate_paths() {
 
   # Ensure doc_dir is absolute
   case "$doc_dir" in
-  /*) ;;
-  *) doc_dir="$project_root/$doc_dir" ;;
+    /*) ;;
+    *) doc_dir="$project_root/$doc_dir" ;;
   esac
 
   # Prevent doc_dir from being inside lib_dir (circular reference)
   case "$doc_dir" in
-  "$lib_dir"/*)
-    die "Documentation directory cannot be inside Library directory\nLib: $lib_dir\nDoc: $doc_dir"
-    ;;
+    "$lib_dir"/*)
+      die "Documentation directory cannot be inside Library directory\nLib: $lib_dir\nDoc: $doc_dir"
+      ;;
   esac
 
   log_verbose "${c_blue}📚 SRC:${c_reset} $lib_dir"
@@ -243,7 +243,7 @@ generate_symlinks() {
 
   #> Use a temporary file to avoid subshell variable scope issues
   tmpfile=$(mktemp)
-  find "${lib_dir}" -type f -name "*.md" -not -path "*/Documentation/*" | sort >"${tmpfile}"
+  find "${lib_dir}" -type f -name "*.md" -not -path "*/Documentation/*" | sort > "${tmpfile}"
 
   #> Process each file
   while IFS= read -r md_file; do
@@ -256,8 +256,8 @@ generate_symlinks() {
 
     #> Skip if already correctly linked
     if
-      [ -L "${absolute_path}" ] &&
-        [ "$(readlink "${absolute_path}")" = "${md_file}" ]
+      [ -L "${absolute_path}" ] \
+        && [ "$(readlink "${absolute_path}")" = "${md_file}" ]
     then
       log_verbose "   ${c_dim}⏭️  Already linked:${c_reset} ${relative_path}"
       skip_count=$((skip_count + 1))
@@ -289,7 +289,7 @@ generate_symlinks() {
     else
       [ "${quiet}" -eq 0 ] && log_error "   ${c_red}✗${c_reset} Failed: ${absolute_path}"
     fi
-  done <"${tmpfile}"
+  done < "${tmpfile}"
 
   rm -f "${tmpfile}"
 
@@ -322,7 +322,7 @@ generate_index() {
     printf -- '---\n\n'
 
     #> Find all symlinked .md files and group by directory
-    find "${doc_dir}/Libraries" -type l -name "*.md" 2>/dev/null | sort | {
+    find "${doc_dir}/Libraries" -type l -name "*.md" 2> /dev/null | sort | {
       last_dir=""
       count=0
 
@@ -347,7 +347,7 @@ generate_index() {
       printf '\n---\n\n'
       printf '**Total documents:** %d symlinks\n' "${count}"
     }
-  } >"${index_path}"
+  } > "${index_path}"
 
   log_verbose "   ${c_green}✓${c_reset} Generated:      ${index_path}"
   log_verbose ""
@@ -359,15 +359,15 @@ generate_index() {
 execute() {
   #> Count paths only after validation
   link_count_before=$(
-    [ -d "${doc_dir}" ] &&
-      find "${doc_dir}" -type l 2>/dev/null | wc -l || echo 0
+    [ -d "${doc_dir}" ] \
+      && find "${doc_dir}" -type l 2> /dev/null | wc -l || echo 0
   )
 
   #> Generate the links and index
   generate_symlinks
   generate_index
 
-  link_count_after=$(find "${doc_dir}" -type l 2>/dev/null | wc -l)
+  link_count_after=$(find "${doc_dir}" -type l 2> /dev/null | wc -l)
   changes=$((link_count_after - link_count_before))
 }
 main() {

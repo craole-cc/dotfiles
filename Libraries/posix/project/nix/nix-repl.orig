@@ -5,7 +5,7 @@ path=$(pwd -P)
 host=$(hostname)
 
 # Check for nix command
-if ! command -v nix >/dev/null 2>&1; then
+if ! command -v nix > /dev/null 2>&1; then
   printf "❌ Unable to load REPL: 'nix' not found\n" >&2
   exit 1
 fi

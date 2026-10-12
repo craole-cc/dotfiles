@@ -126,8 +126,8 @@ initialise_environment() {
 # shellcheck disable=SC2329
 initialise_mod_time_fetcher() {
   get_mod_time_bsd() {
-    if _epoch=$(stat -f '%m' "${_path}" 2>/dev/null); then
-      if _date=$(date -r "${_epoch}" '+%Y-%m-%d %H:%M' 2>/dev/null); then
+    if _epoch=$(stat -f '%m' "${_path}" 2> /dev/null); then
+      if _date=$(date -r "${_epoch}" '+%Y-%m-%d %H:%M' 2> /dev/null); then
         printf "%s" "${_date}"
         return "${CODE_SUCCESS}"
       fi
@@ -137,8 +137,8 @@ initialise_mod_time_fetcher() {
   }
 
   get_mod_time_gnu() {
-    if _epoch=$(stat -c '%Y' "${_path}" 2>/dev/null); then
-      if _date=$(date -d @"${_epoch}" '+%Y-%m-%d %H:%M' 2>/dev/null); then
+    if _epoch=$(stat -c '%Y' "${_path}" 2> /dev/null); then
+      if _date=$(date -d @"${_epoch}" '+%Y-%m-%d %H:%M' 2> /dev/null); then
         printf "%s" "${_date}"
         return "${CODE_SUCCESS}"
       fi
@@ -148,17 +148,17 @@ initialise_mod_time_fetcher() {
   }
 
   get_mod_time_perl() {
-    if command -v perl >/dev/null 2>&1; then
-      if _epoch=$(perl -e 'printf("%d\n",(stat(shift))[9])' "${_path}" 2>/dev/null); then
-        if _date=$(date -r "${_epoch}" '+%Y-%m-%d %H:%M' 2>/dev/null); then
+    if command -v perl > /dev/null 2>&1; then
+      if _epoch=$(perl -e 'printf("%d\n",(stat(shift))[9])' "${_path}" 2> /dev/null); then
+        if _date=$(date -r "${_epoch}" '+%Y-%m-%d %H:%M' 2> /dev/null); then
           printf "%s" "${_date}"
           return "${CODE_SUCCESS}"
         fi
-        if _date=$(date -d @"${_epoch}" '+%Y-%m-%d %H:%M' 2>/dev/null); then
+        if _date=$(date -d @"${_epoch}" '+%Y-%m-%d %H:%M' 2> /dev/null); then
           printf "%s" "${_date}"
           return "${CODE_SUCCESS}"
         fi
-        if _date=$(perl -MPOSIX -e 'print strftime("%Y-%m-%d %H:%M", localtime(shift))' "${_epoch}" 2>/dev/null); then
+        if _date=$(perl -MPOSIX -e 'print strftime("%Y-%m-%d %H:%M", localtime(shift))' "${_epoch}" 2> /dev/null); then
           printf "%s" "${_date}"
           return "${CODE_SUCCESS}"
         fi
@@ -176,11 +176,11 @@ initialise_mod_time_fetcher() {
     test_file="/dev/null"
   fi
 
-  if stat -f '%m' "${test_file}" >/dev/null 2>&1; then
+  if stat -f '%m' "${test_file}" > /dev/null 2>&1; then
     MOD_TIME_FETCHER=get_mod_time_bsd
-  elif stat -c '%Y' "${test_file}" >/dev/null 2>&1; then
+  elif stat -c '%Y' "${test_file}" > /dev/null 2>&1; then
     MOD_TIME_FETCHER=get_mod_time_gnu
-  elif command -v perl >/dev/null 2>&1; then
+  elif command -v perl > /dev/null 2>&1; then
     MOD_TIME_FETCHER=get_mod_time_perl
   else
     MOD_TIME_FETCHER=""
@@ -192,11 +192,11 @@ initialise_utilities() {
     unset tmpfile
     umask "${UMASK_USER}"
 
-    if ! tmpfile=$(mktemp "${TMPDIR}/fmt.XXXXXX" 2>/dev/null); then
+    if ! tmpfile=$(mktemp "${TMPDIR}/fmt.XXXXXX" 2> /dev/null); then
       tmpfile="${TMPDIR}/fmt.$$.$(awk \
-        'BEGIN {srand(); printf "%d", int(rand() * 1000000)}' 2>/dev/null)"
+        'BEGIN {srand(); printf "%d", int(rand() * 1000000)}' 2> /dev/null)"
 
-      if ! : >"${tmpfile}"; then
+      if ! : > "${tmpfile}"; then
         printf 'Failed to create temporary file\n' >&2
         return "${CODE_SYSTEM}"
       fi
@@ -217,44 +217,44 @@ initialise_utilities() {
 
     while [ $# -gt 0 ]; do
       case $1 in
-      -a | --file-a)
-        [ -z "$2" ] && {
-          printf 'Error: Missing argument for %s\n' "$1" >&2
+        -a | --file-a)
+          [ -z "$2" ] && {
+            printf 'Error: Missing argument for %s\n' "$1" >&2
+            return "${CODE_ARGS}"
+          }
+          shift
+          file_a=$1
+          ;;
+        -b | --file-b)
+          [ -z "$2" ] && {
+            printf 'Error: Missing argument for %s\n' "$1" >&2
+            return "${CODE_ARGS}"
+          }
+          shift
+          file_b=$1
+          ;;
+        -f | --filter)
+          [ -z "$2" ] && {
+            printf 'Error: Missing argument for %s\n' "$1" >&2
+            return "${CODE_ARGS}"
+          }
+          shift
+          filter=$1
+          ;;
+        --help)
+          diff_sans_header__usage
+          return "${CODE_SUCCESS}"
+          ;;
+        --)
+          shift
+          break
+          ;;
+        -*)
+          printf 'Unknown option: %s\n' "$1" >&2
+          diff_sans_header__usage >&2
           return "${CODE_ARGS}"
-        }
-        shift
-        file_a=$1
-        ;;
-      -b | --file-b)
-        [ -z "$2" ] && {
-          printf 'Error: Missing argument for %s\n' "$1" >&2
-          return "${CODE_ARGS}"
-        }
-        shift
-        file_b=$1
-        ;;
-      -f | --filter)
-        [ -z "$2" ] && {
-          printf 'Error: Missing argument for %s\n' "$1" >&2
-          return "${CODE_ARGS}"
-        }
-        shift
-        filter=$1
-        ;;
-      --help)
-        diff_sans_header__usage
-        return "${CODE_SUCCESS}"
-        ;;
-      --)
-        shift
-        break
-        ;;
-      -*)
-        printf 'Unknown option: %s\n' "$1" >&2
-        diff_sans_header__usage >&2
-        return "${CODE_ARGS}"
-        ;;
-      *) break ;;
+          ;;
+        *) break ;;
       esac
       shift
     done
@@ -269,8 +269,8 @@ initialise_utilities() {
       return "${CODE_FILE}"
     }
 
-    diff -u "${file_a}" "${file_b}" |
-      sed -e '/^---[[:space:]]/d' \
+    diff -u "${file_a}" "${file_b}" \
+      | sed -e '/^---[[:space:]]/d' \
         -e '/^+++[[:space:]]/d' \
         ${filter:+-e} "${filter:-}"
   }
@@ -282,7 +282,7 @@ initialise_utilities() {
 
     [ -e "$1" ] && {
       _path="$1"
-      _date="$("${MOD_TIME_FETCHER}" "${_path}" 2>/dev/null)"
+      _date="$("${MOD_TIME_FETCHER}" "${_path}" 2> /dev/null)"
     }
 
     printf "%s" "${_date}"
@@ -306,10 +306,10 @@ initialise_utilities() {
 get_absolute_path() {
   _file="$1"
   _pwd=$(pwd)
-  cd "$(dirname "${_file}")" >/dev/null 2>&1 || return "${CODE_SYSTEM}"
+  cd "$(dirname "${_file}")" > /dev/null 2>&1 || return "${CODE_SYSTEM}"
   _cwd="$(pwd)"
   _path="${_cwd}/$(basename "${_file}")"
-  cd "${_pwd}" >/dev/null 2>&1 || return "${CODE_SYSTEM}"
+  cd "${_pwd}" > /dev/null 2>&1 || return "${CODE_SYSTEM}"
 
   printf "%s" "${_path}"
 }
@@ -317,41 +317,41 @@ get_absolute_path() {
 parse_arguments() {
   while [ "$#" -gt 0 ]; do
     case $1 in
-    -d | --debug)
-      VERBOSITY=5
-      ACTION="check"
-      ;;
-    --lint | --check | --dry*) ACTION="check" ;;
-    -f | --fmt | --format) ACTION="format" ;;
-    --skip-sections) ALLOW_SECTION_SEPARATION=0 ;;
-    --skip-leading-space) ALLOW_LEADING_WHITESPACE_TRIM=0 ;;
-    --skip-trailing-space) ALLOW_TRAILING_WHITESPACE_TRIM=0 ;;
-    --skip-blank-lines) ALLOW_BLANK_LINE_REMOVAL=0 ;;
-    -s | --separate-sections) ALLOW_SECTION_SEPARATION=1 ;;
-    -l | --trim-leading-space) ALLOW_LEADING_WHITESPACE_TRIM=1 ;;
-    -t | --trim-trailing-space) ALLOW_TRAILING_WHITESPACE_TRIM=1 ;;
-    -w | --whitespace) ALLOW_MULTIPLE_SPACE_SQUEEZE=1 ;;
-    -b | --drop-blank-lines) ALLOW_BLANK_LINE_REMOVAL=1 ;;
-    --version)
-      printf '%s\n' "${SCR_VERSION}"
-      exit 0
-      ;;
-    --)
-      shift
+      -d | --debug)
+        VERBOSITY=5
+        ACTION="check"
+        ;;
+      --lint | --check | --dry*) ACTION="check" ;;
+      -f | --fmt | --format) ACTION="format" ;;
+      --skip-sections) ALLOW_SECTION_SEPARATION=0 ;;
+      --skip-leading-space) ALLOW_LEADING_WHITESPACE_TRIM=0 ;;
+      --skip-trailing-space) ALLOW_TRAILING_WHITESPACE_TRIM=0 ;;
+      --skip-blank-lines) ALLOW_BLANK_LINE_REMOVAL=0 ;;
+      -s | --separate-sections) ALLOW_SECTION_SEPARATION=1 ;;
+      -l | --trim-leading-space) ALLOW_LEADING_WHITESPACE_TRIM=1 ;;
+      -t | --trim-trailing-space) ALLOW_TRAILING_WHITESPACE_TRIM=1 ;;
+      -w | --whitespace) ALLOW_MULTIPLE_SPACE_SQUEEZE=1 ;;
+      -b | --drop-blank-lines) ALLOW_BLANK_LINE_REMOVAL=1 ;;
+      --version)
+        printf '%s\n' "${SCR_VERSION}"
+        exit 0
+        ;;
+      --)
+        shift
 
-      for arg; do
-        [ -f "${arg}" ] && FILES="${FILES:+${FILES}${DELIMITER}}${arg}"
-      done
-      break
-      ;;
-    -*)
-      printf 'Unknown option: %s\n' "$1" >&2
-      printf '%s\n' "${SCR_USAGE}" >&2
-      exit 1
-      ;;
-    *)
-      [ -f "$1" ] && FILES="${FILES:+${FILES}${DELIMITER}}$1"
-      ;;
+        for arg; do
+          [ -f "${arg}" ] && FILES="${FILES:+${FILES}${DELIMITER}}${arg}"
+        done
+        break
+        ;;
+      -*)
+        printf 'Unknown option: %s\n' "$1" >&2
+        printf '%s\n' "${SCR_USAGE}" >&2
+        exit 1
+        ;;
+      *)
+        [ -f "$1" ] && FILES="${FILES:+${FILES}${DELIMITER}}$1"
+        ;;
     esac
     shift
   done
@@ -410,23 +410,23 @@ execute_action() {
   execute_action__prep() {
     sed_script=""
 
-    [ "${ALLOW_LEADING_WHITESPACE_TRIM}" = "1" ] &&
-      sed_script="${sed_script:+${sed_script};}${PATTERN_LEADING_SPACE_TRIM}"
+    [ "${ALLOW_LEADING_WHITESPACE_TRIM}" = "1" ] \
+      && sed_script="${sed_script:+${sed_script};}${PATTERN_LEADING_SPACE_TRIM}"
 
-    [ "${ALLOW_TRAILING_WHITESPACE_TRIM}" = "1" ] &&
-      sed_script="${sed_script:+${sed_script};}${PATTERN_TRAILING_SPACE_TRIM}"
+    [ "${ALLOW_TRAILING_WHITESPACE_TRIM}" = "1" ] \
+      && sed_script="${sed_script:+${sed_script};}${PATTERN_TRAILING_SPACE_TRIM}"
 
-    [ "${ALLOW_MULTIPLE_SPACE_SQUEEZE}" = "1" ] &&
-      sed_script="${sed_script:+${sed_script};}${PATTERN_MULTIPLE_SPACE_SQUEEZE}"
+    [ "${ALLOW_MULTIPLE_SPACE_SQUEEZE}" = "1" ] \
+      && sed_script="${sed_script:+${sed_script};}${PATTERN_MULTIPLE_SPACE_SQUEEZE}"
 
-    [ "${ALLOW_BLANK_LINE_REMOVAL}" = "1" ] &&
-      sed_script="${sed_script:+${sed_script};}${PATTERN_BLANK_LINE_REMOVAL}"
+    [ "${ALLOW_BLANK_LINE_REMOVAL}" = "1" ] \
+      && sed_script="${sed_script:+${sed_script};}${PATTERN_BLANK_LINE_REMOVAL}"
 
-    [ "${ALLOW_SECTION_SEPARATION}" = "1" ] &&
-      sed_script="${sed_script:+${sed_script};}${PATTERN_SECTION_SPLIT}"
+    [ "${ALLOW_SECTION_SEPARATION}" = "1" ] \
+      && sed_script="${sed_script:+${sed_script};}${PATTERN_SECTION_SPLIT}"
 
-    [ "${VERBOSITY}" -ge 4 ] &&
-      printf "SED PATTERN: %s\n" "${sed_script}"
+    [ "${VERBOSITY}" -ge 4 ] \
+      && printf "SED PATTERN: %s\n" "${sed_script}"
 
     [ -z "${sed_script}" ] && return 0
 
@@ -437,7 +437,7 @@ execute_action() {
 
     tmp_new="${tmp}.formatted"
 
-    sed -e "${sed_script}" "${tmp}" >"${tmp_new}" || {
+    sed -e "${sed_script}" "${tmp}" > "${tmp_new}" || {
       printf "Sed formatting failed\n" >&2
       rm -f "${tmp_new}"
       return "${CODE_FORMAT}"

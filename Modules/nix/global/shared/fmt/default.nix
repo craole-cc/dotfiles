@@ -9,7 +9,7 @@
 }: let
   inherit inputs;
   inherit (lix.attrsets.access) attrNames attrValues;
-  inherit (lix.attrsets.aggregation) recursiveUpdate;
+  inherit (lix.attrsets.aggregation) mergeSafe recursiveUpdate;
   inherit (lix.attrsets.construction) genAttrs;
   inherit (lix.attrsets.transformation) filterAttrs;
   inherit (lix.filesystem.access) readFile;
@@ -203,16 +203,16 @@
       };
     in {inherit package formatter;};
   in {
-    # packages = dprint.package // flint.packages;
-    formatters =
+    formatters = mergeSafe [
       dprint.formatter
-      // flint.formatters
-      // {
-        statix.priority = mkForce 1;
-        alejandra.priority = mkForce 2;
-        shellcheck.priority = mkForce 3;
-        shfmt.priority = mkForce 4;
-      };
+      flint.formatters
+      {
+        statix.priority = mkForce 11;
+        alejandra.priority = mkForce 12;
+        shellcheck.priority = mkForce 21;
+        shfmt.priority = mkForce 22;
+      }
+    ];
     inherit (flint) packages dependencies;
   };
 

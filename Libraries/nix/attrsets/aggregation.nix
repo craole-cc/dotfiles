@@ -356,14 +356,28 @@
       )
     else defaults // attrs;
 
+  #TODO: Add real documentation with Arguments, Type, Examples
   # Merge plain namespaces key by key, but treat module-system values
   # (option declarations, mkIf, mkMerge, mkOverride, ...) as atomic: right wins.
-  mergeSafe = recursiveUpdateUntil (
-    _path: left: right:
-      !(isAttrs left && isAttrs right)
-      || left ? _type
-      || right ? _type
-  );
+  # mergeSafe = recursiveUpdateUntil (
+  #   _path: left: right:
+  #     !(isAttrs left && isAttrs right)
+  #     || left ? _type
+  #     || right ? _type
+  # );
+  mergeSafe = let
+    baseMatcher = recursiveUpdateUntil (
+      _path: left: right:
+        !(isAttrs left && isAttrs right)
+        || left ? _type
+        || right ? _type
+    );
+  in
+    args:
+      if isList args
+      then foldl' baseMatcher {} args
+      else baseMatcher args; # allows binary usage like (mergeSafe set1 set2) if curried/called appropriately,
+  # or you can adapt it to handle 2 explicit arguments.
 
   /**
   Deep-merge a list of attrsets, left-to-right, combining nested attrsets
