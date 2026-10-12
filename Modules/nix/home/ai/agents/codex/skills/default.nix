@@ -17,21 +17,23 @@
   inherit (lix.types.primitives) lines path str;
 
   openai = let
-    source = (inputs.codex-skills or {}).outPath or pkgs.fetchFromGitHub {
-      #? OpenAI's curated skills, pinned. To update:
-      #? - bump `rev`,
-      #? - set `hash` to lib.fakeHash
-      #? - attempt build
-      #? - copy the discovered hash Nix reports.
-      owner = "openai";
-      repo = "skills";
-      rev = "49f948faa9258a0c61caceaf225e179651397431";
-      hash = "sha256-t4oGnFg0YpxJaQiFpgTiwYhaFoZK6wPDiqvHoG0bXiU=";
-    };
+    source =
+      (inputs.codex-skills or {
+        }).outPath or (pkgs.fetchFromGitHub {
+        #? OpenAI's curated skills, pinned. To update:
+        #? - bump `rev`,
+        #? - set `hash` to lib.fakeHash
+        #? - attempt build
+        #? - copy the discovered hash Nix reports.
+        owner = "openai";
+        repo = "skills";
+        rev = "49f948faa9258a0c61caceaf225e179651397431";
+        hash = "sha256-t4oGnFg0YpxJaQiFpgTiwYhaFoZK6wPDiqvHoG0bXiU=";
+      });
     target = name: let
       path = concat {
         root = source;
-        stem = ["skills" ".curates" name];
+        stem = ["skills" ".curated" name];
       };
     in
       path;

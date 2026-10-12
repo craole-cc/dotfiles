@@ -11,12 +11,14 @@
   inherit (lix.types.primitives) package path str;
 
   openai = let
-    source = (inputs.codex-plugins or {}).outPath or pkgs.fetchFromGitHub {
-      owner = "openai";
-      repo = "plugins";
-      rev = "0722921d5542fc593105c27bd52630babd8b8c2a";
-      hash = "sha256-0HXOrcWKpNexof5Y7iDOy7wixwvCjF1FoN1M95P+n74=";
-    };
+    source =
+      (inputs.codex-plugins or {
+        }).outPath or (pkgs.fetchFromGitHub {
+        owner = "openai";
+        repo = "plugins";
+        rev = "0722921d5542fc593105c27bd52630babd8b8c2a";
+        hash = "sha256-0HXOrcWKpNexof5Y7iDOy7wixwvCjF1FoN1M95P+n74=";
+      });
     target = name: let
       path = concat {
         root = source;

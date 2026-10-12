@@ -38,10 +38,10 @@ in {
   #> Skip the key when empty so no empty [mcp_servers] table is emitted.
   settings = optionalAttrs (cfg.mcp.servers != {}) {mcp_servers = cfg.mcp.servers;};
 
-  programs.enableMcpIntegration = cfg.mcp.enable;
+  program.enableMcpIntegration = cfg.mcp.enable;
 
   outputs = {
-    program.mcp = optionalAttrs (cfg.mcp.shared != {}) {
+    programs.mcp = optionalAttrs (cfg.mcp.shared != {}) {
       enable = true;
       servers = cfg.mcp.shared;
     };
