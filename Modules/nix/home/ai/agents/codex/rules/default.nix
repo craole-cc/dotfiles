@@ -29,5 +29,5 @@ in {
     '';
   };
 
-  programs = {inherit (cfg) rules;};
+  program = {inherit (cfg) rules;};
 }

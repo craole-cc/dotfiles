@@ -50,5 +50,5 @@ in {
     features = optionalAttrs (cfg.hooks != {}) {hooks = true;};
   };
 
-  programs = {inherit (cfg) hooks;};
+  program = {inherit (cfg) hooks;};
 }

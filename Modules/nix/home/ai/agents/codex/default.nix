@@ -1,9 +1,8 @@
 {
   config,
-  inputs,
-  system,
   lix,
   user,
+  inputs,
   pkgs,
   ...
 }: let
@@ -19,12 +18,22 @@
   inherit (lix.lists.predicates) isIn;
   inherit (lix.lists.transformation) filter;
   inherit (lix.modules.construction) mkConfig mkContext mkIf mkMerge mkOverride;
-  inherit (lix.options.construction) mkEnable mkOption mkPackageOption mkTrue;
+  inherit (lix.options.construction) mkEnable mkOption mkTrue;
+  inherit (lix.sources.packages) pkgsFrom;
   inherit (lix.types.combinators) attrsOf either nullOr;
-  inherit (lix.types.primitives) anything lines path;
+  inherit (lix.types.primitives) anything lines package path;
 
   context = mkContext {inherit config dom sub mod;};
   inherit (context) cfg;
+
+  tools = pkgsFrom {
+    inherit inputs pkgs;
+    sources = let
+      source = "codex";
+      # source = "llm-agents";
+    in {${mod} = source;};
+  };
+  meta = tools.${mod};
 
   # Give every leaf the same priority, so a layer still merges key by key.
   layer = priority: attributes:
@@ -33,7 +42,7 @@
   # Each part returns { options, settings, programs }; any of them may be absent.
   parts =
     map
-    (file: import file {inherit lix pkgs cfg;})
+    (file: import file {inherit lix pkgs cfg inputs;})
     [
       ./hooks
       ./integrations
@@ -71,15 +80,13 @@ in
             ));
         };
 
-        package =
-          mkPackageOption
-          inputs.llm-agents.packages.${system}
-          mod {
-            pkgsText = "inputs.llm-agents.packages.<system>";
-            extraDescription = ''
-              Taken from llm-agents rather than nixpkgs, so it tracks upstream Codex releases more closely.
-            '';
-          };
+        package = mkOption {
+          default = meta.package;
+          description = ''
+            Taken from the flake inputs rather than nixpkgs, so it tracks upstream Codex releases more closely.
+          '';
+          type = package;
+        };
 
         context = mkOption {
           type = nullOr (either lines path);
@@ -132,7 +139,7 @@ in
     outputs = mkMerge [
       {
         programs.codex =
-          collect "programs"
+          collect "program"
           // {
             enable = true;
             inherit (cfg) package;

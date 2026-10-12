@@ -1,28 +1,32 @@
 {
   lix,
   pkgs,
+  inputs,
   cfg,
   ...
 }: let
   inherit (lix.options.construction) mkOption;
   inherit (lix.types.combinators) attrsOf either listOf;
+  inherit (lix.filesystem.primitives) concat;
   inherit (lix.types.primitives) package path str;
 
-  # OpenAI's curated plugins, pinned. To update: bump `rev`, set `hash` to an
-  # empty string, build once, and copy the hash Nix reports.
-  openai = pkgs.fetchFromGitHub {
-    owner = "openai";
-    repo = "plugins";
-    rev = "0722921d5542fc593105c27bd52630babd8b8c2a";
-    hash = "sha256-0HXOrcWKpNexof5Y7iDOy7wixwvCjF1FoN1M95P+n74=";
-  };
-
-  # Home Manager wants one directory per plugin, and the derivation name must
-  # match the plugin's name in its manifest.
-  fromOpenai = name:
-    pkgs.runCommandLocal name {} ''
-      cp -r --no-preserve=mode ${openai}/plugins/${name} $out
-    '';
+  openai = let
+    source = (inputs.codex-plugins or {}).outPath or pkgs.fetchFromGitHub {
+      owner = "openai";
+      repo = "plugins";
+      rev = "0722921d5542fc593105c27bd52630babd8b8c2a";
+      hash = "sha256-0HXOrcWKpNexof5Y7iDOy7wixwvCjF1FoN1M95P+n74=";
+    };
+    target = name: let
+      path = concat {
+        root = source;
+        stem = ["plugins" name];
+      };
+    in
+      pkgs.runCommandLocal name {} ''
+        cp -r --no-preserve=mode ${path} $out
+      '';
+  in {inherit source target;};
 in {
   options = {
     curated.plugins = mkOption {
@@ -56,8 +60,8 @@ in {
     };
   };
 
-  programs = {
-    plugins = map fromOpenai cfg.curated.plugins ++ cfg.plugins;
-    marketplaces = {openai-curated = openai;} // cfg.marketplaces;
+  program = {
+    plugins = (map openai.target cfg.curated.plugins) ++ cfg.plugins;
+    marketplaces = {openai = openai.source;} // cfg.marketplaces;
   };
 }

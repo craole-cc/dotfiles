@@ -41,7 +41,7 @@ in {
   programs.enableMcpIntegration = cfg.mcp.enable;
 
   outputs = {
-    programs.mcp = optionalAttrs (cfg.mcp.shared != {}) {
+    program.mcp = optionalAttrs (cfg.mcp.shared != {}) {
       enable = true;
       servers = cfg.mcp.shared;
     };

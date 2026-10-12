@@ -3,16 +3,16 @@
   cfg,
   ...
 }: let
+  inherit (lix.attrsets.transformation) removeNulls;
   inherit (lix.options.construction) mkOption;
   inherit (lix.types.combinators) attrsOf;
-  inherit (lix.content.emptiness) withoutNulls;
   inherit (lix.types.primitives) anything;
 in {
   options.profiles = mkOption {
     type = attrsOf anything;
     default = {
       # Read-only second opinion on a change, using the review model.
-      review = withoutNulls {
+      review = removeNulls {
         model = cfg.model.review;
         model_reasoning_effort = "high";
         approval_policy = "on-request";
@@ -20,7 +20,7 @@ in {
       };
 
       # Hard problems: the review model at maximum reasoning.
-      deep = withoutNulls {
+      deep = removeNulls {
         model = cfg.model.review;
         model_reasoning_effort = "xhigh"; # TODO: Check if this is correct or if it should be `max`.
       };
@@ -36,5 +36,5 @@ in {
     '';
   };
 
-  programs = {inherit (cfg) profiles;};
+  program = {inherit (cfg) profiles;};
 }

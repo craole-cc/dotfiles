@@ -181,16 +181,39 @@
       inputs.nixpkgs.follows = "nixPackages";
     };
 
+    #~@ AI
     ai = {
       repo = "llm-agents.nix";
       owner = "numtide";
       type = "github";
     };
-
     hermes = {
       repo = "hermes-agent";
       owner = "NousResearch";
       type = "github";
+    };
+    codex = {
+      repo = "codex-cli-nix";
+      owner = "sadjow";
+      type = "github";
+    };
+    # openai-codex = {
+    #   repo = "codex";
+    #   owner = "openai";
+    #   type = "github";
+    #   inputs.nixpkgs.follows = "nixPackages";
+    # };
+    codex-plugins = {
+      repo = "plugins";
+      owner = "openai";
+      type = "github";
+      flake = false;
+    };
+    codex-skills = {
+      repo = "skills";
+      owner = "openai";
+      type = "github";
+      flake = false;
     };
 
     rustOverlay = {

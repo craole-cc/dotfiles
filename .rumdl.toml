@@ -1,0 +1,21 @@
+[global]
+  line-length = 120
+  respect-gitignore = true
+  exclude = ["node_modules", ".git"]
+
+[MD013]
+  abbreviations = []
+  blockquotes = true
+  code-block-line-length = "__nullable__"
+  code-blocks = false
+  heading-line-length = "__nullable__"
+  headings = true
+  length-mode = "visual"
+  line-length = 100
+  paragraphs = true
+  reflow = false
+  reflow-mode = "default"
+  require-sentence-capital = true
+  stern = false
+  strict = false
+  tables = false

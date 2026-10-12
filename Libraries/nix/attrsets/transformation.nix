@@ -9,6 +9,7 @@
   inherit (_.debug.runners) runTests;
   inherit (_.debug.tracing) id;
   inherit (_.strings.access) getEnv;
+  inherit (_.attrsets.transformation) filterAttrs;
   inherit (_.strings.construction) asString;
   inherit (_.strings.transformation) toUpper;
   inherit (_.types.predicates) isList;
@@ -88,8 +89,22 @@
       if type == "set"
       then listToAttrs pairs
       else pairs;
+
+  /**
+  Remove all attributes whose value is `null`.
+
+  # Type
+  - `removeNulls` :: AttrSet -> AttrSet
+
+  # Examples
+  ```nix
+  removeNulls { a = 1; b = null; c = "foo"; }
+  => { a = 1; c = "foo"; }
+  ```
+  */
+  removeNulls = filterAttrs (_: value: value != null);
 in {
-  inherit asEnvVars;
+  inherit asEnvVars removeNulls;
 
   __rootAliases = {inherit asEnvVars;};
 

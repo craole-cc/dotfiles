@@ -3,10 +3,10 @@
   cfg,
   ...
 }: let
+  inherit (lix.attrsets.transformation) removeNulls;
   inherit (lix.options.construction) mkEnum mkFalse mkOption;
   inherit (lix.types.combinators) listOf nullOr;
   inherit (lix.types.primitives) str;
-  inherit (lix.content.emptiness) withoutNulls;
 in {
   options = {
     model = {
@@ -79,14 +79,14 @@ in {
     };
   };
 
-  settings = withoutNulls {
+  settings = removeNulls {
     model = cfg.model.main;
     review_model = cfg.model.review;
     approval_policy = cfg.approval.policy;
     approvals_reviewer = cfg.approval.reviewer;
     sandbox_mode = cfg.sandbox.mode;
     check_for_update_on_startup = cfg.update.check;
-    tui = withoutNulls {
+    tui = removeNulls {
       notifications = cfg.tui.notifications;
       notification_condition = cfg.tui.condition;
     };

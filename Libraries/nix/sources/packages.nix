@@ -1,8 +1,4 @@
-{
-  _,
-  # _defaults,
-  ...
-}: let
+{_, ...}: let
   meta = {
     doc = ''
       Input Packages Resolution
@@ -88,6 +84,9 @@
         "age"
         "caelestia"
         "catppuccin"
+        "codex"
+        "codex-plugins"
+        "codex-skills"
         "dank-material-shell"
         "dms-plugin-registry"
         "fresh-editor"
@@ -132,14 +131,15 @@
     system,
     input,
   }: let
-    packages = inputs.${input}.packages.${system} or {};
-    formatter = inputs.${input}.formatter.${system} or null;
+    packages = {
+      sys = inputs.${input}.packages.${system} or null;
+      fmt = inputs.${input}.formatter.${system} or null;
+    };
   in
-    if packages != {}
-    then packages
-    else if formatter != null
-    then {${input} = formatter;}
-    else {};
+    with packages;
+      if isNotEmpty sys
+      then sys
+      else optionalAttrs (isNotEmpty fmt) {${input} = fmt;};
 
   /**
     Build the final version string for a resolved package: derives a

@@ -4,11 +4,6 @@
   # __moduleRef,
   ...
 }: let
-  inherit (_.filesystem.predicates) pathExists;
-  inherit (_.types.predicates) isAttrs isList isPath isString typeOf;
-  inherit (_.strings.construction) concatStringsSep;
-  inherit (_.strings.predicates) hasPrefix;
-
   exports = {
     internal = {
       inherit
@@ -20,6 +15,11 @@
     };
     external = {};
   };
+
+  inherit (_.filesystem.predicates) pathExists;
+  inherit (_.types.predicates) isAttrs isList isPath isString typeOf;
+  inherit (_.strings.construction) concatStringsSep;
+  inherit (_.strings.predicates) hasPrefix;
 
   src = _defaults.paths.repo.src.store; # TODO: This has got to be temporary
 

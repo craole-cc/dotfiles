@@ -300,17 +300,26 @@
         "chaotic"
       ];
 
-      stylix = tryNames [
-        "nixStyle"
-        "styleManager"
-        "stylix"
-      ];
-
       caelestia = tryNames [
         "shellCaelestia"
         "caelestiaShell"
         "caelestia-shell"
         "caelestia"
+      ];
+
+      codex = tryNames [
+        "codex-community"
+        "openai-codex"
+        "codex-cli"
+        "codex"
+      ];
+      codex-plugins = tryNames [
+        "codex-plugins"
+        "openai-plugins"
+      ];
+      codex-skills = tryNames [
+        "codex-skills"
+        "openai-skills"
       ];
 
       dank-greeter = tryNames [
@@ -412,6 +421,12 @@
         "qmlshell"
         "quick"
         "quickshell"
+      ];
+
+      stylix = tryNames [
+        "nixStyle"
+        "styleManager"
+        "stylix"
       ];
 
       treefmt = tryNames [

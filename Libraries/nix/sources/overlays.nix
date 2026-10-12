@@ -1,8 +1,4 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   __doc = ''
     Input Overlays Generation
 
@@ -12,7 +8,7 @@
   '';
 
   inherit (_.hardware.system) systemOf;
-  inherit (lib.attrsets) filterAttrs mapAttrs mapAttrs';
+  inherit (_.attrsets) removeNulls mapAttrs mapAttrs';
 
   __exports = {
     internal = {
@@ -28,7 +24,7 @@
 
   #~@ Core overlays - stable/unstable nixpkgs channels
 
-  stableOverlay = {
+  stable = {
     inputs,
     config,
   }: final: _: let
@@ -37,7 +33,7 @@
     fromStable = import (inputs.nixpkgs-stable or inputs.nixpkgs) {inherit system config;};
   };
 
-  unstableOverlay = {
+  unstable = {
     inputs,
     config,
   }: final: _: let
@@ -51,12 +47,11 @@
   #> Flattened - exposes each input's default package directly on pkgs.
   #> Inputs listed in `exclude` remain available under pkgs.fromInputs but do
   #> not replace an existing nixpkgs package of the same name.
-  flattenedOverlay = {
+  flattened = {
     packages,
     exclude ? [],
   }: _final: prev: let
     system = systemOf prev;
-    flattenedPackages = builtins.removeAttrs packages exclude;
     resolve = pkgsSet: let
       val = pkgsSet.${system} or null;
     in
@@ -64,19 +59,19 @@
       then null
       else if val ? outPath
       then val # ? already a derivation
-      else val.default or null; # ? attrset → pick .default
+      else val.default or null; # ? attrset -> pick .default
   in
-    filterAttrs (_: v: v != null) (
+    removeNulls (
       mapAttrs' (name: pkgsSet: {
         inherit name;
         value = resolve pkgsSet;
       })
-      flattenedPackages
+      (removeAttrs packages exclude)
     );
 
   #> Variant expansion - explicitly expose named variants for known multi-output inputs
   #> Avoids forcing evaluation of entire nixpkgs attrsets (which causes AAAAAASomeThingsFailToEvaluate)
-  variantOverlay = {packages}: _final: prev: let
+  variant = {packages}: _final: prev: let
     system = systemOf prev;
     zen = packages."zen-browser".${system} or {};
   in {
@@ -87,10 +82,11 @@
 
   #> Categorised - exposes all input package sets under pkgs.fromInputs.<name>
   #> e.g. pkgs.fromInputs.helix = { default = ...; helix = ...; }
-  fromInputsOverlay = {packages}: _final: prev: let
-    system = systemOf prev;
-  in {
-    fromInputs = mapAttrs (_: pkgsSet: pkgsSet.${system} or null) packages;
+  fromInputs = {packages}: _final: prev: {
+    fromInputs =
+      mapAttrs
+      (_: pkgsSet: pkgsSet.${systemOf prev} or null)
+      packages;
   };
 
   #~@ Builder functions
@@ -99,33 +95,38 @@
     inputs,
     config,
   }: [
-    (stableOverlay {inherit inputs config;})
-    (unstableOverlay {inherit inputs config;})
+    (stable {inherit inputs config;})
+    (unstable {inherit inputs config;})
   ];
 
   mkHome = {
     inputs,
     packages,
-  }: [
-    # The application registry resolves Helix from nixpkgs. Keep the flake
-    # input available for explicit consumers without allowing its default
-    # package to shadow pkgs.helix during whole-system evaluation.
-    (flattenedOverlay {
-      inherit packages;
-      exclude = ["helix"];
-    })
-    (variantOverlay {inherit packages;})
-    (fromInputsOverlay {inherit packages;})
-    (inputs.rust-overlay.overlays.default or (_: _: {}))
-    (inputs.chaotic.overlays.default or (_: _: {}))
-  ];
+  }:
+    [
+      # The application registry resolves Helix from nixpkgs. Keep the flake
+      # input available for explicit consumers without allowing its default
+      # package to shadow pkgs.helix during whole-system evaluation.
+      (flattened {
+        inherit packages;
+        exclude = ["helix"];
+      })
+      (variant {inherit packages;})
+      (fromInputs {inherit packages;})
+    ]
+    ++ (with inputs; [
+      (rust-overlay.overlays.default or (_: _: {}))
+      (chaotic.overlays.default or (_: _: {}))
+      (codex.overlays.default or (_: _: {}))
+    ]);
 
   mkAll = {
     config,
     inputs,
     packages,
   }:
-    mkCore {inherit inputs config;} ++ mkHome {inherit inputs packages;};
+    mkCore {inherit inputs config;}
+    ++ mkHome {inherit inputs packages;};
 in
   __exports.internal
   // {

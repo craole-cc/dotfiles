@@ -1,12 +1,12 @@
 ---
 name: plan-first
-description: Agree a plan before editing files. Use for any change that touches more than one file or has more than one reasonable approach.
+description: Agree on an explicit execution plan before editing files. Use for multi-file changes or multi-approach tasks.
 ---
 
 # Plan first
 
-1. Restate the goal in one or two sentences and name anything ambiguous.
-2. List the files you expect to change and why, and say what you will not touch.
-3. Describe the approach, the main edge cases, and how you will check the result (tests, a build, a command to run).
-4. Stop and wait for approval before changing any file.
-5. After approval, follow the plan. If you must deviate, say so and why before continuing.
+1. **Restate goal:** Summarise the target outcome in 1–2 sentences and highlight ambiguities.
+2. **Identify targets:** List expected files to modify/add and explicitly state what will remain untouched.
+3. **Execution strategy:** Outline the implementation path, key edge cases, and verification steps (tests, builds, commands).
+4. **Approval checkpoint:** Stop and wait for user confirmation before modifying any workspace files.
+5. **Execution & deviation:** Follow the agreed plan. Inform the user and explain prior to proceeding any deviations.
