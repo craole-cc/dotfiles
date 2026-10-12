@@ -9,6 +9,7 @@ in {
 
   stateVersion = "25.05";
   system = "${arch}-${os}";
+  type = "laptop";
   class = "nixos";
   id = "d2c1db8e"; # > head -c8 /etc/machine-id'
 

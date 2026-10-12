@@ -49,6 +49,7 @@
         mkUtilities
         mkContext
         mkFlake
+        mkLayer
         ;
       inherit (_.modules.core.construction) mkCore;
       inherit (_.modules.home.construction) mkHome;
@@ -63,13 +64,14 @@
 
   inherit (_.attrsets.access) attrNames getAttrFromPath;
   inherit (_.attrsets.construction) genAttrs optionalAttrs;
-  inherit (_.attrsets.transformation) filterAttrs mapAttrs setAttrByPath;
+  inherit (_.attrsets.transformation) filterAttrs mapAttrs mapAttrsRecursiveCond setAttrByPath;
+  inherit (_.attrsets.predicates) isDerivation;
   inherit (_.debug.assertions) withContext;
   inherit (_.hardware.system) getSystems;
   inherit (_.lists.construction) optional optionals;
   inherit (_.lists.predicates) elem;
   inherit (_.schema.construction) mkSchema;
-  inherit (_.modules.construction) mkIf mkMerge;
+  inherit (_.modules.construction) mkIf mkMerge mkOverride;
   inherit (_.modules.evaluation) evalModules extend;
   inherit (_.modules.home.users) mkUsers;
   inherit (_.options.construction) mkOption;
@@ -309,6 +311,18 @@
             )
           )
     );
+
+  /**
+  Wrap every leaf of an attrset in `mkOverride priority`, so layers of
+  different priority still merge key by key.
+
+  # Type
+  mkLayer :: int -> AttrSet -> AttrSet
+  */
+  mkLayer = priority:
+    mapAttrsRecursiveCond
+    (value: !(value ? _type) && !(isDerivation value))
+    (_path: value: mkOverride priority value);
 
   mkConfig = {
     predicate ? null,

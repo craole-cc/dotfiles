@@ -65,6 +65,7 @@
       mapAttrs
       mapAttrs'
       mapAttrsRecursive
+      mapAttrsRecursiveCond
       mapAttrsToList
       removeAttrs
       setAttrByPath
