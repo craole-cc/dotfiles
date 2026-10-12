@@ -1,18 +1,28 @@
 {
   lix,
   cfg,
+  dom,
   tools,
   host,
+  user,
   ...
 }: let
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.modules.construction) mkIf;
-  inherit (lix.lists.predicates) elem;
+  inherit (lix.lists.predicates) isIn;
+  inherit (lix.lists.transformation) filter;
   inherit (lix.types.primitives) package;
 
+  domain = user.applications.${dom} or {};
+  selectedApplications =
+    (user.applications.allowed or [])
+    ++ map (module: domain.${module}) (
+      filter (module: domain ? ${module})
+      ["primary" "secondary" "tertiary"]
+    );
+
   isGraphical =
-    #TODO: Use isIn and check functionalities
-    elem
+    isIn
     (host.type or (host.specs.machine or null))
     ["desktop" "laptop"];
 in {
@@ -20,9 +30,9 @@ in {
     enable = mkEnable {
       description = ''
         Install the ChatGPT desktop app (it also runs Codex) alongside the CLI.
-        Defaults to on when Codex is enabled and the host is a desktop or laptop.
+        Defaults to on when ChatGPT is selected and the host is a desktop or laptop.
       '';
-      condition = cfg.enable && isGraphical;
+      condition = isIn selectedApplications ["chatgpt"] && isGraphical;
     };
 
     package = mkOption {

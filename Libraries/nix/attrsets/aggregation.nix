@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (_.attrsets.access) attrNames;
-  inherit (_.attrsets.aggregation) intersectAttrs recursiveUpdate;
+  inherit (_.attrsets.aggregation) intersectAttrs recursiveUpdate recursiveUpdateUntil;
   inherit (_.attrsets.construction) listToAttrs;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.debug.assertions) mkTest;
@@ -356,6 +356,15 @@
       )
     else defaults // attrs;
 
+  # Merge plain namespaces key by key, but treat module-system values
+  # (option declarations, mkIf, mkMerge, mkOverride, ...) as atomic: right wins.
+  mergeSafe = recursiveUpdateUntil (
+    _path: left: right:
+      !(isAttrs left && isAttrs right)
+      || left ? _type
+      || right ? _type
+  );
+
   /**
   Deep-merge a list of attrsets, left-to-right, combining nested attrsets
   recursively instead of the shallow last-wins semantics of `//`/`foldl' (//)`.
@@ -478,6 +487,7 @@ in {
     recursiveMergeAll
     mergeShellFragments
     mkShellFragments
+    mergeSafe
     ;
 
   __rootAliases = {
