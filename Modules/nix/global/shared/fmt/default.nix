@@ -118,7 +118,17 @@
       specs = {
         sh = {
           dependencies = with pkgs; [shellcheck shfmt];
-          includes = ["*"];
+          includes = [
+            "Libraries/posix/**"
+            "**/posix/**"
+            "**/bash/**"
+            "**/zsh/**"
+            "**/sh/**"
+            "**/shellscript/**"
+            "*.sh"
+            "*.bash"
+            "*.zsh"
+          ];
           options = ["--detect-shell"];
         };
 
