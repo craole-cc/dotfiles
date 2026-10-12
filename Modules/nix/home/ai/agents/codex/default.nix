@@ -4,6 +4,7 @@
   user,
   inputs,
   pkgs,
+  host,
   ...
 }: let
   dom = "ai";
@@ -47,7 +48,7 @@
   # Each part returns { options, settings, program, outputs }; any may be absent.
   parts =
     map
-    (file: import file {inherit lix pkgs cfg inputs tools;})
+    (file: import file {inherit cfg host lix pkgs inputs tools;})
     [
       ./hooks
       ./integrations
@@ -84,13 +85,13 @@
         ));
     };
 
-    package = mkOption {
-      default = meta.package;
-      description = ''
-        Taken from the flake inputs rather than nixpkgs, so it tracks upstream Codex releases more closely.
-      '';
-      type = package;
-    };
+    # package = mkOption {
+    #   default = meta.package;
+    #   description = ''
+    #     Taken from the flake inputs rather than nixpkgs, so it tracks upstream Codex releases more closely.
+    #   '';
+    #   type = package;
+    # };
 
     context = mkOption {
       type = nullOr (either lines path);
