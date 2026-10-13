@@ -146,8 +146,8 @@
   style = {
     autoSwitch = true;
     opacity.terminal = {
-      light = 0.95;
-      dark = 0.97;
+      light = 0.88;
+      dark = 0.92;
     };
     theme = {
       polarity = "dark";
@@ -186,9 +186,9 @@
     };
 
     browser = {
-      primary = "brave";
-      secondary = "zen-twilight";
-      tertiary = "chromium";
+      primary = "zen-twilight";
+      secondary = "chromium";
+      tertiary = "brave";
     };
 
     editor = {
@@ -204,8 +204,8 @@
     };
     terminal = {
       primary = "ghostty";
-      tertiary = "kitty";
       secondary = "foot";
+      tertiary = "kitty";
     };
     explorer = {
       primary = "yazi";
