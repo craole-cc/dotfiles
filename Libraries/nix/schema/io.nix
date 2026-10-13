@@ -191,7 +191,7 @@
         # ── Window state ─────────────────────────────────────────────────────────
         #? action = "" means the WM must override - these are WM dispatch commands
         close = {
-          inherit mod;
+          mod = mod ++ ["CTRL"];
           key = "Q";
           action = "";
         };

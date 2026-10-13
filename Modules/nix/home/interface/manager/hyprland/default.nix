@@ -42,6 +42,7 @@
   };
 
   terminalLaunch = keyboard.bindings.terminal or {};
+  windowClose = keyboard.bindings.close or {};
   windowCycle = keyboard.bindings.windowCycle or {};
   windowLast = keyboard.bindings.windowLast or {};
   primaryTerminal = apps.terminal.primary or null;
@@ -109,26 +110,49 @@
       map (role: mkDmsScratchpadRoleBind category scratchpad role) scratchpadRoles
     );
 
-  dmsTerminalBind = let
+  mkDmsTerminalBind = role: extraMods: let
     key = terminalLaunch.key or null;
     mod = terminalLaunch.mod or null;
+    terminal = apps.terminal.${role} or null;
     command =
-      if builtins.isAttrs primaryTerminal
-      then primaryTerminal.command or null
+      if builtins.isAttrs terminal
+      then terminal.command or null
       else null;
   in
     if key == null || mod == null || command == null || command == ""
     then ""
     else let
-      chord = mkDmsChord key terminalLaunch;
+      chord = mkDmsChordWith key terminalLaunch extraMods;
     in ''
       hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.exec_cmd(${builtins.toJSON command}), { description = "Open primary terminal" })
+      hl.bind(${builtins.toJSON chord}, hl.dsp.exec_cmd(${builtins.toJSON command}), { description = ${builtins.toJSON "Open ${role} terminal"} })
+    '';
+
+  dmsTerminalBinds =
+    mkDmsTerminalBind "primary" []
+    + mkDmsTerminalBind "secondary" ["SHIFT"]
+    + mkDmsTerminalBind "tertiary" ["ALT"];
+
+  dmsWindowCloseBind = let
+    key = windowClose.key or null;
+    mod = windowClose.mod or null;
+  in
+    if key == null || mod == null
+    then ""
+    else let
+      chord = mkDmsChord key windowClose;
+    in ''
+      hl.unbind("SUPER + Q")
+      hl.unbind(${builtins.toJSON chord})
+      hl.bind(${builtins.toJSON chord}, hl.dsp.window.close(), { description = "Close window" })
     '';
 
   dmsGhosttyQuickTerminalBind =
     if config.programs.ghostty.enable or false
     then ''
+      hl.on("hyprland.start", function()
+        hl.exec_cmd("ghostty --gtk-single-instance=true --quit-after-last-window-closed=false --initial-window=false")
+      end)
       hl.unbind("ALT + grave")
       hl.bind("ALT + grave", hl.dsp.global("com.mitchellh.ghostty:ALT+grave"), { description = "Toggle Ghostty quick terminal" })
     ''
@@ -252,7 +276,8 @@
       -- Loaded after DMS's mutable binds-user.lua so explicit dotDots chords
       -- remain authoritative even if DMS has persisted older bindings.
     ''
-    + dmsTerminalBind
+    + dmsTerminalBinds
+    + dmsWindowCloseBind
     + dmsGhosttyQuickTerminalBind
     + dmsWindowLastBind
     + dmsWindowCycleBinds
