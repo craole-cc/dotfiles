@@ -377,9 +377,9 @@ process_file() {
 }
 
 #~@ Directory walking: find -> keep shell scripts -> fan out to workers
-run_finder() {
-  _rf_dir=$1
-
+# run_workers – read NUL-separated paths on stdin and fan them out to NPROC
+# parallel copies of this script (each one filters with is_shell_file)
+run_workers() {
   set -- xargs -0 -P "${NPROC}" -n 20
   if [ -x "${SCRIPT_PATH}" ]; then
     set -- "$@" "${SCRIPT_PATH}"
@@ -391,13 +391,18 @@ run_finder() {
   if [ "${GUARD_VARS}" -eq 1 ]; then set -- "$@" -g; fi
   if [ "${DEFAULT_CASE}" -eq 0 ]; then set -- "$@" -D; fi
   set -- "$@" --internal-process
+  "$@"
+}
+
+run_finder() {
+  _rf_dir=$1
 
   case ${FINDER} in
     fd | fdfind)
-      "${FINDER}" --type f --print0 . "${_rf_dir}" | "$@"
+      "${FINDER}" --type f --print0 . "${_rf_dir}" | run_workers
       ;;
     *)
-      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -print0 | "$@"
+      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -print0 | run_workers
       ;;
   esac
 }
@@ -477,7 +482,11 @@ main() {
     exit 2
   }
 
-  #> Route 2: public interface – files are always processed, dirs are walked
+  #> Route 2: public interface – dirs are walked. With --detect-shell, named
+  #> files are filtered and fanned out to parallel workers (this is how treefmt
+  #> calls us, so it must not run one file at a time). Without it, named files
+  #> are always processed, in order.
+  _main_batch=0
   for _arg in "$@"; do
     if [ -d "${_arg}" ]; then
       set +e
@@ -487,8 +496,8 @@ main() {
       [ "${_main_st}" -eq 0 ] || _main_rc=1
     elif [ -f "${_arg}" ]; then
       if [ "${DETECT_SHELL}" -eq 1 ]; then
-        is_shell_file "${_arg}"
-        [ "${IS_SHELL}" -eq 1 ] || continue
+        _main_batch=1
+        continue
       fi
       set +e
       process_file "${_arg}"
@@ -500,6 +509,16 @@ main() {
       _main_rc=1
     fi
   done
+
+  if [ "${_main_batch}" -eq 1 ]; then
+    set +e
+    for _arg in "$@"; do
+      if [ -f "${_arg}" ]; then printf '%s\0' "${_arg}"; fi
+    done | run_workers
+    _main_st=$?
+    set -e
+    [ "${_main_st}" -eq 0 ] || _main_rc=1
+  fi
 
   exit "${_main_rc}"
 }

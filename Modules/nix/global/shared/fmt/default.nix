@@ -158,10 +158,7 @@
       _module.args = {inherit flake lix;} // utils;
       imports = (importAllPaths ./.).value;
       projectRootFile = "flake.nix";
-      #~@ flint-sh already runs shfmt + shellcheck (with shebang detection)
       programs = {
-        shellcheck.enable = mkForce false;
-        shfmt.enable = mkForce false;
       };
       settings.global = {inherit (specs) excludes;};
     };
@@ -171,7 +168,7 @@
 
   custom = let
     flint = let
-      domains = specs.domains;
+      inherit (specs) domains;
       mkName = type: "flint-${type}";
       types = attrNames domains;
 
@@ -249,6 +246,17 @@
       {
         statix.priority = mkForce 11;
         alejandra.priority = mkForce 12;
+        #~@ The standalone checkers only get files with a shell extension, which
+        #~@ are always valid shell. flint-sh covers shebang-only scripts through
+        #~@ --detect-shell, so nothing non-shell can reach shellcheck or shfmt.
+        shellcheck = {
+          priority = mkForce 21;
+          includes = mkForce ["*.sh" "*.bash"];
+        };
+        shfmt = {
+          priority = mkForce 22;
+          includes = mkForce ["*.sh" "*.bash"];
+        };
       }
     ];
     inherit (flint) packages dependencies exes;

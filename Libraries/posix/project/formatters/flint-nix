@@ -213,9 +213,9 @@ process_file() {
 }
 
 #~@ Directory walking: find -> fan out to workers
-run_finder() {
-  _rf_dir=$1
-
+# run_workers – read NUL-separated paths on stdin and fan them out to NPROC
+# parallel copies of this script
+run_workers() {
   set -- xargs -0 -P "${NPROC}" -n 20
   if [ -x "${SCRIPT_PATH}" ]; then
     set -- "$@" "${SCRIPT_PATH}"
@@ -225,15 +225,24 @@ run_finder() {
   if [ "${DRY_RUN}" -eq 1 ]; then set -- "$@" -d; fi
   if [ -n "${USER_CONFIG}" ]; then set -- "$@" -c "${USER_CONFIG}"; fi
   set -- "$@" --internal-process
+  "$@"
+}
 
+run_finder() {
+  _rf_dir=$1
+
+  set +e
   case ${FINDER} in
     fd | fdfind)
-      "${FINDER}" --type f --extension nix --print0 . "${_rf_dir}" | "$@" || EXIT_CODE=1
+      "${FINDER}" --type f --extension nix --print0 . "${_rf_dir}" | run_workers
       ;;
     *)
-      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -name '*.nix' -print0 | "$@" || EXIT_CODE=1
+      find "${_rf_dir}" \( -name .git -o -name node_modules \) -prune -o -type f -name '*.nix' -print0 | run_workers
       ;;
   esac
+  _rf_st=$?
+  set -e
+  [ "${_rf_st}" -eq 0 ] || EXIT_CODE=1
 }
 
 #~@ Entry Point
@@ -290,17 +299,36 @@ main() {
     exit 2
   }
 
-  #> Route 2: public interface – files are always processed, dirs are walked
+  #> Route 2: public interface – dirs are walked, named .nix files are fanned
+  #> out to parallel workers (this is how treefmt calls us), and any other
+  #> named file is processed in place, in order
+  _main_batch=0
   for _arg in "$@"; do
     if [ -d "${_arg}" ]; then
       run_finder "${_arg}"
     elif [ -f "${_arg}" ]; then
-      process_file "${_arg}"
+      case ${_arg} in
+        *.nix) _main_batch=1 ;;
+        *) process_file "${_arg}" ;;
+      esac
     else
       printf '%s: skipping non-existent path: %s\n' "${_scr_name}" "${_arg}" >&2
       EXIT_CODE=1
     fi
   done
+
+  if [ "${_main_batch}" -eq 1 ]; then
+    set +e
+    for _arg in "$@"; do
+      case ${_arg} in
+        *.nix) if [ -f "${_arg}" ]; then printf '%s\0' "${_arg}"; fi ;;
+        *) ;;
+      esac
+    done | run_workers
+    _main_st=$?
+    set -e
+    [ "${_main_st}" -eq 0 ] || EXIT_CODE=1
+  fi
 
   exit "${EXIT_CODE}"
 }
