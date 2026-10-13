@@ -1,12 +1,10 @@
-let
-  alpha = 0.97;
-in {
+{style}: {
   # DMS writes the active light/dark palette here. The DMS module seeds a
   # Frappé-like fallback before Foot starts, then Matugen owns subsequent
   # updates. Foot always reads the generated palette as its active theme.
   main.include = "~/.config/foot/dank-colors.ini";
-  colors-dark = {inherit alpha;};
-  colors-light = {inherit alpha;};
+  colors-dark.alpha = style.opacity.terminal.dark;
+  colors-light.alpha = style.opacity.terminal.light;
 
   cursor = {
     style = "beam";

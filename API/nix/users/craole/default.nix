@@ -145,6 +145,10 @@
 
   style = {
     autoSwitch = true;
+    opacity.terminal = {
+      light = 0.95;
+      dark = 0.97;
+    };
     theme = {
       polarity = "dark";
       accent = "teal";

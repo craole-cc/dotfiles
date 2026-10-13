@@ -1,4 +1,4 @@
-{
+{style}: {
   settings = {
     #| Daemon mode:
     # -- Single instance across all windows (reduced memory footprint)
@@ -14,7 +14,7 @@
     confirm-close-surface = false;
 
     background-blur = true;
-    background-opacity = 0.97;
+    background-opacity = style.opacity.terminal.dark;
     font-size = 10;
   };
 }

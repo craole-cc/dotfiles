@@ -1,4 +1,5 @@
 {
+  config,
   context,
   lix,
   ...
@@ -11,5 +12,6 @@ in {
   # `dankcolors` Ghostty theme from its active Material/Matugen palette.
   settings = mkIf wantsDmsShell.condition {
     theme = "dankcolors";
+    config-file = "?${config.xdg.configHome}/ghostty/dotdots-opacity";
   };
 }

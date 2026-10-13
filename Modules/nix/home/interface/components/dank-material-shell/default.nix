@@ -4,6 +4,7 @@
   lib,
   lix,
   pkgs,
+  style,
   ...
 }: let
   inherit (lib.hm.dag) entryAfter;
@@ -109,6 +110,12 @@
     bright6=179299
     bright7=4c4f69
   '';
+  ghosttyOpacityFallback = pkgs.writeText "dotdots-ghostty-opacity" ''
+    background-opacity = ${toString style.opacity.terminal.dark}
+  '';
+  kittyOpacityFallback = pkgs.writeText "dotdots-kitty-opacity.conf" ''
+    background_opacity ${toString style.opacity.terminal.dark}
+  '';
   syncDmsAppearance = pkgs.writeShellScript "sync-dms-desktop-appearance" ''
     mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
     settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
@@ -118,12 +125,14 @@
         cursor=${escapeShellArg darkCursorTheme}
         icons=${escapeShellArg darkIconTheme}
         color_scheme=prefer-dark
+        terminal_opacity=${toString style.opacity.terminal.dark}
         foot_signal=USR1
         ;;
       light)
         cursor=${escapeShellArg lightCursorTheme}
         icons=${escapeShellArg lightIconTheme}
         color_scheme=prefer-light
+        terminal_opacity=${toString style.opacity.terminal.light}
         foot_signal=USR2
         ;;
       *) exit 0 ;;
@@ -176,6 +185,33 @@
     ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-size ${toString cursorSize} || true
     ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
     command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" ${toString cursorSize} >/dev/null 2>&1 || true
+
+    write_opacity_file() {
+      local target="$1" setting="$2" tmp
+      if [ -L "$target" ]; then
+        echo "Refusing to replace managed terminal opacity symlink: $target" >&2
+        return 1
+      fi
+      if [ -f "$target" ] && [ "$(${coreutils}/bin/cat "$target")" = "$setting" ]; then
+        return 1
+      fi
+      ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$target")"
+      tmp="$(${coreutils}/bin/mktemp "$target.tmp.XXXXXX")" || return 1
+      printf '%s\n' "$setting" > "$tmp"
+      ${coreutils}/bin/chmod 0644 "$tmp"
+      ${coreutils}/bin/mv -f "$tmp" "$target"
+    }
+
+    ghostty_opacity=${escapeShellArg "${config.xdg.configHome}/ghostty/dotdots-opacity"}
+    kitty_opacity=${escapeShellArg "${config.xdg.configHome}/kitty/dotdots-opacity.conf"}
+    if write_opacity_file "$ghostty_opacity" "background-opacity = $terminal_opacity"; then
+      ${glib}/bin/gdbus call --session --dest com.mitchellh.ghostty \
+        --object-path /com/mitchellh/ghostty \
+        --method org.gtk.Actions.Activate reload-config '[]' '{}' >/dev/null 2>&1 || true
+    fi
+    if write_opacity_file "$kitty_opacity" "background_opacity $terminal_opacity"; then
+      ${procps}/bin/pkill -USR1 -x kitty || true
+    fi
     ${procps}/bin/pkill -"$foot_signal" -x foot || true
   '';
 in
@@ -235,7 +271,7 @@ in
 
       systemd.user = {
         services.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Apply DMS appearance to GTK, cursors, and Foot";
+          Unit.Description = "Apply DMS appearance to desktop and terminals";
           Unit.StartLimitIntervalSec = 0;
           Service = {
             Type = "oneshot";
@@ -245,7 +281,7 @@ in
         };
 
         paths.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Watch DMS appearance settings and the generated Foot palette";
+          Unit.Description = "Watch DMS appearance settings and the generated terminal palette";
           Path = {
             PathChanged = [
               "%h/.config/DankMaterialShell/settings.json"
@@ -261,6 +297,8 @@ in
       home.activation.configureDmsTheme = entryAfter ["writeBoundary"] ''
         settings="$HOME/.config/DankMaterialShell/settings.json"
         foot_theme="$HOME/.config/foot/dank-colors.ini"
+        ghostty_opacity="$HOME/.config/ghostty/dotdots-opacity"
+        kitty_opacity="$HOME/.config/kitty/dotdots-opacity.conf"
         theme=${escapeShellArg themePath}
         dark_icons=${darkIcons}
         light_icons=${lightIcons}
@@ -269,9 +307,17 @@ in
 
         $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$settings")"
         $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$foot_theme")"
+        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$ghostty_opacity")"
+        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$kitty_opacity")"
         $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$HOME/.hermes/skins"
         if [ ! -e "$foot_theme" ]; then
           $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${footFallback} "$foot_theme"
+        fi
+        if [ ! -e "$ghostty_opacity" ] && [ ! -L "$ghostty_opacity" ]; then
+          $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${ghosttyOpacityFallback} "$ghostty_opacity"
+        fi
+        if [ ! -e "$kitty_opacity" ] && [ ! -L "$kitty_opacity" ]; then
+          $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${kittyOpacityFallback} "$kitty_opacity"
         fi
 
         if [ -L "$settings" ]; then

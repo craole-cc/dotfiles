@@ -4,6 +4,7 @@
   lix,
   user,
   pkgs,
+  style,
   ...
 }: let
   inherit (lix.modules.construction) mkContext mkConfig mkMerge;
@@ -20,9 +21,9 @@
   resolved = userApplicationConfig {
     inherit context user pkgs;
     extraProgramConfig = mkMerge [
-      (import ./general.nix)
+      (import ./general.nix {inherit style;})
       (import ./input.nix)
-      (import ./themes.nix {inherit lix context;})
+      (import ./themes.nix {inherit config lix context;})
     ];
     debug = false;
   };

@@ -3,6 +3,7 @@
   lib,
   lix,
   pkgs,
+  style,
   user,
   ...
 }: let
@@ -26,7 +27,7 @@ in {
     programs.${app} = {
       enable = true;
       server.enable = true;
-      settings = (import ./settings.nix) // (import ./input.nix) // (import ./themes.nix);
+      settings = (import ./settings.nix) // (import ./input.nix) // (import ./themes.nix {inherit style;});
     };
 
     home = {

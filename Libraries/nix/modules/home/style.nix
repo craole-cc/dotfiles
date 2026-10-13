@@ -1,4 +1,5 @@
 {lib, ...}: let
+  inherit (lib.attrsets) recursiveUpdate;
   inherit (lib.strings) hasInfix toLower;
 
   mkStyle = {
@@ -31,6 +32,12 @@
         material = "Material Symbols Sharp";
         clock = "Rubik";
       };
+    opacity = recursiveUpdate {
+      terminal = {
+        light = 1.0;
+        dark = 1.0;
+      };
+    } (user.style.opacity or {});
   in {
     inherit
       fonts
@@ -39,6 +46,7 @@
       accent
       flavor
       catppuccin
+      opacity
       ;
   };
 

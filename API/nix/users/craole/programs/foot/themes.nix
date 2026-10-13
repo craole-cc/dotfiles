@@ -1,8 +1,7 @@
-{
+{style}: {
   include = "~/.config/foot/theme.ini";
-  colors = {
-    alpha = 0.95; # Slight transparency (1.0 = opaque)
-  };
+  colors-dark.alpha = style.opacity.terminal.dark;
+  colors-light.alpha = style.opacity.terminal.light;
 
   cursor = {
     style = "beam"; # Options: block, underline, beam

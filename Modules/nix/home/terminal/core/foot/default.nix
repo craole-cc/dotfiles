@@ -5,6 +5,7 @@
   user,
   paths,
   pkgs,
+  style,
   ...
 }: let
   inherit (lix.modules.construction) mkContext mkConfig mkMerge;
@@ -90,7 +91,7 @@
       settings = mkMerge [
         (import ./settings.nix {inherit lix;})
         (import ./input.nix)
-        (import ./themes.nix)
+        (import ./themes.nix {inherit style;})
       ];
     };
     # inherit (cfg) debug;

@@ -3,6 +3,7 @@
   lib,
   lix,
   pkgs,
+  style,
   user,
   ...
 }: let
@@ -23,7 +24,8 @@
     inherit context user pkgs;
     extraProgramConfig = {
       settings = {
-        background_opacity = 0.97;
+        background_opacity = style.opacity.terminal.dark;
+        dynamic_background_opacity = true;
         copy_on_select = "no";
         confirm_os_window_close = 0;
         remember_window_size = false;
@@ -34,6 +36,7 @@
       extraConfig = lib.optionalString dmsEnabled ''
         include dank-tabs.conf
         include dank-theme.conf
+        include dotdots-opacity.conf
       '';
     };
   };
