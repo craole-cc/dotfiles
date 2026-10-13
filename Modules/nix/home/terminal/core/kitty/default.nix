@@ -23,6 +23,7 @@
     inherit context user pkgs;
     extraProgramConfig = {
       settings = {
+        background_opacity = 0.97;
         copy_on_select = "no";
         confirm_os_window_close = 0;
       };
