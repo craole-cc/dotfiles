@@ -20,25 +20,15 @@
     case "$CURRENT" in
       *light*)
         VARIANT="light"
-        HELIX_THEME="catppuccin_latte"
         ZED_THEME="Catppuccin Latte"
         GHOSTTY_THEME="Catppuccin Latte"
         ;;
       *)
         VARIANT="dark"
-        HELIX_THEME="catppuccin_frappe"
         ZED_THEME="Catppuccin Frappé"
         GHOSTTY_THEME="Catppuccin Frappe"
         ;;
     esac
-
-    ${optionalString (isEnabled "helix") ''
-            # Update Helix theme
-            mkdir -p "${HOME}/.config/helix"
-            cat > "${HOME}/.config/helix/theme-override.toml" <<EOF
-      theme = "$HELIX_THEME"
-      EOF
-    ''}
 
     ${optionalString (isEnabled "zed-editor") ''
       # Update Zed theme (follows system mode)
@@ -101,7 +91,7 @@ in {
   '';
 
   programs = {
-    helix = mkIf (isEnabled "helix") {settings.theme = mkForce "catppuccin_latte";};
+    helix = mkIf (isEnabled "helix") {settings.theme = mkForce "base16_transparent";};
 
     bash.initExtra = mkIf (isEnabled "bash") ''
       # Sync themes on shell start
