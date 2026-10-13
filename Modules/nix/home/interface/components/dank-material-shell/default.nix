@@ -34,6 +34,12 @@
     input_path = '${footMatugenTemplate}'
     output_path = '${config.xdg.configHome}/foot/dank-colors.ini'
   '';
+  hermesMatugenTemplate = ./hermes-matugen.yaml;
+  hermesMatugenConfig = pkgs.writeText "dotdots-hermes-matugen.toml" ''
+    [templates.dotdots_hermes]
+    input_path = '${hermesMatugenTemplate}'
+    output_path = '${config.home.homeDirectory}/.hermes/skins/dms-wallpaper.yaml'
+  '';
   footFallback = pkgs.writeText "dms-foot-fallback.ini" ''
     [colors-dark]
     foreground=c6d0f5
@@ -127,6 +133,7 @@ in
       xdg = {
         configFile."DankMaterialShell/themes/${themeName}.json".source = themeFile;
         configFile."matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
+        configFile."matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
         dataFile."icons/${cfg.icons.name}".source = "${cfg.icons.package}/share/icons/${cfg.icons.name}";
       };
 
@@ -165,6 +172,7 @@ in
 
         $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$settings")"
         $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$foot_theme")"
+        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$HOME/.hermes/skins"
         if [ ! -e "$foot_theme" ]; then
           $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${footFallback} "$foot_theme"
         fi
