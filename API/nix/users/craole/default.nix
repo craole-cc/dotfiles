@@ -146,7 +146,7 @@
   style = {
     autoSwitch = true;
     opacity.terminal = {
-      light = 0.88;
+      light = 0.85;
       dark = 0.92;
     };
     theme = {
