@@ -140,6 +140,9 @@ in
               currentThemeName: "dynamic",
               currentThemeCategory: "dynamic",
               customThemeFile: $theme,
+              matugenScheme: "scheme-smart",
+              matugenContrast: -0.35,
+              screenPreferences: {wallpaper: ["all"]},
               runDmsMatugenTemplates: true,
               matugenTemplateGtk: true,
               matugenTemplateFoot: true,
@@ -156,6 +159,9 @@ in
             currentThemeName: "dynamic",
             currentThemeCategory: "dynamic",
             customThemeFile: $theme,
+            matugenScheme: "scheme-smart",
+            matugenContrast: -0.35,
+            screenPreferences: {wallpaper: ["all"]},
             runDmsMatugenTemplates: true,
             matugenTemplateGtk: true,
             matugenTemplateFoot: true,
@@ -173,6 +179,8 @@ in
         # Set the theme category before its name. Selecting the dynamic theme
         # makes subsequent DMS wallpaper changes drive Matugen regeneration.
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set customThemeFile "$theme" >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenScheme scheme-smart >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenContrast -0.35 >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set runDmsMatugenTemplates true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGtk true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateFoot true >/dev/null 2>&1 || true
