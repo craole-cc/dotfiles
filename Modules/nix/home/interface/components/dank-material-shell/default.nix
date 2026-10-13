@@ -11,7 +11,7 @@
   inherit (lix.modules.construction) mkConfig mkContext mkForce;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.strings.transformation) escapeShellArg;
-  inherit (pkgs) coreutils dms-shell glib gnugrep jq procps quickshell;
+  inherit (pkgs) coreutils dms-shell glib gnugrep gnused jq procps quickshell;
 
   context = mkContext {
     inherit config;
@@ -126,6 +126,7 @@
         icons=${escapeShellArg darkIconTheme}
         color_scheme=prefer-dark
         terminal_opacity=${toString style.opacity.terminal.dark}
+        btop_theme=adwaita-dark
         foot_signal=USR1
         ;;
       light)
@@ -133,6 +134,7 @@
         icons=${escapeShellArg lightIconTheme}
         color_scheme=prefer-light
         terminal_opacity=${toString style.opacity.terminal.light}
+        btop_theme=adwaita
         foot_signal=USR2
         ;;
       *) exit 0 ;;
@@ -212,6 +214,44 @@
     if write_opacity_file "$kitty_opacity" "background_opacity $terminal_opacity"; then
       ${procps}/bin/pkill -USR1 -x kitty || true
     fi
+
+    btop_config=${escapeShellArg "${config.xdg.configHome}/btop/btop.conf"}
+    if [ -L "$btop_config" ]; then
+      echo "Refusing to replace managed btop config symlink: $btop_config" >&2
+    else
+      ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$btop_config")"
+      if tmp="$(${coreutils}/bin/mktemp "$btop_config.tmp.XXXXXX")"; then
+        if [ -f "$btop_config" ]; then
+          if ! ${gnused}/bin/sed -E \
+            -e "s/^[[:space:]]*color_theme[[:space:]]*=.*/color_theme = \"$btop_theme\"/" \
+            -e 's/^[[:space:]]*theme_background[[:space:]]*=.*/theme_background = false/' \
+            "$btop_config" > "$tmp"; then
+            ${coreutils}/bin/rm -f "$tmp"
+            tmp=
+          else
+            ${gnugrep}/bin/grep -Eq '^[[:space:]]*color_theme[[:space:]]*=' "$btop_config" ||
+              printf 'color_theme = "%s"\n' "$btop_theme" >> "$tmp"
+            ${gnugrep}/bin/grep -Eq '^[[:space:]]*theme_background[[:space:]]*=' "$btop_config" ||
+              printf 'theme_background = false\n' >> "$tmp"
+            ${coreutils}/bin/chmod --reference="$btop_config" "$tmp"
+          fi
+        else
+          printf 'color_theme = "%s"\ntheme_background = false\n' "$btop_theme" > "$tmp"
+          ${coreutils}/bin/chmod 0644 "$tmp"
+        fi
+        if [ -n "$tmp" ]; then
+          if [ ! -f "$btop_config" ] || ! ${coreutils}/bin/cmp -s "$tmp" "$btop_config"; then
+            if ${coreutils}/bin/mv -f "$tmp" "$btop_config"; then
+              ${procps}/bin/pkill -USR2 -x btop || true
+            else
+              ${coreutils}/bin/rm -f "$tmp"
+            fi
+          else
+            ${coreutils}/bin/rm -f "$tmp"
+          fi
+        fi
+      fi
+    fi
     ${procps}/bin/pkill -"$foot_signal" -x foot || true
   '';
 in
@@ -281,11 +321,12 @@ in
         };
 
         paths.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Watch DMS appearance settings and the generated terminal palette";
+          Unit.Description = "Watch DMS appearance settings and terminal palettes";
           Path = {
             PathChanged = [
               "%h/.config/DankMaterialShell/settings.json"
               "%h/.config/foot/dank-colors.ini"
+              "%h/.config/btop/btop.conf"
             ];
           };
           Install.WantedBy = ["graphical-session.target"];
