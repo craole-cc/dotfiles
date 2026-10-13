@@ -54,7 +54,16 @@
     bright7=c6d0f5
   '';
   reloadFoot = pkgs.writeShellScript "reload-foot-dms-theme" ''
-    ${procps}/bin/pkill -USR1 -x foot || true
+    mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
+
+    case "$mode" in
+      dark)
+        ${procps}/bin/pkill -USR1 -x foot || true
+        ;;
+      light)
+        ${procps}/bin/pkill -USR2 -x foot || true
+        ;;
+    esac
   '';
 in
   mkConfig {
@@ -99,7 +108,7 @@ in
 
       systemd.user = {
         services.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Reload Foot after DMS regenerates its palette";
+          Unit.Description = "Switch Foot to DMS's active colour mode";
           Service = {
             Type = "oneshot";
             ExecStart = reloadFoot;
