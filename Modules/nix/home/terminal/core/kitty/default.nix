@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   lix,
   pkgs,
   style,
@@ -9,16 +8,15 @@
 }: let
   inherit (lix.applications.generators) userApplicationConfig;
   inherit (lix.modules.construction) mkConfig mkContext;
-  inherit (lix.options.construction) mkTrue;
-
+  inherit (lix.strings.construction) optionalString;
+  inherit (lix.options.construction) mkEnable;
+  inherit (context) wantsDmsShell;
   context = mkContext {
     inherit config;
     dom = "terminal";
     sub = "emulators";
     mod = "kitty";
   };
-
-  dmsEnabled = context.wantsDmsShell.condition;
 
   resolved = userApplicationConfig {
     inherit context user pkgs;
@@ -33,7 +31,7 @@
 
       # DMS owns the generated color files. Home Manager only includes them
       # when DMS is the active shell; without DMS Kitty keeps its own defaults.
-      extraConfig = lib.optionalString dmsEnabled ''
+      extraConfig = optionalString wantsDmsShell.condition ''
         include dank-tabs.conf
         include dank-theme.conf
         include dotdots-opacity.conf
@@ -44,9 +42,10 @@ in
   mkConfig {
     inherit context;
     # options.enable = mkTrue "Kitty Terminal Emulator";
-    # options.enable = mkEnable {
-    #   inherit context;
-    #   condition = resolved.enable;
-    # };
+    options.enable = mkEnable {
+      inherit context;
+      condition = resolved.enable;
+      description = "Kitty Terminal Emulator";
+    };
     outputs = {inherit (resolved) programs home;};
   }
