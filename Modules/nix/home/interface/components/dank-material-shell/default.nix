@@ -10,7 +10,7 @@
   inherit (lix.modules.construction) mkConfig mkContext mkForce;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.strings.transformation) escapeShellArg;
-  inherit (pkgs) coreutils dms-shell glib jq procps quickshell;
+  inherit (pkgs) coreutils dms-shell glib gnugrep jq procps quickshell;
 
   context = mkContext {
     inherit config;
@@ -37,6 +37,7 @@
   lightIconTheme = "candy-icons";
   darkCursorTheme = "material_dark_cursors";
   lightCursorTheme = "catppuccin-latte-mauve-cursors";
+  cursorSize = 24;
   resolvedIcons = {name = darkIconTheme; package = buufIcons;};
 
   darkIcons = escapeShellArg darkIconTheme;
@@ -107,27 +108,71 @@
   '';
   syncDmsAppearance = pkgs.writeShellScript "sync-dms-desktop-appearance" ''
     mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
+    settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
 
     case "$mode" in
       dark)
         cursor=${escapeShellArg darkCursorTheme}
         icons=${escapeShellArg darkIconTheme}
-        ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme prefer-dark || true
-        ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
-        ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
-        command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" 24 >/dev/null 2>&1 || true
-        ${procps}/bin/pkill -USR1 -x foot || true
+        color_scheme=prefer-dark
+        foot_signal=USR1
         ;;
       light)
         cursor=${escapeShellArg lightCursorTheme}
         icons=${escapeShellArg lightIconTheme}
-        ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme prefer-light || true
-        ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
-        ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
-        command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" 24 >/dev/null 2>&1 || true
-        ${procps}/bin/pkill -USR2 -x foot || true
+        color_scheme=prefer-light
+        foot_signal=USR2
         ;;
+      *) exit 0 ;;
     esac
+
+    # DMS regenerates Hyprland's cursor.lua from this mutable setting.
+    # Only write when it differs, so the settings path cannot retrigger forever.
+    if [ -f "$settings" ] && [ ! -L "$settings" ] &&
+       ${jq}/bin/jq -e --arg cursor "$cursor" --argjson size ${toString cursorSize} \
+         '.cursorSettings.theme != $cursor or .cursorSettings.size != $size' \
+         "$settings" >/dev/null; then
+      if tmp="$(${coreutils}/bin/mktemp "$settings.tmp.XXXXXX")"; then
+        trap '${coreutils}/bin/rm -f "$tmp"' EXIT
+        if ${jq}/bin/jq --arg cursor "$cursor" --argjson size ${toString cursorSize} \
+          '.cursorSettings = ((.cursorSettings // {}) + {theme: $cursor, size: $size})' \
+          "$settings" > "$tmp"; then
+          ${coreutils}/bin/chmod --reference="$settings" "$tmp"
+          ${coreutils}/bin/mv -f "$tmp" "$settings"
+        fi
+        trap - EXIT
+        ${coreutils}/bin/rm -f "$tmp"
+      fi
+    fi
+
+    xresources="$HOME/.Xresources"
+    if [ ! -L "$xresources" ] && { [ ! -e "$xresources" ] || [ -w "$xresources" ]; } &&
+       { [ ! -f "$xresources" ] ||
+         ! ${gnugrep}/bin/grep -Fxq "Xcursor.theme: $cursor" "$xresources" ||
+         ! ${gnugrep}/bin/grep -Fxq 'Xcursor.size: ${toString cursorSize}' "$xresources"; }; then
+      if tmp="$(${coreutils}/bin/mktemp "$xresources.tmp.XXXXXX")"; then
+        trap '${coreutils}/bin/rm -f "$tmp"' EXIT
+        if [ ! -f "$xresources" ] ||
+           ${jq}/bin/jq -Rr 'select(test("^[[:space:]]*Xcursor\\.(theme|size):") | not)' \
+             "$xresources" > "$tmp"; then
+          printf 'Xcursor.theme: %s\nXcursor.size: %s\n' "$cursor" ${toString cursorSize} >> "$tmp"
+          if [ -f "$xresources" ]; then
+            ${coreutils}/bin/chmod --reference="$xresources" "$tmp"
+          fi
+          ${coreutils}/bin/mv -f "$tmp" "$xresources"
+          command -v xrdb >/dev/null 2>&1 && xrdb -merge "$xresources" >/dev/null 2>&1 || true
+        fi
+        trap - EXIT
+        ${coreutils}/bin/rm -f "$tmp"
+      fi
+    fi
+
+    ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme "$color_scheme" || true
+    ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
+    ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-size ${toString cursorSize} || true
+    ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
+    command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" ${toString cursorSize} >/dev/null 2>&1 || true
+    ${procps}/bin/pkill -"$foot_signal" -x foot || true
   '';
 in
   mkConfig {
