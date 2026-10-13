@@ -22,7 +22,10 @@
   resolved = userApplicationConfig {
     inherit context user pkgs;
     extraProgramConfig = {
-      settings.copy_on_select = "clipboard";
+      settings = {
+        copy_on_select = "no";
+        confirm_os_window_close = 0;
+      };
 
       # DMS owns the generated color files. Home Manager only includes them
       # when DMS is the active shell; without DMS Kitty keeps its own defaults.
