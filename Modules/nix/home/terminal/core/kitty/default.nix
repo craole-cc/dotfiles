@@ -26,7 +26,7 @@
       settings = {
         background_opacity = style.opacity.terminal.dark;
         dynamic_background_opacity = true;
-        copy_on_select = "no";
+        copy_on_select = "clipboard";
         confirm_os_window_close = 0;
         remember_window_size = false;
       };
