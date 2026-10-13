@@ -150,13 +150,16 @@
   dmsGhosttyQuickTerminalBind =
     if config.programs.ghostty.enable or false
     then ''
-      hl.on("hyprland.start", function()
-        hl.exec_cmd("ghostty --gtk-single-instance=true --quit-after-last-window-closed=false --initial-window=false")
-      end)
       hl.unbind("ALT + grave")
       hl.bind("ALT + grave", hl.dsp.global("com.mitchellh.ghostty:ALT+grave"), { description = "Toggle Ghostty quick terminal" })
     ''
     else "";
+
+  dmsKittyWindowRule = ''
+    -- Kitty sometimes requests maximisation when opened inside a special
+    -- workspace. Keep new windows in the workspace's tiled layout.
+    hl.window_rule({ match = { class = "^kitty$" }, suppress_event = "maximize" })
+  '';
 
   dmsWindowLastBind = let
     key = windowLast.key or null;
@@ -276,6 +279,7 @@
       -- Loaded after DMS's mutable binds-user.lua so explicit dotDots chords
       -- remain authoritative even if DMS has persisted older bindings.
     ''
+    + dmsKittyWindowRule
     + dmsTerminalBinds
     + dmsWindowCloseBind
     + dmsGhosttyQuickTerminalBind
@@ -350,6 +354,14 @@
     # the traditional first-compatible-backend behaviour at the Home layer;
     # NixOS owns the detailed Hyprland/GTK portal routing.
     xdg.portal.config.common.default = "*";
+
+    # The portal identifies native apps by their app-named systemd unit. Start
+    # Ghostty through its packaged service so global keybind registration has
+    # the required application ID, even before any terminal window opens.
+    xdg.configFile."systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service" =
+      mkIf (dmsEnabled && (config.programs.ghostty.enable or false)) {
+        source = "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
+      };
 
     programs = mkAddons "programs";
     services = mkAddons "services";
