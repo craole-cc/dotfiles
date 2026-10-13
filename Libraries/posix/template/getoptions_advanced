@@ -79,7 +79,7 @@ blood_type() {
 
 range() {
   number || return 1
-  [[ "$1" -le "${OPTARG}" ]] && [[ "${OPTARG}" -le "$2" ]] && return 0
+  [[ $1 -le ${OPTARG} ]] && [[ ${OPTARG} -le $2 ]] && return 0
   return 2
 }
 
@@ -98,7 +98,7 @@ append_array() {
 append_array_posix() {
   # Store multiple (escaped) values in one variable in a POSIX compliant way
   set -- "$1" "${OPTARG}"
-  until [[ "${2#*\'}" = "$2" ]] && eval "$1=\"\$$1 '\${3:-}\$2'\""; do
+  until [[ ${2#*\'} == "$2" ]] && eval "$1=\"\$$1 '\${3:-}\$2'\""; do
     set -- "$1" "${2#*\'}" "${2%%\'*}'\"'\"'"
   done
 }

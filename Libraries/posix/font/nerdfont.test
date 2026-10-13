@@ -273,7 +273,7 @@ test_ligatures() {
   pout_test --label "Comparison" "<= >= < >"
   pout_test --label "Logic" "|| && |> <| <|| ||> <&&> &&>"
   pout_test --label "Math" "++ -- ** /* */ </ />"
-  pout_test --label "Special" ":= :: ;; =>= >>> <<= >>= __ \\ \\\\"
+  pout_test --label "Special" ':= :: ;; =>= >>> <<= >>= __ \ \\'
   pout_test --label "Arrows" "-> => <- <= |=> ==> |="
   pout_test --label "Arrows Ext" "<== ==> <=> <--> <~~> <~> <==>"
   pout_test --label "Labels" "[FATAL] [TODO] [NOTE] [MARK] [FIXME]"

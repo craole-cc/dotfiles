@@ -7,20 +7,21 @@
   print,
   ...
 }: let
-  inherit inputs;
   inherit (lix.attrsets.access) attrNames attrValues;
   inherit (lix.attrsets.aggregation) mergeSafe recursiveUpdate;
   inherit (lix.attrsets.construction) genAttrs;
-  inherit (lix.attrsets.transformation) filterAttrs;
+  inherit (lix.attrsets.transformation) filterAttrs mapAttrs;
   inherit (lix.filesystem.access) readFile;
-  inherit (lix.filesystem.primitives) mkPath;
+  inherit (lix.filesystem.primitives) concat;
   inherit (lix.filesystem.traversal) importAllPaths;
   inherit (lix.lists.construction) concatLists;
   inherit (lix.lists.predicates) elem;
   inherit (lix.lists.transformation) filter sort uniqueStrings;
   inherit (lix.modules.construction) mkForce;
+  inherit (lix.sources.access) getExe;
   inherit (lix.strings.transformation) replaceStrings;
   inherit (pkgs) dprint-plugins writeShellApplication writeText;
+  paths' = paths.store;
 
   mkConfig = module: let
     input =
@@ -34,78 +35,135 @@
   in
     (output pkgs module).config;
 
+  #~@ Tools resolved through pkgsFor (name -> input, null = nixpkgs)
   sources = {
     alejandra = null;
+    dprint = null;
     harper = null;
     ruff = null;
+    rumdl = null;
     shellcheck = null;
     shfmt = null;
     statix = null;
     tombi = null;
     treefmt = "treefmt";
   };
+
+  #~@ Tools the flint scripts need at runtime
+  runtimeNames = [
+    "coreutils"
+    "diffutils"
+    "fd"
+    "findutils"
+    "gnupatch"
+    "gnused"
+    "mawk"
+    "ripgrep"
+    "sd"
+  ];
+
   utils = pkgsFor {
     inherit sources;
-    extraSources = {
-      fd = null;
-      ripgrep = null;
-      sd = null;
-      mawk = null;
-      git = null;
+    extraSources =
+      genAttrs runtimeNames (_: null)
+      // {git = null;};
+  };
+
+  specs = {
+    excludes = [
+      ".dotsrc"
+      "LICENSE"
+      "**/node_modules/**"
+      "**/target/**"
+      "**/.git/**"
+      "**/dist/**"
+      "**/build/**"
+      "**/review/**"
+      "**/archive/**"
+      "*.lock"
+      "Assets/**"
+      "*.diff"
+      "*.patch"
+      "AGENTS.md"
+      "secrets.yaml"
+      "**/secrets.yaml"
+      "**/dump.nix"
+      "**/.bin/**"
+      "**/.config/**"
+      "**README.md"
+      ".zed/**"
+      "Configuration/**"
+      "Documentation/**"
+      "Environment/**"
+      "Modules/global/**"
+      "Modules/nixos/configurations/hosts/QBX/**"
+      "Modules/nixos/scripts/**"
+      "Review/**"
+      "Scripts/**"
+      "Tasks/**"
+      "Templates/**"
+      "**/flint-*-tmp.*/**"
+    ];
+
+    #~@ Each entry becomes a `flint-<name>` formatter.
+    #~@ `dependencies` are names that must exist in `sources` above.
+    domains = {
+      sh = {
+        dependencies = ["shellcheck" "shfmt"];
+        includes = [
+          "Libraries/posix/**"
+          "**/posix/**"
+          "**/bash/**"
+          "**/sh/**"
+          "**/shellscript/**"
+          "*.sh"
+          "*.bash"
+        ];
+        excludes = [
+          #~@ Other languages and docs that live inside the shell directories
+          "*.md"
+          "*.nix"
+          "*.json"
+          "*.jsonc"
+          "*.toml"
+          "*.yaml"
+          "*.yml"
+          "*.txt"
+          "*.py"
+          "*.rs"
+          "*.js"
+          "*.ts"
+          "*.ps1"
+          "*.bat"
+          "*.cmd"
+          "*.lock"
+          #> Patch artefacts and backups of non-shell files.
+          #? `.orig`, `.bak` and ` copy` are left in on purpose, since
+          #? some are real shell scripts.
+          "*.rej"
+          "*.diff"
+          "*.patch"
+          "*.nix.*"
+          "*.md.*"
+        ];
+        options = ["--detect-shell"];
+      };
     };
   };
 
   #~@ Nix-side eval: store-path commands, used by `nix fmt`.
   init = let
+    flake.path = paths.store.src;
     module = {
-      _module.args =
-        {
-          inherit lix;
-          flake = {
-            path = paths.store.src;
-          };
-        }
-        // utils;
+      _module.args = {inherit flake lix;} // utils;
       imports = (importAllPaths ./.).value;
       projectRootFile = "flake.nix";
+      #~@ flint-sh already runs shfmt + shellcheck (with shebang detection)
       programs = {
+        shellcheck.enable = mkForce false;
+        shfmt.enable = mkForce false;
       };
-      settings = {
-        global.excludes = [
-          ".dotsrc"
-          "LICENSE"
-          "**/node_modules/**"
-          "**/target/**"
-          "**/.git/**"
-          "**/dist/**"
-          "**/build/**"
-          "**/review/**"
-          "**/archive/**"
-          "*.lock"
-          "Assets/**"
-          "*.diff"
-          "*.patch"
-          "AGENTS.md"
-          "secrets.yaml"
-          "**/secrets.yaml"
-          "**/dump.nix"
-          "**/.bin/**"
-          "**/.config/**"
-          "**README.md"
-          ".zed/**"
-          "Configuration/**"
-          "Documentation/**"
-          "Environment/**"
-          "Modules/global/**"
-          "Modules/nixos/configurations/hosts/QBX/**"
-          "Modules/nixos/scripts/**"
-          "Review/**"
-          "Scripts/**"
-          "Tasks/**"
-          "Templates/**"
-          "**/flint-*-tmp.*/**"
-        ];
-      };
+      settings.global = {inherit (specs) excludes;};
     };
     config = mkConfig module;
   in
@@ -113,81 +171,46 @@
 
   custom = let
     flint = let
+      domains = specs.domains;
       mkName = type: "flint-${type}";
+      types = attrNames domains;
 
-      specs = {
-        sh = {
-          dependencies = with pkgs; [shellcheck shfmt];
-          includes = [
-            "Libraries/posix/**"
-            "**/posix/**"
-            "**/bash/**"
-            "**/zsh/**"
-            "**/sh/**"
-            "**/shellscript/**"
-            "*.sh"
-            "*.bash"
-            "*.zsh"
-          ];
-          options = ["--detect-shell"];
-        };
-
-        nix = {
-          dependencies = with pkgs; [alejandra statix];
-          includes = ["*.nix"];
-        };
-      };
-
-      types = attrNames specs;
-
-      dependencies = concatLists (
-        map (type: specs.${type}.dependencies) types
-      );
+      resolve = names: map (name: utils.${name}.pkg) names;
+      deps = genAttrs types (type: resolve domains.${type}.dependencies);
+      dependencies = concatLists (attrValues deps);
+      runtimeInputs = resolve runtimeNames;
 
       packages = genAttrs types (type: let
         name = mkName type;
       in
         writeShellApplication {
           inherit name;
-          runtimeInputs =
-            (with pkgs; [
-              coreutils
-              diffutils
-              fd
-              findutils
-              gnupatch
-              gnused
-              mawk
-              ripgrep
-              sd
-            ])
-            ++ specs.${type}.dependencies;
+          runtimeInputs = runtimeInputs ++ deps.${type};
 
-          text =
-            readFile
-            (mkPath [
-              "Libraries"
-              "posix"
-              "project"
-              "formatters"
-              name
-            ]).store;
+          text = readFile (concat {
+            root = paths'.lib.sh;
+            stem = ["project" "formatters" name];
+          });
         });
 
+      #> type -> executable path
+      exes = mapAttrs (_: getExe) packages;
+
       formatters = genAttrs types (type: let
-        name = mkName type;
-        spec = specs.${type};
+        spec = domains.${type};
       in {
-        command = "${packages.${type}}/bin/${name}";
+        command = exes.${type};
         includes = spec.includes or [];
         excludes = spec.excludes or [];
         options = spec.options or [];
       });
-    in {inherit packages formatters dependencies;};
+    in {inherit packages formatters dependencies exes;};
 
     dprint = let
-      stem = ["Configuration" "dprint" "config.jsonc"];
-      path = readFile (mkPath stem).store;
+      content = readFile (concat {
+        root = paths'.cfg.default;
+        stem = ["dprint" "config.jsonc"];
+      });
       plugins =
         replaceStrings [
           "https://plugins.dprint.dev/json-0.23.0.wasm"
@@ -201,14 +224,14 @@
           "${g-plane-malva}/plugin.wasm"
         ]);
 
-      package = pkgs.dprint;
+      package = utils.dprint.pkg;
       formatter.dprint = {
-        command = "${package}/bin/dprint";
+        command = utils.dprint.exe;
         options = mkForce [
           "fmt"
           "--allow-no-files"
           "--config"
-          "${writeText "dprint.json" (plugins path)}"
+          "${writeText "dprint.json" (plugins content)}"
         ];
       };
     in {inherit package formatter;};
@@ -217,13 +240,18 @@
       dprint.formatter
       flint.formatters
       {
+        rumdl = {
+          command = utils.rumdl.exe;
+          options = ["fmt"];
+          includes = ["*.md" "**/*.md"];
+        };
+      }
+      {
         statix.priority = mkForce 11;
         alejandra.priority = mkForce 12;
-        shellcheck.priority = mkForce 21;
-        shfmt.priority = mkForce 22;
       }
     ];
-    inherit (flint) packages dependencies;
+    inherit (flint) packages dependencies exes;
   };
 
   tool = let
@@ -238,7 +266,7 @@
       (name: !(elem name programs))
       formatters
     );
-    tools = uniqueStrings (formatters ++ programs ++ ["treefmt"]);
+    names = uniqueStrings (formatters ++ programs ++ ["treefmt"]);
 
     resolved = pkgsFor {
       required = false;
@@ -247,7 +275,7 @@
         ruff-format = "ruff";
       };
       sources =
-        genAttrs tools (_: null)
+        genAttrs names (_: null)
         // genAttrs ["ruff"] (_: null)
         // sources;
     };
@@ -256,7 +284,7 @@
 
     wrappers = let
       for = field:
-        genAttrs (filter (name: name != "treefmt") tools) (
+        genAttrs (filter (name: name != "treefmt") names) (
           name:
             if name == "statix"
             then {
@@ -267,9 +295,7 @@
                 "_"
               ];
             }
-            else {
-              command = mkForce ((of name).${field} or name);
-            }
+            else {command = mkForce ((of name).${field} or name);}
         );
     in {
       exe = for "exe";
@@ -277,17 +303,7 @@
     };
   in
     resolved
-    // {
-      inherit
-        tools
-        packages
-        programs
-        formatters
-        of
-        wrappers
-        ;
-      names = tools;
-    };
+    // {inherit names packages programs formatters of wrappers;};
 
   mkEval = wrappers: let
     module.settings.formatter = recursiveUpdate wrappers custom.formatters;
@@ -302,10 +318,11 @@
       filter (pkg: pkg != null) (
         map
         (name: (tool.of name).pkg or null)
-        (filter (name: name != "treefmt") tool.tools)
+        (filter (name: name != "treefmt") tool.names)
       )
       ++ attrValues custom.packages
-      ++ custom.dependencies;
+      ++ custom.dependencies
+      ++ [utils.rumdl.pkg];
     withTools = drv:
       drv.overrideAttrs (old: {
         nativeBuildInputs = (old.nativeBuildInputs or []) ++ allTools;
@@ -315,7 +332,7 @@
     // build
     // {
       formatter = withTools wrapper;
-      checks.formatting = withTools (check paths.store.src);
+      checks.formatting = withTools (check paths'.src);
       formatters = allTools;
       devShell = eval.devShell.overrideAttrs (old: {
         nativeBuildInputs = (old.nativeBuildInputs or []) ++ allTools;
@@ -339,15 +356,10 @@
                   ));
                 by = name: let
                   app = tool.of name;
-                  pkg = custom.packages.${name} or null;
                 in [
                   name
                   (app.ver or "unknown")
-                  (app.exe or (
-                    if pkg == null
-                    then "-"
-                    else "${pkg}/bin/${name}"
-                  ))
+                  (app.exe or (custom.exes.${name} or "-"))
                 ];
               in
                 map by names;

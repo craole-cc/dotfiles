@@ -1,23 +1,14 @@
 args: let
-  inherit
-    (args)
-    pkgs
-    lix
-    inputs
-    names
-    paths
-    ;
-  inherit (args.lix.sources.packages) pkgOf pkgsFrom;
+  inherit (args) pkgs lix inputs names paths;
+  inherit (lix.sources.packages) pkgOf pkgsFrom;
   inherit (lix.lists.construction) optionals;
   inherit (lix.modules.core.software) mkFetch;
   inherit (lix.strings.construction) concat;
-  inherit (pkgs) writeShellScriptBin writeShellApplication;
-  inherit (pkgs.stdenv.hostPlatform) system isLinux isDarwin;
+  inherit (pkgs) writeShellScriptBin writeShellApplication stdenv;
+  inherit (stdenv.hostPlatform) system isLinux isDarwin;
 
   name = names.src;
-  fetch = mkFetch {
-    inherit name pkgs paths;
-  };
+  fetch = mkFetch {inherit name pkgs paths;};
 
   cmdExists = writeShellScriptBin "cmd-exists" ''
     command -v "$@" >/dev/null 2>&1
@@ -31,16 +22,7 @@ args: let
     required ? true,
     versionArgs ? null,
   }:
-    pkgOf {
-      inherit
-        input
-        inputs
-        pkgs
-        required
-        target
-        versionArgs
-        ;
-    };
+    pkgOf {inherit input inputs pkgs required target versionArgs;};
 
   pkgsFor = {
     sources ? {},
@@ -50,13 +32,7 @@ args: let
     aliases ? {},
   }:
     pkgsFrom {
-      inherit
-        inputs
-        pkgs
-        required
-        exclude
-        aliases
-        ;
+      inherit inputs pkgs required exclude aliases;
       sources = sources // extraSources;
     };
 

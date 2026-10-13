@@ -2892,7 +2892,7 @@ if [[ -n $1 ]]; then
 else
   while
     IFS=''
-    read -r line || [[ -n "${line}" ]]
+    read -r line || [[ -n ${line} ]]
   do
     emojify_line "${line}"
   done

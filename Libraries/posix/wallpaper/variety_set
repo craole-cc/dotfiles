@@ -2,83 +2,83 @@
 set -uo pipefail
 
 WP="${1:-}"
-if [[ -z "$WP" || ! -f "$WP" ]]; then
-    printf '%s\n' 'variety_set: expected an existing wallpaper image path as the first argument' >&2
-    exit 2
+if [[ -z $WP || ! -f $WP ]]; then
+  printf '%s\n' 'variety_set: expected an existing wallpaper image path as the first argument' >&2
+  exit 2
 fi
 
 # Let DMS own wallpaper changes when it is running, so its wallpaper-based
 # Matugen theme follows Variety's selection. When DMS is in per-monitor mode,
 # use its per-monitor IPC for each connected Hyprland output.
-if command -v dms >/dev/null 2>&1; then
-    if dms ipc call wallpaper set "$WP" >/dev/null 2>&1; then
-        exit 0
-    fi
+if command -v dms > /dev/null 2>&1; then
+  if dms ipc call wallpaper set "$WP" > /dev/null 2>&1; then
+    exit 0
+  fi
 
-    if command -v hyprctl >/dev/null 2>&1; then
-        dms_wallpaper_set=true
-        monitor_count=0
-        while IFS= read -r monitor; do
-            [[ -n "$monitor" ]] || continue
-            ((monitor_count += 1))
-            if ! dms ipc call wallpaper setFor "$monitor" "$WP" >/dev/null 2>&1; then
-                dms_wallpaper_set=false
-                break
-            fi
-        done < <(hyprctl monitors 2>/dev/null | sed -n 's/^Monitor \([^ ]*\) .*/\1/p')
+  if command -v hyprctl > /dev/null 2>&1; then
+    dms_wallpaper_set=true
+    monitor_count=0
+    while IFS= read -r monitor; do
+      [[ -n $monitor ]] || continue
+      ((monitor_count += 1))
+      if ! dms ipc call wallpaper setFor "$monitor" "$WP" > /dev/null 2>&1; then
+        dms_wallpaper_set=false
+        break
+      fi
+    done < <(hyprctl monitors 2> /dev/null | sed -n 's/^Monitor \([^ ]*\) .*/\1/p')
 
-        if (( monitor_count > 0 )) && [[ "$dms_wallpaper_set" == true ]]; then
-            exit 0
-        fi
+    if ((monitor_count > 0)) && [[ $dms_wallpaper_set == true ]]; then
+      exit 0
     fi
+  fi
 fi
 
 # Translate Variety's display modes to Hyprpaper's fit modes.
 case "${4:-zoom}" in
-    centered|scaled) fit_mode=contain ;;
-    stretched) fit_mode=fill ;;
-    wallpaper) fit_mode=tile ;;
-    *) fit_mode=cover ;;
+  centered | scaled) fit_mode=contain ;;
+  stretched) fit_mode=fill ;;
+  wallpaper) fit_mode=tile ;;
+  *) fit_mode=cover ;;
 esac
 
 # Hyprpaper is the preferred Hyprland backend. Set each active monitor so
 # monitor-specific wallpapers are replaced as well as the fallback image.
-if command -v hyprctl >/dev/null 2>&1; then
-    active="$(hyprctl hyprpaper listactive 2>/dev/null || true)"
-    monitors=()
-    while IFS= read -r line; do
-        [[ "$line" == *": "* ]] || continue
-        monitor="${line%%: *}"
-        [[ -n "$monitor" ]] && monitors+=("$monitor")
-    done <<< "$active"
+if command -v hyprctl > /dev/null 2>&1; then
+  active="$(hyprctl hyprpaper listactive 2> /dev/null || true)"
+  monitors=()
+  while IFS= read -r line; do
+    [[ $line == *": "* ]] || continue
+    monitor="${line%%: *}"
+    [[ -n $monitor ]] && monitors+=("$monitor")
+  done <<< "$active"
 
-    if ((${#monitors[@]})); then
-        for monitor in "${monitors[@]}"; do
-            if ! hyprctl hyprpaper wallpaper "$monitor, $WP, $fit_mode" >/dev/null; then
-                printf 'variety_set: Hyprpaper failed to set wallpaper on %s\n' "$monitor" >&2
-                exit 1
-            fi
-        done
-        exit 0
-    elif hyprctl hyprpaper wallpaper ", $WP, $fit_mode" >/dev/null; then
-        exit 0
-    fi
+  if ((${#monitors[@]})); then
+    for monitor in "${monitors[@]}"; do
+      if ! hyprctl hyprpaper wallpaper "$monitor, $WP, $fit_mode" > /dev/null; then
+        printf 'variety_set: Hyprpaper failed to set wallpaper on %s\n' "$monitor" >&2
+        exit 1
+      fi
+    done
+    exit 0
+  elif hyprctl hyprpaper wallpaper ", $WP, $fit_mode" > /dev/null; then
+    exit 0
+  fi
 fi
 
 # swaybg is the fallback for Wayland compositors when Hyprpaper IPC is absent.
-if command -v swaybg >/dev/null 2>&1; then
-    case "${4:-zoom}" in
-        centered) sway_mode=center ;;
-        scaled) sway_mode=fit ;;
-        stretched) sway_mode=stretch ;;
-        wallpaper) sway_mode=tile ;;
-        *) sway_mode=fill ;;
-    esac
-    if command -v pkill >/dev/null 2>&1; then
-        pkill -x swaybg 2>/dev/null || true
-    fi
-    swaybg -i "$WP" -m "$sway_mode" >/dev/null 2>&1 &
-    exit 0
+if command -v swaybg > /dev/null 2>&1; then
+  case "${4:-zoom}" in
+    centered) sway_mode=center ;;
+    scaled) sway_mode=fit ;;
+    stretched) sway_mode=stretch ;;
+    wallpaper) sway_mode=tile ;;
+    *) sway_mode=fill ;;
+  esac
+  if command -v pkill > /dev/null 2>&1; then
+    pkill -x swaybg 2> /dev/null || true
+  fi
+  swaybg -i "$WP" -m "$sway_mode" > /dev/null 2>&1 &
+  exit 0
 fi
 
 printf '%s\n' 'variety_set: neither Hyprpaper IPC nor swaybg is available' >&2
