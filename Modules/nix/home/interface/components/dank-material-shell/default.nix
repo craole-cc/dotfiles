@@ -170,6 +170,7 @@
       fi
     fi
 
+    export GSETTINGS_SCHEMA_DIR="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas"
     ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme "$color_scheme" || true
     ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
     ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-size ${toString cursorSize} || true
@@ -235,6 +236,7 @@ in
       systemd.user = {
         services.dotdots-foot-dms-theme-reload = {
           Unit.Description = "Apply DMS appearance to GTK, cursors, and Foot";
+          Unit.StartLimitIntervalSec = 0;
           Service = {
             Type = "oneshot";
             ExecStart = syncDmsAppearance;
