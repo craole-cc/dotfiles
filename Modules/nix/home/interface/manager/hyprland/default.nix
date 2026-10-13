@@ -126,6 +126,14 @@
       hl.bind(${builtins.toJSON chord}, hl.dsp.exec_cmd(${builtins.toJSON command}), { description = "Open primary terminal" })
     '';
 
+  dmsGhosttyQuickTerminalBind =
+    if config.programs.ghostty.enable or false
+    then ''
+      hl.unbind("ALT + grave")
+      hl.bind("ALT + grave", hl.dsp.global("com.mitchellh.ghostty:ALT+grave"), { description = "Toggle Ghostty quick terminal" })
+    ''
+    else "";
+
   dmsWindowLastBind = let
     key = windowLast.key or null;
     mod = windowLast.mod or null;
@@ -245,6 +253,7 @@
       -- remain authoritative even if DMS has persisted older bindings.
     ''
     + dmsTerminalBind
+    + dmsGhosttyQuickTerminalBind
     + dmsWindowLastBind
     + dmsWindowCycleBinds
     + lib.concatStringsSep "" (lib.mapAttrsToList mkDmsScratchpadBinds scratchpads)

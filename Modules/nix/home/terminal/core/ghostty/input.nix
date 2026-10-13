@@ -1,7 +1,7 @@
 {
   settings.keybind = [
     "clear"
-    "ctrl+backquote=toggle_quick_terminal"
+    "global:alt+backquote=toggle_quick_terminal"
     # "ctrl+h=goto_split:left"
     # "ctrl+l=goto_split:right"
     "alt+f4=close_window"
