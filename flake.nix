@@ -93,10 +93,15 @@
       type = "github";
       inputs.nixpkgs.follows = "nixPackages";
     };
-
     secretsManager = {
       repo = "agenix";
       owner = "ryantm";
+      type = "github";
+      inputs.nixpkgs.follows = "nixPackages";
+    };
+    treeFormatter = {
+      repo = "treefmt-nix";
+      owner = "numtide";
       type = "github";
       inputs.nixpkgs.follows = "nixPackages";
     };
@@ -174,10 +179,18 @@
       inputs.nixpkgs.follows = "nixPackages";
     };
 
-    buuf-icons = {
-      url = "git+https://git.disroot.org/eudaimon/buuf-nestort.git?ref=master";
+    buufIcons = {
+      url = "https://git.disroot.org/eudaimon/buuf-nestort.git";
+      ref = "master";
+      type = "git";
       flake = false;
     };
+    # buuf-icons = {
+    #   url = "https://git.disroot.org/eudaimon/buuf-nestort.git";
+    #   ref = "master";
+    #   type = "git";
+    #   flake = false;
+    # };
 
     #~@ AI
     ai = {

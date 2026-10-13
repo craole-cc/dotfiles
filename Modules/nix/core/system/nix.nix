@@ -151,7 +151,7 @@ in
             key = mkOption {
               description = "Trusted public key.";
               example = literalExpression ''"cache.numtide.com-1:dGZlQILjUw6nfhbyU3aRjVm4iklknCKEIh5+OR2TXVY="'';
-              type = str;
+              type = either str (listOf str);
             };
           };
         });

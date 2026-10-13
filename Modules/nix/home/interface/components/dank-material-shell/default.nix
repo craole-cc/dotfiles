@@ -38,7 +38,10 @@
   darkCursorTheme = "material_dark_cursors";
   lightCursorTheme = "catppuccin-latte-mauve-cursors";
   cursorSize = 24;
-  resolvedIcons = {name = darkIconTheme; package = buufIcons;};
+  resolvedIcons = {
+    name = darkIconTheme;
+    package = buufIcons;
+  };
 
   darkIcons = escapeShellArg darkIconTheme;
   lightIcons = escapeShellArg lightIconTheme;
@@ -204,13 +207,17 @@ in
       };
 
       xdg = {
-        configFile."DankMaterialShell/themes/${themeName}.json".source = themeFile;
-        configFile."matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
-        configFile."matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
-        dataFile."icons/${darkIconTheme}".source = "${buufIcons}/share/icons/${darkIconTheme}";
-        dataFile."icons/${lightIconTheme}".source = "${pkgs.candy-icons}/share/icons/${lightIconTheme}";
-        dataFile."icons/${darkCursorTheme}".source = "${pkgs.material-cursors}/share/icons/${darkCursorTheme}";
-        dataFile."icons/${lightCursorTheme}".source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${lightCursorTheme}";
+        configFile = {
+          "DankMaterialShell/themes/${themeName}.json".source = themeFile;
+          "matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
+          "matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
+        };
+        dataFile = {
+          "icons/${darkIconTheme}".source = "${buufIcons}/share/icons/${darkIconTheme}";
+          "icons/${lightIconTheme}".source = "${pkgs.candy-icons}/share/icons/${lightIconTheme}";
+          "icons/${darkCursorTheme}".source = "${pkgs.material-cursors}/share/icons/${darkCursorTheme}";
+          "icons/${lightCursorTheme}".source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${lightCursorTheme}";
+        };
       };
 
       home.packages = [

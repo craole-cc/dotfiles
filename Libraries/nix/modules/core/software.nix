@@ -57,6 +57,7 @@
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.transformation) filterAttrs;
   inherit (_.filesystem.access) readFile;
+  inherit (_.lists.construction) toList;
   inherit (_.lists.predicates) all;
   inherit (_.lists.transformation) uniqueStrings;
   inherit (_.modules.construction) mkForce;
@@ -130,7 +131,7 @@
         ];
         trusted-users = ["@wheel"];
         substituters = uniqueStrings (map (cache: cache.sub) caches');
-        trusted-public-keys = uniqueStrings (map (cache: cache.key) caches');
+        trusted-public-keys = uniqueStrings (builtins.concatLists (map (cache: toList cache.key) caches'));
       };
     };
 

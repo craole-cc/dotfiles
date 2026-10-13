@@ -85,6 +85,7 @@
         "caelestia"
         "catppuccin"
         "codex"
+        "buuf-icons"
         "codex-plugins"
         "codex-skills"
         "dank-material-shell"
