@@ -185,6 +185,7 @@ in
               screenPreferences: {wallpaper: ["all"]},
               runDmsMatugenTemplates: true,
               matugenTemplateGtk: true,
+              matugenTemplateGhostty: true,
               matugenTemplateFoot: false,
               matugenTemplateVscode: true,
               matugenTemplateZed: true,
@@ -204,6 +205,7 @@ in
             screenPreferences: {wallpaper: ["all"]},
             runDmsMatugenTemplates: true,
             matugenTemplateGtk: true,
+            matugenTemplateGhostty: true,
             matugenTemplateFoot: false,
             matugenTemplateVscode: true,
             matugenTemplateZed: true,
@@ -223,6 +225,7 @@ in
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenContrast -0.35 >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set runDmsMatugenTemplates true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGtk true >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGhostty true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateFoot false >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateVscode true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZed true >/dev/null 2>&1 || true
