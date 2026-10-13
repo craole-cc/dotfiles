@@ -191,8 +191,13 @@ in
         };
 
         paths.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Watch the DMS-generated Foot palette";
-          Path.PathChanged = "%h/.config/foot/dank-colors.ini";
+          Unit.Description = "Watch DMS appearance settings and the generated Foot palette";
+          Path = {
+            PathChanged = [
+              "%h/.config/DankMaterialShell/settings.json"
+              "%h/.config/foot/dank-colors.ini"
+            ];
+          };
           Install.WantedBy = ["graphical-session.target"];
         };
       };

@@ -1,6 +1,6 @@
 {
   programs.helix = {
-    settings.theme = "light";
+    settings.theme = "base16_transparent";
     themes = {
       light = {
         "inherits" = "seoul256-light-hard";
