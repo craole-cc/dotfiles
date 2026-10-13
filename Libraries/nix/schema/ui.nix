@@ -515,9 +515,9 @@
         workspacePrev.action = "hyprctl dispatch workspace previous";
         windowCycle.action = "hyprctl dispatch focuscurrentorlast";
         logout.action = "hyprctl dispatch exit";
-        screenshot.action = "hyprshot -m output";
-        screenshotRegion.action = "hyprshot -m region";
-        screenshotWindow.action = "hyprshot -m window";
+        screenshot.action = "dms screenshot full";
+        screenshotRegion.action = "dms screenshot";
+        screenshotWindow.action = "dms screenshot window";
       };
     };
     niri = recursiveUpdate (mkWayland "niri") {
