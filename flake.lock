@@ -147,7 +147,7 @@
         "type": "github"
       }
     },
-    "buuf-icons": {
+    "buufIcons": {
       "flake": false,
       "locked": {
         "lastModified": 1785312372,
@@ -830,7 +830,7 @@
       "inputs": {
         "ai": "ai",
         "browserZen": "browserZen",
-        "buuf-icons": "buuf-icons",
+        "buufIcons": "buufIcons",
         "codex": "codex",
         "codex-plugins": "codex-plugins",
         "codex-skills": "codex-skills",
