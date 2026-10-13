@@ -297,6 +297,15 @@
         ];
       };
 
+      buuf-icons = {
+        names = [
+          "buuf-nestort"
+          "buufIcons"
+          "buuf"
+          "buuf-icons"
+        ];
+      };
+
       catppuccin = {
         names = [
           "styleCatppuccin"
