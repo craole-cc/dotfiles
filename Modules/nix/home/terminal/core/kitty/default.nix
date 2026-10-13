@@ -26,6 +26,7 @@
         background_opacity = 0.97;
         copy_on_select = "no";
         confirm_os_window_close = 0;
+        remember_window_size = false;
       };
 
       # DMS owns the generated color files. Home Manager only includes them
