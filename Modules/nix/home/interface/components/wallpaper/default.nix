@@ -21,5 +21,5 @@ in
       inherit context;
       condition = ctx.wantsHyprland.condition;
     };
-    outputs.home.packages = [pkgs.variety];
+    outputs.home.packages = [pkgs.variety pkgs.hyprpaper];
   }
