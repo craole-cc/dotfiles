@@ -28,6 +28,12 @@
   themeName = "dotdots-catppuccin";
   themeFile = ./dms-catppuccin.json;
   themePath = "${config.xdg.configHome}/DankMaterialShell/themes/${themeName}.json";
+  footMatugenTemplate = ./foot-matugen.ini;
+  footMatugenConfig = pkgs.writeText "dotdots-foot-matugen.toml" ''
+    [templates.dotdots_foot]
+    input_path = '${footMatugenTemplate}'
+    output_path = '${config.xdg.configHome}/foot/dank-colors.ini'
+  '';
   footFallback = pkgs.writeText "dms-foot-fallback.ini" ''
     [colors-dark]
     foreground=c6d0f5
@@ -52,6 +58,30 @@
     bright5=ca9ee6
     bright6=81c8be
     bright7=c6d0f5
+
+    [colors-light]
+    foreground=4c4f69
+    background=eff1f5
+    selection-foreground=4c4f69
+    selection-background=acb0be
+    cursor=eff1f5 dc8a78
+
+    regular0=acb0be
+    regular1=d20f39
+    regular2=40a02b
+    regular3=df8e1d
+    regular4=1e66f5
+    regular5=ea76cb
+    regular6=179299
+    regular7=5c5f77
+    bright0=9ca0b0
+    bright1=d20f39
+    bright2=40a02b
+    bright3=df8e1d
+    bright4=1e66f5
+    bright5=ea76cb
+    bright6=179299
+    bright7=4c4f69
   '';
   reloadFoot = pkgs.writeShellScript "reload-foot-dms-theme" ''
     mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
@@ -96,6 +126,7 @@ in
 
       xdg = {
         configFile."DankMaterialShell/themes/${themeName}.json".source = themeFile;
+        configFile."matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
         dataFile."icons/${cfg.icons.name}".source = "${cfg.icons.package}/share/icons/${cfg.icons.name}";
       };
 
@@ -154,7 +185,7 @@ in
               screenPreferences: {wallpaper: ["all"]},
               runDmsMatugenTemplates: true,
               matugenTemplateGtk: true,
-              matugenTemplateFoot: true,
+              matugenTemplateFoot: false,
               matugenTemplateVscode: true,
               matugenTemplateZed: true,
               matugenTemplateZenBrowser: true,
@@ -173,7 +204,7 @@ in
             screenPreferences: {wallpaper: ["all"]},
             runDmsMatugenTemplates: true,
             matugenTemplateGtk: true,
-            matugenTemplateFoot: true,
+            matugenTemplateFoot: false,
             matugenTemplateVscode: true,
             matugenTemplateZed: true,
             matugenTemplateZenBrowser: true,
@@ -192,7 +223,7 @@ in
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenContrast -0.35 >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set runDmsMatugenTemplates true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGtk true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateFoot true >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateFoot false >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateVscode true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZed true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZenBrowser true >/dev/null 2>&1 || true
