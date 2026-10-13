@@ -10,7 +10,7 @@
   inherit (lix.modules.construction) mkConfig mkContext mkForce;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.strings.transformation) escapeShellArg;
-  inherit (pkgs) coreutils dms-shell jq procps quickshell;
+  inherit (pkgs) coreutils dms-shell glib jq procps quickshell;
 
   context = mkContext {
     inherit config;
@@ -35,6 +35,8 @@
   };
   darkIconTheme = "Buuf";
   lightIconTheme = "candy-icons";
+  darkCursorTheme = "material_dark_cursors";
+  lightCursorTheme = "catppuccin-latte-mauve-cursors";
   resolvedIcons = {name = darkIconTheme; package = buufIcons;};
 
   darkIcons = escapeShellArg darkIconTheme;
@@ -103,14 +105,26 @@
     bright6=179299
     bright7=4c4f69
   '';
-  reloadFoot = pkgs.writeShellScript "reload-foot-dms-theme" ''
+  syncDmsAppearance = pkgs.writeShellScript "sync-dms-desktop-appearance" ''
     mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
 
     case "$mode" in
       dark)
+        cursor=${escapeShellArg darkCursorTheme}
+        icons=${escapeShellArg darkIconTheme}
+        ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme prefer-dark || true
+        ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
+        ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
+        command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" 24 >/dev/null 2>&1 || true
         ${procps}/bin/pkill -USR1 -x foot || true
         ;;
       light)
+        cursor=${escapeShellArg lightCursorTheme}
+        icons=${escapeShellArg lightIconTheme}
+        ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme prefer-light || true
+        ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
+        ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
+        command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" 24 >/dev/null 2>&1 || true
         ${procps}/bin/pkill -USR2 -x foot || true
         ;;
     esac
@@ -150,7 +164,14 @@ in
         configFile."matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
         dataFile."icons/${darkIconTheme}".source = "${buufIcons}/share/icons/${darkIconTheme}";
         dataFile."icons/${lightIconTheme}".source = "${pkgs.candy-icons}/share/icons/${lightIconTheme}";
+        dataFile."icons/${darkCursorTheme}".source = "${pkgs.material-cursors}/share/icons/${darkCursorTheme}";
+        dataFile."icons/${lightCursorTheme}".source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${lightCursorTheme}";
       };
+
+      home.packages = [
+        pkgs.material-cursors
+        pkgs.catppuccin-cursors.latteMauve
+      ];
 
       gtk = {
         enable = mkForce true;
@@ -161,11 +182,12 @@ in
 
       systemd.user = {
         services.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Switch Foot to DMS's active colour mode";
+          Unit.Description = "Apply DMS appearance to GTK, cursors, and Foot";
           Service = {
             Type = "oneshot";
-            ExecStart = reloadFoot;
+            ExecStart = syncDmsAppearance;
           };
+          Install.WantedBy = ["graphical-session.target"];
         };
 
         paths.dotdots-foot-dms-theme-reload = {

@@ -158,7 +158,11 @@
     cursors = {
       accent = "mauve";
       dark = "material";
-      light = "material";
+      light = "catppuccin";
+      variants = {
+        light = "latte";
+        dark = "frappe";
+      };
     };
     fonts = {
       emoji = "Noto Color Emoji";
