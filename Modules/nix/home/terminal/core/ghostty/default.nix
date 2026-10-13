@@ -7,7 +7,7 @@
   ...
 }: let
   inherit (lix.modules.construction) mkContext mkConfig mkMerge;
-  inherit (lix.options.construction) mkEnable;
+  # inherit (lix.options.construction) mkEnable;
   inherit (lix.applications.generators) userApplicationConfig;
 
   context = mkContext {
@@ -22,10 +22,7 @@
     extraProgramConfig = mkMerge [
       (import ./general.nix)
       (import ./input.nix)
-      (import ./themes.nix {
-        inherit lix;
-        dmsEnabled = context.wantsDmsShell.condition;
-      })
+      (import ./themes.nix {inherit lix context;})
     ];
     debug = false;
   };

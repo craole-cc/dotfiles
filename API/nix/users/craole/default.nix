@@ -199,9 +199,9 @@
       };
     };
     terminal = {
-      primary = "foot";
-      secondary = "ghostty";
+      primary = "ghostty";
       tertiary = "kitty";
+      secondary = "foot";
     };
     explorer = {
       primary = "yazi";

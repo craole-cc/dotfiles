@@ -1,14 +1,15 @@
 {
-  dmsEnabled,
+  context,
   lix,
   ...
 }: let
-  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.modules.construction) mkIf;
+  inherit (context) wantsDmsShell;
 in {
   # Keep behavioral configuration in Home Manager, but delegate terminal
   # colors to DMS when DMS owns the desktop shell. DMS regenerates the
   # `dankcolors` Ghostty theme from its active Material/Matugen palette.
-  settings = optionalAttrs dmsEnabled {
+  settings = mkIf wantsDmsShell.condition {
     theme = "dankcolors";
   };
 }
