@@ -147,6 +147,23 @@
         "type": "github"
       }
     },
+    "buuf-icons": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785312372,
+        "narHash": "sha256-6aEM+rL7chkP83Rol6/F5jmG3mo6vALPk2pIvkUK1rU=",
+        "ref": "master",
+        "rev": "ba218523983aec90f1e9facaefeeeeecdcf6d6a5",
+        "revCount": 184,
+        "type": "git",
+        "url": "https://git.disroot.org/eudaimon/buuf-nestort.git"
+      },
+      "original": {
+        "ref": "master",
+        "type": "git",
+        "url": "https://git.disroot.org/eudaimon/buuf-nestort.git"
+      }
+    },
     "codex": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -813,6 +830,7 @@
       "inputs": {
         "ai": "ai",
         "browserZen": "browserZen",
+        "buuf-icons": "buuf-icons",
         "codex": "codex",
         "codex-plugins": "codex-plugins",
         "codex-skills": "codex-skills",

@@ -14,6 +14,7 @@
     confirm-close-surface = false;
 
     background-blur = true;
+    background-opacity = 0.97;
     font-size = 14;
   };
 }

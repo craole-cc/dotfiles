@@ -174,11 +174,9 @@
       inputs.nixpkgs.follows = "nixPackages";
     };
 
-    treeFormatter = {
-      repo = "treefmt-nix";
-      owner = "numtide";
-      type = "github";
-      inputs.nixpkgs.follows = "nixPackages";
+    buuf-icons = {
+      url = "git+https://git.disroot.org/eudaimon/buuf-nestort.git?ref=master";
+      flake = false;
     };
 
     #~@ AI

@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   lix,
   pkgs,
@@ -19,12 +20,25 @@
   };
   inherit (context) cfg ctx;
 
-  resolvedIcons = {
-    name = "candy-icons";
-    package = pkgs.candy-icons;
+  buufIcons = pkgs.stdenvNoCC.mkDerivation {
+    pname = "buuf-icons";
+    version = "unstable-2026-10-12";
+    src = inputs.buuf-icons;
+    dontConfigure = true;
+    dontBuild = true;
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out/share/icons/Buuf"
+      cp -R "$src"/. "$out/share/icons/Buuf/"
+      runHook postInstall
+    '';
   };
+  darkIconTheme = "Buuf";
+  lightIconTheme = "candy-icons";
+  resolvedIcons = {name = darkIconTheme; package = buufIcons;};
 
-  iconTheme = cfg.icons.name;
+  darkIcons = escapeShellArg darkIconTheme;
+  lightIcons = escapeShellArg lightIconTheme;
   themeName = "dotdots-catppuccin";
   themeFile = ./dms-catppuccin.json;
   themePath = "${config.xdg.configHome}/DankMaterialShell/themes/${themeName}.json";
@@ -134,7 +148,8 @@ in
         configFile."DankMaterialShell/themes/${themeName}.json".source = themeFile;
         configFile."matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
         configFile."matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
-        dataFile."icons/${cfg.icons.name}".source = "${cfg.icons.package}/share/icons/${cfg.icons.name}";
+        dataFile."icons/${darkIconTheme}".source = "${buufIcons}/share/icons/${darkIconTheme}";
+        dataFile."icons/${lightIconTheme}".source = "${pkgs.candy-icons}/share/icons/${lightIconTheme}";
       };
 
       gtk = {
@@ -142,7 +157,7 @@ in
         iconTheme = mkForce {inherit (cfg.icons) package name;};
       };
 
-      home.sessionVariables.QS_ICON_THEME = cfg.icons.name;
+      home.sessionVariables.QS_ICON_THEME = darkIconTheme;
 
       systemd.user = {
         services.dotdots-foot-dms-theme-reload = {
@@ -166,7 +181,8 @@ in
         settings="$HOME/.config/DankMaterialShell/settings.json"
         foot_theme="$HOME/.config/foot/dank-colors.ini"
         theme=${escapeShellArg themePath}
-        icons=${escapeShellArg iconTheme}
+        dark_icons=${darkIcons}
+        light_icons=${lightIcons}
         tmp="$(${coreutils}/bin/mktemp)"
         trap '${coreutils}/bin/rm -f "$tmp"' EXIT
 
@@ -183,7 +199,7 @@ in
         fi
 
         if [ -f "$settings" ]; then
-          ${jq}/bin/jq --arg theme "$theme" --arg icons "$icons" '
+          ${jq}/bin/jq --arg theme "$theme" --arg darkIcons "$dark_icons" --arg lightIcons "$light_icons" '
             . + {
               currentThemeName: "dynamic",
               currentThemeCategory: "dynamic",
@@ -198,13 +214,13 @@ in
               matugenTemplateVscode: true,
               matugenTemplateZed: true,
               matugenTemplateZenBrowser: true,
-              iconThemeDark: $icons,
-              iconThemeLight: $icons,
-              iconThemePerMode: false
+              iconThemeDark: $darkIcons,
+              iconThemeLight: $lightIcons,
+              iconThemePerMode: true
             }
           ' "$settings" > "$tmp"
         else
-          ${jq}/bin/jq -n --arg theme "$theme" --arg icons "$icons" '{
+          ${jq}/bin/jq -n --arg theme "$theme" --arg darkIcons "$dark_icons" --arg lightIcons "$light_icons" '{
             currentThemeName: "dynamic",
             currentThemeCategory: "dynamic",
             customThemeFile: $theme,
@@ -218,9 +234,9 @@ in
             matugenTemplateVscode: true,
             matugenTemplateZed: true,
             matugenTemplateZenBrowser: true,
-            iconThemeDark: $icons,
-            iconThemeLight: $icons,
-            iconThemePerMode: false
+            iconThemeDark: $darkIcons,
+            iconThemeLight: $lightIcons,
+            iconThemePerMode: true
           }' > "$tmp"
         fi
 
@@ -238,9 +254,9 @@ in
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateVscode true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZed true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZenBrowser true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeDark "$icons" >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeLight "$icons" >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemePerMode false >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeDark "$dark_icons" >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeLight "$light_icons" >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemePerMode true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeCategory dynamic >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeName dynamic >/dev/null 2>&1 || true
       '';
