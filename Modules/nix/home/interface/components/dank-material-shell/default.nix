@@ -137,8 +137,8 @@ in
         if [ -f "$settings" ]; then
           ${jq}/bin/jq --arg theme "$theme" --arg icons "$icons" '
             . + {
-              currentThemeName: "custom",
-              currentThemeCategory: "custom",
+              currentThemeName: "dynamic",
+              currentThemeCategory: "dynamic",
               customThemeFile: $theme,
               runDmsMatugenTemplates: true,
               matugenTemplateGtk: true,
@@ -153,8 +153,8 @@ in
           ' "$settings" > "$tmp"
         else
           ${jq}/bin/jq -n --arg theme "$theme" --arg icons "$icons" '{
-            currentThemeName: "custom",
-            currentThemeCategory: "custom",
+            currentThemeName: "dynamic",
+            currentThemeCategory: "dynamic",
             customThemeFile: $theme,
             runDmsMatugenTemplates: true,
             matugenTemplateGtk: true,
@@ -170,8 +170,8 @@ in
 
         $DRY_RUN_CMD ${coreutils}/bin/install -m 0600 "$tmp" "$settings"
 
-        # Set dependencies first. currentThemeName is last because changing it
-        # loads the custom file and regenerates all enabled Matugen consumers.
+        # Set the theme category before its name. Selecting the dynamic theme
+        # makes subsequent DMS wallpaper changes drive Matugen regeneration.
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set customThemeFile "$theme" >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set runDmsMatugenTemplates true >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGtk true >/dev/null 2>&1 || true
@@ -182,8 +182,8 @@ in
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeDark "$icons" >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeLight "$icons" >/dev/null 2>&1 || true
         $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemePerMode false >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeCategory custom >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeName custom >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeCategory dynamic >/dev/null 2>&1 || true
+        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeName dynamic >/dev/null 2>&1 || true
       '';
     };
   }
