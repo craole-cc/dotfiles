@@ -23,8 +23,6 @@ in
       condition = isAllowed;
     };
     outputs.programs.bash =
-      {
-        enable = true;
-      }
+      {enable = true;}
       // import ./settings.nix;
   }
