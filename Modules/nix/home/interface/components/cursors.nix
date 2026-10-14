@@ -7,8 +7,7 @@
   inherit (lix.lists.predicates) isIn;
   inherit (lix.options.construction) mkOption;
   inherit (lix.styles.cursors) mkOne;
-  inherit (lix.styles.cursors.types.polarity) home;
-  inherit (lix.types.combinators) attrsOf;
+  inherit (lix.types.primitives) str;
 
   resolveCursor = polarity: requested: let
     size =
@@ -38,14 +37,17 @@
       inherit (resolved) name package size;
     };
 in {
-  options.themes.cursors = mkOption {
-    type = attrsOf home;
-    default = {};
-    description = "Resolved cursor themes for each appearance mode";
+  options.themes.modes.dark.cursor = mkOption {
+    type = str;
+    default = style.cursors.dark;
+    description = "Cursor theme requested for dark mode";
+    apply = resolveCursor "dark";
   };
 
-  config.themes.cursors = {
-    dark = resolveCursor "dark" style.cursors.dark;
-    light = resolveCursor "light" style.cursors.light;
+  options.themes.modes.light.cursor = mkOption {
+    type = str;
+    default = style.cursors.light;
+    description = "Cursor theme requested for light mode";
+    apply = resolveCursor "light";
   };
 }

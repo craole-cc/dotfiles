@@ -8,8 +8,7 @@
   inherit (lix.lists.predicates) isIn;
   inherit (lix.options.construction) mkOption;
   inherit (lix.styles.icons) mkOne;
-  inherit (lix.styles.icons.types.icon) home;
-  inherit (lix.types.combinators) attrsOf;
+  inherit (lix.types.primitives) str;
 
   buufIcons = pkgs.stdenvNoCC.mkDerivation {
     pname = "buuf-icons";
@@ -42,14 +41,17 @@
         icon = requested;
       };
 in {
-  options.themes.icons = mkOption {
-    type = attrsOf home;
-    default = {};
-    description = "Resolved icon themes for each appearance mode";
+  options.themes.modes.dark.icon = mkOption {
+    type = str;
+    default = style.icons.dark;
+    description = "Icon theme requested for dark mode";
+    apply = resolveIcon "dark";
   };
 
-  config.themes.icons = {
-    dark = resolveIcon "dark" style.icons.dark;
-    light = resolveIcon "light" style.icons.light;
+  options.themes.modes.light.icon = mkOption {
+    type = str;
+    default = style.icons.light;
+    description = "Icon theme requested for light mode";
+    apply = resolveIcon "light";
   };
 }

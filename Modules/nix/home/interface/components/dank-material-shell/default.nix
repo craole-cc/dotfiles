@@ -32,7 +32,16 @@
   inherit (context) cfg ctx;
 
   configHome = config.xdg.configHome or "${user.home}/.config";
-  themes = config.themes;
+  themes = {
+    icons = {
+      dark = config.themes.modes.dark.icon;
+      light = config.themes.modes.light.icon;
+    };
+    cursors = {
+      dark = config.themes.modes.dark.cursor;
+      light = config.themes.modes.light.cursor;
+    };
+  };
 
   # TODO: Resolve in the schema so we get user > host > default
   inherit (user.theme) palettes modes;
