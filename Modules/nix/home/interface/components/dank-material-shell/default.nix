@@ -33,135 +33,8 @@
 
   configHome = config.xdg.configHome or "${user.home}/.config";
 
-  palettes = rec {
-    catppuccin = {
-      frappe = rec {
-        name = "Catppuccin Frappé";
-        variant = "dark";
-        description = "Soothing pastel theme, the low-contrast dark flavor.";
-        author = "Catppuccin";
-        license = "MIT";
-        source = "https://github.com/catppuccin/catppuccin";
-        colors = {
-          rosewater = "#f2d5cf";
-          flamingo = "#eebebe";
-          pink = "#f4b8e4";
-          mauve = "#ca9ee6";
-          red = "#e78284";
-          maroon = "#ea999c";
-          peach = "#ef9f76";
-          yellow = "#e5c890";
-          green = "#a6d189";
-          teal = "#81c8be";
-          sky = "#99d1db";
-          sapphire = "#85c1dc";
-          blue = "#8caaee";
-          lavender = "#babbf1";
-          text = "#c6d0f5";
-          subtext1 = "#b5bfe2";
-          subtext0 = "#a5adce";
-          overlay2 = "#949cbb";
-          overlay1 = "#838ba7";
-          overlay0 = "#737994";
-          surface2 = "#626880";
-          surface1 = "#51576d";
-          surface0 = "#414559";
-          base = "#303446";
-          mantle = "#292c3c";
-          crust = "#232634";
-        };
-
-        background = colors.base;
-        foreground = colors.text;
-        muted = colors.subtext0;
-        surface = colors.surface1;
-        accent = colors.mauve;
-
-        ansi = {
-          regular = {
-            black = "surface1";
-            red = "red";
-            green = "green";
-            yellow = "yellow";
-            blue = "blue";
-            magenta = "mauve";
-            cyan = "teal";
-            white = "subtext1";
-          };
-          bright = {
-            black = "surface2";
-            white = "text";
-          };
-        };
-      };
-      latte = rec {
-        name = "Catppuccin Latte";
-        variant = "light";
-        description = "Soothing pastel theme, the light flavor.";
-        author = "Catppuccin";
-        license = "MIT";
-        source = "https://github.com/catppuccin/catppuccin";
-        colors = {
-          rosewater = "#dc8a78";
-          flamingo = "#dd7878";
-          pink = "#ea76cb";
-          mauve = "#8839ef";
-          red = "#d20f39";
-          maroon = "#e64553";
-          peach = "#fe640b";
-          yellow = "#df8e1d";
-          green = "#40a02b";
-          teal = "#179299";
-          sky = "#04a5e5";
-          sapphire = "#209fb5";
-          blue = "#1e66f5";
-          lavender = "#7287fd";
-          text = "#4c4f69";
-          subtext1 = "#5c5f77";
-          subtext0 = "#6c6f85";
-          overlay2 = "#7c7f93";
-          overlay1 = "#8c8fa1";
-          overlay0 = "#9ca0b0";
-          surface2 = "#acb0be";
-          surface1 = "#bcc0cc";
-          surface0 = "#ccd0da";
-          base = "#eff1f5";
-          mantle = "#e6e9ef";
-          crust = "#dce0e8";
-        };
-
-        background = colors.base;
-        foreground = colors.text;
-        muted = colors.subtext0;
-        surface = colors.surface2;
-        accent = colors.teal;
-
-        ansi = {
-          regular = {
-            black = "surface2";
-            red = "red";
-            green = "green";
-            yellow = "yellow";
-            blue = "blue";
-            magenta = "pink";
-            cyan = "teal";
-            white = "subtext1";
-          };
-          bright = {
-            black = "overlay0";
-            white = "text";
-          };
-        };
-      };
-    };
-    dark = catppuccin.frappe;
-    light = catppuccin.latte;
-  };
-
-  modes = {
-    dark = palettes.catppuccin.frappe;
-    light = palettes.catppuccin.latte;
-  };
+  # TODO: Resolve in the schema so we get user > host > default
+  inherit (user.theme) palettes modes;
 
   # Shared by every terminal: names -> hex, roles -> terminal concepts.
   # Colors keep their "#"; each app decides how to write them.
@@ -206,7 +79,6 @@
     )}
   '';
 
-  # kitty: keeps "#", colors are color0..color15
   mkKittyPalette = palette: let
     terminal = mkTerminalPalette palette;
   in ''
@@ -222,7 +94,6 @@
     )}
   '';
 
-  # ghostty: keeps "#", palette = index=color
   mkGhosttyPalette = palette: let
     terminal = mkTerminalPalette palette;
   in ''
@@ -597,20 +468,22 @@ in
     };
 
     outputs = {
-      programs.dank-material-shell = {
-        inherit (cfg) enable;
+      programs = {
+        # dank-material-shell = {
+        #   inherit (cfg) enable;
 
-        # The flake module is still used for Home Manager integration, but its
-        # pinned package closure is expensive to rebuild locally. Victus tracks
-        # nixos-unstable, where both packages are available from nixpkgs and can
-        # normally be substituted from cache.nixos.org.
-        inherit (tools.dms-shell) package;
-        quickshell = {inherit (tools.quickshell) package;};
+        #   # The flake module is still used for Home Manager integration, but its
+        #   # pinned package closure is expensive to rebuild locally. Victus tracks
+        #   # nixos-unstable, where both packages are available from nixpkgs and can
+        #   # normally be substituted from cache.nixos.org.
+        #   inherit (tools.dms-shell) package;
+        #   quickshell = {inherit (tools.quickshell) package;};
 
-        systemd = {
-          enable = true;
-          target = "graphical-session.target";
-        };
+        #   systemd = {
+        #     enable = true;
+        #     target = "graphical-session.target";
+        #   };
+        # };
       };
 
       xdg = {
@@ -629,49 +502,76 @@ in
       };
 
       home = {
-        packages = [style.cursors.dark.package style.cursors.light.package];
+        packages = with style.cursors; [dark.package light.package];
         sessionVariables = {
           # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
           QS_ICON_THEME = icons.dark.theme;
         };
 
-        activation.configureDmsTheme = entryAfter ["writeBoundary"] ''
-          settings="$HOME/.config/DankMaterialShell/settings.json"
-          foot_theme="$HOME/.config/foot/dank-colors.ini"
-          ghostty_opacity="$HOME/.config/ghostty/dotdots-opacity"
-          kitty_opacity="$HOME/.config/kitty/dotdots-opacity.conf"
-          theme="${apps.dms.theme.pathStr}"
-          dark_icons="${icons.dark.name}"
-          light_icons="${icons.light.name}"
-          tmp="$(${bins.mktemp})"
-          trap '${bins.rm} -f "$tmp"' EXIT
+        activation.configureDmsTheme = let
+          inherit (bins) dirname dmsSet install jaq mkdir mktemp rm;
+          inherit (apps) foot ghostty kitty;
+        in
+          entryAfter ["writeBoundary"] ''
+            settings="$HOME/.config/DankMaterialShell/settings.json"
+            foot_theme="$HOME/.config/foot/dank-colors.ini"
+            ghostty_opacity="$HOME/.config/ghostty/dotdots-opacity"
+            kitty_opacity="$HOME/.config/kitty/dotdots-opacity.conf"
+            theme="${apps.dms.theme.pathStr}"
+            dark_icons="${icons.dark.name}"
+            light_icons="${icons.light.name}"
+            tmp="$(${mktemp})"
+            trap '${rm} -f "$tmp"' EXIT
 
-          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$settings")"
-          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$foot_theme")"
-          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$ghostty_opacity")"
-          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$kitty_opacity")"
-          $DRY_RUN_CMD ${bins.mkdir} -p "$HOME/.hermes/skins"
-          if [ -e "$foot_theme" ]; then :; else
-            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.foot.fallback} "$foot_theme"
-          fi
-          if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
-            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.ghostty.opacity.fallback} "$ghostty_opacity"
-          fi
-          if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
-            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.kitty.opacity.fallback} "$kitty_opacity"
-          fi
+            $DRY_RUN_CMD ${mkdir} -p "$(${dirname} "$settings")"
+            $DRY_RUN_CMD ${mkdir} -p "$(${dirname} "$foot_theme")"
+            $DRY_RUN_CMD ${mkdir} -p "$(${dirname} "$ghostty_opacity")"
+            $DRY_RUN_CMD ${mkdir} -p "$(${dirname} "$kitty_opacity")"
+            $DRY_RUN_CMD ${mkdir} -p "$HOME/.hermes/skins"
+            if [ -e "$foot_theme" ]; then :; else
+              $DRY_RUN_CMD ${install} -m 0644 ${foot.fallback} "$foot_theme"
+            fi
+            if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
+              $DRY_RUN_CMD ${install} -m 0644 ${ghostty.opacity.fallback} "$ghostty_opacity"
+            fi
+            if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
+              $DRY_RUN_CMD ${install} -m 0644 ${kitty.opacity.fallback} "$kitty_opacity"
+            fi
 
-          if [ -L "$settings" ]; then
-            echo "Refusing to replace managed DMS settings symlink: $settings" >&2
-            exit 1
-          fi
+            if [ -L "$settings" ]; then
+              echo "Refusing to replace managed DMS settings symlink: $settings" >&2
+              exit 1
+            fi
 
-          if [ -f "$settings" ]; then
-            ${bins.jaq} \
-              --arg theme "$theme" \
-              --arg darkIcons "$dark_icons" \
-              --arg lightIcons "$light_icons" '
-              . + {
+            if [ -f "$settings" ]; then
+              ${jaq} \
+                --arg theme "$theme" \
+                --arg darkIcons "$dark_icons" \
+                --arg lightIcons "$light_icons" '
+                . + {
+                  currentThemeName: "dynamic",
+                  currentThemeCategory: "dynamic",
+                  customThemeFile: $theme,
+                  matugenScheme: "scheme-smart",
+                  matugenContrast: -0.35,
+                  screenPreferences: {wallpaper: ["all"]},
+                  runDmsMatugenTemplates: true,
+                  matugenTemplateGtk: true,
+                  matugenTemplateGhostty: true,
+                  matugenTemplateFoot: false,
+                  matugenTemplateVscode: true,
+                  matugenTemplateZed: true,
+                  matugenTemplateZenBrowser: true,
+                  iconThemeDark: $darkIcons,
+                  iconThemeLight: $lightIcons,
+                  iconThemePerMode: true
+                }
+              ' "$settings" > "$tmp"
+            else
+              ${jaq} -n \
+                --arg theme "$theme" \
+                --arg darkIcons "$dark_icons" \
+                --arg lightIcons "$light_icons" '{
                 currentThemeName: "dynamic",
                 currentThemeCategory: "dynamic",
                 customThemeFile: $theme,
@@ -688,52 +588,29 @@ in
                 iconThemeDark: $darkIcons,
                 iconThemeLight: $lightIcons,
                 iconThemePerMode: true
-              }
-            ' "$settings" > "$tmp"
-          else
-            ${bins.jaq} -n \
-              --arg theme "$theme" \
-              --arg darkIcons "$dark_icons" \
-              --arg lightIcons "$light_icons" '{
-              currentThemeName: "dynamic",
-              currentThemeCategory: "dynamic",
-              customThemeFile: $theme,
-              matugenScheme: "scheme-smart",
-              matugenContrast: -0.35,
-              screenPreferences: {wallpaper: ["all"]},
-              runDmsMatugenTemplates: true,
-              matugenTemplateGtk: true,
-              matugenTemplateGhostty: true,
-              matugenTemplateFoot: false,
-              matugenTemplateVscode: true,
-              matugenTemplateZed: true,
-              matugenTemplateZenBrowser: true,
-              iconThemeDark: $darkIcons,
-              iconThemeLight: $lightIcons,
-              iconThemePerMode: true
-            }' > "$tmp"
-          fi
+              }' > "$tmp"
+            fi
 
-          $DRY_RUN_CMD ${bins.install} -m 0600 "$tmp" "$settings"
+            $DRY_RUN_CMD ${install} -m 0600 "$tmp" "$settings"
 
-          # Set the theme category before its name. Selecting the dynamic theme
-          # makes subsequent DMS wallpaper changes drive Matugen regeneration.
-          $DRY_RUN_CMD ${bins.dmsSet} customThemeFile "$theme" >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenScheme scheme-smart >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenContrast -0.35 >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} runDmsMatugenTemplates true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateGtk true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateGhostty true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateFoot false >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateVscode true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateZed true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateZenBrowser true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} iconThemeDark "$dark_icons" >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} iconThemeLight "$light_icons" >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} iconThemePerMode true >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} currentThemeCategory dynamic >/dev/null 2>&1 || true
-          $DRY_RUN_CMD ${bins.dmsSet} currentThemeName dynamic >/dev/null 2>&1 || true
-        '';
+            # Set the theme category before its name. Selecting the dynamic theme
+            # makes subsequent DMS wallpaper changes drive Matugen regeneration.
+            $DRY_RUN_CMD ${dmsSet} customThemeFile "$theme" >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenScheme scheme-smart >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenContrast -0.35 >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} runDmsMatugenTemplates true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateGtk true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateGhostty true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateFoot false >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateVscode true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateZed true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} matugenTemplateZenBrowser true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} iconThemeDark "$dark_icons" >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} iconThemeLight "$light_icons" >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} iconThemePerMode true >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} currentThemeCategory dynamic >/dev/null 2>&1 || true
+            $DRY_RUN_CMD ${dmsSet} currentThemeName dynamic >/dev/null 2>&1 || true
+          '';
       };
 
       systemd = {

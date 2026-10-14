@@ -693,8 +693,9 @@
     ];
     bar = ["dms"];
     browser = [
-      "brave"
+      "chromium"
       "zen-twilight"
+      "brave"
     ];
     editor = [
       "helix"
@@ -744,9 +745,9 @@
       "starship"
     ];
     terminal = [
+      "ghostty"
       "foot"
       "warp-terminal"
-      "ghostty"
       "kitty"
     ];
   };
