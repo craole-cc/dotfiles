@@ -145,9 +145,11 @@
 
   style = {
     autoSwitch = true;
-    opacity.terminal = {
-      light = 0.85;
-      dark = 0.92;
+    opacity = {
+      terminal = {
+        light = 0.85;
+        dark = 0.92;
+      };
     };
     theme = {
       polarity = "dark";
@@ -156,7 +158,7 @@
       light = "Catppuccin Latte";
     };
     icons = {
-      dark = "candy-icons";
+      dark = "buuf-netsort";
       light = "candy-icons";
     };
     cursors = {

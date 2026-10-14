@@ -307,7 +307,10 @@
     dark = rec {
       theme = style.icons.dark.name;
       name = escapeShellArg theme;
-      source = "${style.icons.dark.package}/share/icons/${theme}";
+      source = concat {
+        root = style.icons.dark.package;
+        stem = ["share" "icons" theme];
+      };
     };
     light = rec {
       theme = style.icons.light.name;
@@ -613,8 +616,8 @@ in
       xdg = {
         configFile = mergeSafe (with apps; [
           # (mkThemeEntry "DankMaterialShell/themes" dms.theme)
-          (mkThemeEntry "matugen/dms/configs" foot.theme.mutagen.source)
-          # (with apps.foot.theme; {"${target}" = {inherit source;};})
+          # (mkThemeEntry "matugen/dms/configs" foot.theme.mutagen.source)
+          (with apps.foot.theme.mutagen; {"${target}" = {inherit source;};})
           # (mkThemeEntry "matugen/dms/configs" hermes.theme)
         ]);
         dataFile = mergeSafe (mkThemeModals {});
