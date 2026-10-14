@@ -1,5 +1,6 @@
 {
   config,
+  cursorThemes,
   iconThemes,
   lib,
   lix,
@@ -10,7 +11,7 @@
   ...
 }: let
   inherit (lib.hm.dag) entryAfter;
-  inherit (lix.attrsets.access) attrNames getAttr;
+  inherit (lix.attrsets.access) getAttr;
   inherit (lix.attrsets.aggregation) mergeSafe;
   inherit (lix.attrsets.transformation) mapAttrs;
   inherit (lix.filesystem.primitives) concat;
@@ -114,7 +115,7 @@
   };
 
   mkThemeModals = {
-    modes ? attrNames modes,
+    modes ? ["dark" "light"],
     types ? ["icons" "cursors"],
   }: let
     mk = mode: type: let
@@ -160,20 +161,12 @@
     rg = binaries.ripgrep;
   };
 
-  cursors = {
-    dark = rec {
-      name = escapeShellArg theme;
-      theme = "material_dark_cursors";
-      source = "${pkgs.material-cursors}/share/icons/${theme}";
-      size = 32;
-    };
-    light = rec {
-      name = escapeShellArg theme;
-      theme = "catppuccin-latte-mauve-cursors";
-      source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${theme}";
-      size = 24;
-    };
-  };
+  cursors = mapAttrs (_: resolved: rec {
+    theme = resolved.name;
+    name = escapeShellArg theme;
+    source = "${resolved.package}/share/icons/${theme}";
+    inherit (resolved) size;
+  }) cursorThemes;
 
   icons = {
     dark = rec {
@@ -503,7 +496,7 @@ in
       };
 
       home = {
-        packages = [pkgs.material-cursors pkgs.catppuccin-cursors.latteMauve];
+        packages = [cursorThemes.dark.package cursorThemes.light.package];
         sessionVariables = {
           # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
           QS_ICON_THEME = icons.dark.theme;

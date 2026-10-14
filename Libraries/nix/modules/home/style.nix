@@ -51,6 +51,20 @@
         or host.style.icons.light
         or "candy-icons";
     };
+    cursors = {
+      dark =
+        user.theme.modes.dark.cursor
+        or user.style.cursors.dark
+        or host.theme.modes.dark.cursor
+        or host.style.cursors.dark
+        or "material-cursors";
+      light =
+        user.theme.modes.light.cursor
+        or user.style.cursors.light
+        or host.theme.modes.light.cursor
+        or host.style.cursors.light
+        or "catppuccin-cursors";
+    };
     opacity = {
       terminal = {
         light =
@@ -76,6 +90,7 @@
       flavor
       catppuccin
       icons
+      cursors
       opacity
       ;
   };

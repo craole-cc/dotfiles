@@ -28,6 +28,11 @@
       name = "Buuf";
       package = buufIcons;
     }
+    else if isIn requested ["candy-icons" "candy"]
+    then {
+      name = "candy-icons";
+      package = pkgs.candy-icons;
+    }
     else
       mkOne {
         inherit pkgs polarity;
