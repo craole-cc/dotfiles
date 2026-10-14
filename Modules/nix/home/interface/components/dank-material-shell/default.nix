@@ -1,7 +1,5 @@
 {
   config,
-  cursorThemes,
-  iconThemes,
   lib,
   lix,
   user,
@@ -34,6 +32,7 @@
   inherit (context) cfg ctx;
 
   configHome = config.xdg.configHome or "${user.home}/.config";
+  themes = config.themes;
 
   # TODO: Resolve in the schema so we get user > host > default
   inherit (user.theme) palettes modes;
@@ -166,23 +165,23 @@
     name = escapeShellArg theme;
     source = "${resolved.package}/share/icons/${theme}";
     inherit (resolved) size;
-  }) cursorThemes;
+  }) themes.cursors;
 
   icons = {
     dark = rec {
-      theme = iconThemes.dark.name;
+      theme = themes.icons.dark.name;
       name = escapeShellArg theme;
       source = concat {
-        root = iconThemes.dark.package;
+        root = themes.icons.dark.package;
         stem = ["share" "icons" theme];
       };
     };
     light = rec {
-      theme = iconThemes.light.name;
+      theme = themes.icons.light.name;
       name = escapeShellArg theme;
-      source = "${iconThemes.light.package}/share/icons/${theme}";
+      source = "${themes.icons.light.package}/share/icons/${theme}";
     };
-    resolved = iconThemes.dark;
+    resolved = themes.icons.dark;
   };
 
   apps = {
@@ -496,7 +495,7 @@ in
       };
 
       home = {
-        packages = [cursorThemes.dark.package cursorThemes.light.package];
+        packages = [themes.cursors.dark.package themes.cursors.light.package];
         sessionVariables = {
           # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
           QS_ICON_THEME = icons.dark.theme;

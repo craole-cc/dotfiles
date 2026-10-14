@@ -6,7 +6,10 @@
   ...
 }: let
   inherit (lix.lists.predicates) isIn;
+  inherit (lix.options.construction) mkOption;
   inherit (lix.styles.icons) mkOne;
+  inherit (lix.styles.icons.types.icon) home;
+  inherit (lix.types.combinators) attrsOf;
 
   buufIcons = pkgs.stdenvNoCC.mkDerivation {
     pname = "buuf-icons";
@@ -39,7 +42,13 @@
         icon = requested;
       };
 in {
-  _module.args.iconThemes = {
+  options.themes.icons = mkOption {
+    type = attrsOf home;
+    default = {};
+    description = "Resolved icon themes for each appearance mode";
+  };
+
+  config.themes.icons = {
     dark = resolveIcon "dark" style.icons.dark;
     light = resolveIcon "light" style.icons.light;
   };
