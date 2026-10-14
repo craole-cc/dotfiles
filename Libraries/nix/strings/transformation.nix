@@ -16,6 +16,7 @@
       toSnake
       toTitle
       toUpper'
+      stripHash
       trim'
       toEnv
       toEnvVar
@@ -97,6 +98,8 @@
   };
 
   _normalizeSymbols = text: _symbolAliases.${text} or (replaceStrings ["++" "#" "."] ["p" "sharp" "-"] text);
+
+  stripHash = removePrefix "#";
 
   /**
   Convert a string or list of strings to lower case.

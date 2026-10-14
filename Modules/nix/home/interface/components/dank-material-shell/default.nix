@@ -1,17 +1,27 @@
 {
   config,
-  inputs,
   lib,
   lix,
+  user,
+  inputs,
   pkgs,
   style,
   ...
 }: let
   inherit (lib.hm.dag) entryAfter;
+  inherit (lix.attrsets.access) attrNames getAttr;
+  inherit (lix.attrsets.aggregation) mergeSafe;
+  inherit (lix.attrsets.transformation) mapAttrs;
+  inherit (lix.filesystem.primitives) concat;
+  inherit (lix.lists.aggregation) concatMap;
+  inherit (lix.lists.transformation) imap0;
   inherit (lix.modules.construction) mkConfig mkContext mkForce;
   inherit (lix.options.construction) mkEnable mkOption;
-  inherit (lix.strings.transformation) escapeShellArg;
-  inherit (pkgs) coreutils dms-shell glib gnugrep gnused jq procps quickshell;
+  inherit (lix.sources.packages) pkgsFrom;
+  inherit (lix.strings.transformation) concatStringsSep escapeShellArg stripHash;
+  inherit (lix.styles.icons.types) icon;
+  inherit (pkgs) writeText writeShellScript;
+  gds = pkgs.gsettings-desktop-schemas;
 
   context = mkContext {
     inherit config;
@@ -21,239 +31,555 @@
   };
   inherit (context) cfg ctx;
 
-  buufIcons = pkgs.stdenvNoCC.mkDerivation {
-    pname = "buuf-icons";
-    version = "unstable-2026-10-12";
-    src = inputs.buuf-icons;
-    dontConfigure = true;
-    dontBuild = true;
-    installPhase = ''
-      runHook preInstall
-      mkdir -p "$out/share/icons/Buuf"
-      cp -R "$src"/. "$out/share/icons/Buuf/"
-      runHook postInstall
-    '';
+  configHome = config.xdg.configHome or "${user.home}/.config";
+
+  palettes = rec {
+    catppuccin = {
+      frappe = rec {
+        name = "Catppuccin Frappé";
+        variant = "dark";
+        description = "Soothing pastel theme, the low-contrast dark flavor.";
+        author = "Catppuccin";
+        license = "MIT";
+        source = "https://github.com/catppuccin/catppuccin";
+        colors = {
+          rosewater = "#f2d5cf";
+          flamingo = "#eebebe";
+          pink = "#f4b8e4";
+          mauve = "#ca9ee6";
+          red = "#e78284";
+          maroon = "#ea999c";
+          peach = "#ef9f76";
+          yellow = "#e5c890";
+          green = "#a6d189";
+          teal = "#81c8be";
+          sky = "#99d1db";
+          sapphire = "#85c1dc";
+          blue = "#8caaee";
+          lavender = "#babbf1";
+          text = "#c6d0f5";
+          subtext1 = "#b5bfe2";
+          subtext0 = "#a5adce";
+          overlay2 = "#949cbb";
+          overlay1 = "#838ba7";
+          overlay0 = "#737994";
+          surface2 = "#626880";
+          surface1 = "#51576d";
+          surface0 = "#414559";
+          base = "#303446";
+          mantle = "#292c3c";
+          crust = "#232634";
+        };
+
+        background = colors.base;
+        foreground = colors.text;
+        muted = colors.subtext0;
+        surface = colors.surface1;
+        accent = colors.mauve;
+
+        ansi = {
+          regular = {
+            black = "surface1";
+            red = "red";
+            green = "green";
+            yellow = "yellow";
+            blue = "blue";
+            magenta = "mauve";
+            cyan = "teal";
+            white = "subtext1";
+          };
+          bright = {
+            black = "surface2";
+            white = "text";
+          };
+        };
+      };
+      latte = rec {
+        name = "Catppuccin Latte";
+        variant = "light";
+        description = "Soothing pastel theme, the light flavor.";
+        author = "Catppuccin";
+        license = "MIT";
+        source = "https://github.com/catppuccin/catppuccin";
+        colors = {
+          rosewater = "#dc8a78";
+          flamingo = "#dd7878";
+          pink = "#ea76cb";
+          mauve = "#8839ef";
+          red = "#d20f39";
+          maroon = "#e64553";
+          peach = "#fe640b";
+          yellow = "#df8e1d";
+          green = "#40a02b";
+          teal = "#179299";
+          sky = "#04a5e5";
+          sapphire = "#209fb5";
+          blue = "#1e66f5";
+          lavender = "#7287fd";
+          text = "#4c4f69";
+          subtext1 = "#5c5f77";
+          subtext0 = "#6c6f85";
+          overlay2 = "#7c7f93";
+          overlay1 = "#8c8fa1";
+          overlay0 = "#9ca0b0";
+          surface2 = "#acb0be";
+          surface1 = "#bcc0cc";
+          surface0 = "#ccd0da";
+          base = "#eff1f5";
+          mantle = "#e6e9ef";
+          crust = "#dce0e8";
+        };
+
+        background = colors.base;
+        foreground = colors.text;
+        muted = colors.subtext0;
+        surface = colors.surface2;
+        accent = colors.teal;
+
+        ansi = {
+          regular = {
+            black = "surface2";
+            red = "red";
+            green = "green";
+            yellow = "yellow";
+            blue = "blue";
+            magenta = "pink";
+            cyan = "teal";
+            white = "subtext1";
+          };
+          bright = {
+            black = "overlay0";
+            white = "text";
+          };
+        };
+      };
+    };
+    dark = catppuccin.frappe;
+    light = catppuccin.latte;
   };
-  darkIconTheme = "Buuf";
-  lightIconTheme = "candy-icons";
-  darkCursorTheme = "material_dark_cursors";
-  lightCursorTheme = "catppuccin-latte-mauve-cursors";
-  cursorSize = 24;
-  resolvedIcons = {
-    name = darkIconTheme;
-    package = buufIcons;
+
+  modes = {
+    dark = palettes.catppuccin.frappe;
+    light = palettes.catppuccin.latte;
   };
 
-  darkIcons = escapeShellArg darkIconTheme;
-  lightIcons = escapeShellArg lightIconTheme;
-  themeName = "dotdots-catppuccin";
-  themeFile = ./dms-catppuccin.json;
-  themePath = "${config.xdg.configHome}/DankMaterialShell/themes/${themeName}.json";
-  footMatugenTemplate = ./foot-matugen.ini;
-  footMatugenConfig = pkgs.writeText "dotdots-foot-matugen.toml" ''
-    [templates.dotdots_foot]
-    input_path = '${footMatugenTemplate}'
-    output_path = '${config.xdg.configHome}/foot/dank-colors.ini'
+  # Shared by every terminal: names -> hex, roles -> terminal concepts.
+  # Colors keep their "#"; each app decides how to write them.
+  mkTerminalPalette = palette: let
+    resolve = mapAttrs (slot: colorName: palette.colors.${colorName});
+    regular = resolve palette.ansi.regular;
+    bright = regular // resolve palette.ansi.bright;
+    ordered = slots:
+      map (slot: slots.${slot}) [
+        "black"
+        "red"
+        "green"
+        "yellow"
+        "blue"
+        "magenta"
+        "cyan"
+        "white"
+      ];
+  in {
+    inherit (palette) name variant foreground background;
+    selectionBackground = palette.surface;
+    cursor = palette.accent;
+    regular = ordered regular; # list of 8, ANSI order
+    bright = ordered bright; # list of 8, ANSI order
+  };
+
+  mkFootPalette = palette: let
+    terminal = mkTerminalPalette palette;
+    hex = stripHash;
+  in ''
+    # ${terminal.name}
+    [colors-${terminal.variant}]
+    foreground=${hex terminal.foreground}
+    background=${hex terminal.background}
+    selection-foreground=${hex terminal.foreground}
+    selection-background=${hex terminal.selectionBackground}
+    cursor=${hex terminal.background} ${hex terminal.cursor}
+
+    ${concatStringsSep "\n" (
+      imap0 (index: color: "regular${toString index}=${hex color}") terminal.regular
+      ++ imap0 (index: color: "bright${toString index}=${hex color}") terminal.bright
+    )}
   '';
-  hermesMatugenTemplate = ./hermes-matugen.yaml;
-  hermesMatugenConfig = pkgs.writeText "dotdots-hermes-matugen.toml" ''
-    [templates.dotdots_hermes]
-    input_path = '${hermesMatugenTemplate}'
-    output_path = '${config.home.homeDirectory}/.hermes/skins/dms-wallpaper.yaml'
+
+  # kitty: keeps "#", colors are color0..color15
+  mkKittyPalette = palette: let
+    terminal = mkTerminalPalette palette;
+  in ''
+    # ${terminal.name}
+    foreground ${terminal.foreground}
+    background ${terminal.background}
+    selection_foreground ${terminal.foreground}
+    selection_background ${terminal.selectionBackground}
+    cursor ${terminal.cursor}
+
+    ${concatStringsSep "\n" (
+      imap0 (index: color: "color${toString index} ${color}") (terminal.regular ++ terminal.bright)
+    )}
   '';
-  footFallback = pkgs.writeText "dms-foot-fallback.ini" ''
-    [colors-dark]
-    foreground=c6d0f5
-    background=303446
-    selection-foreground=c6d0f5
-    selection-background=51576d
-    cursor=303446 ca9ee6
 
-    regular0=51576d
-    regular1=e78284
-    regular2=a6d189
-    regular3=e5c890
-    regular4=8caaee
-    regular5=ca9ee6
-    regular6=81c8be
-    regular7=b5bfe2
-    bright0=626880
-    bright1=e78284
-    bright2=a6d189
-    bright3=e5c890
-    bright4=8caaee
-    bright5=ca9ee6
-    bright6=81c8be
-    bright7=c6d0f5
-
-    [colors-light]
-    foreground=4c4f69
-    background=eff1f5
-    selection-foreground=4c4f69
-    selection-background=acb0be
-    cursor=eff1f5 dc8a78
-
-    regular0=acb0be
-    regular1=d20f39
-    regular2=40a02b
-    regular3=df8e1d
-    regular4=1e66f5
-    regular5=ea76cb
-    regular6=179299
-    regular7=5c5f77
-    bright0=9ca0b0
-    bright1=d20f39
-    bright2=40a02b
-    bright3=df8e1d
-    bright4=1e66f5
-    bright5=ea76cb
-    bright6=179299
-    bright7=4c4f69
+  # ghostty: keeps "#", palette = index=color
+  mkGhosttyPalette = palette: let
+    terminal = mkTerminalPalette palette;
+  in ''
+    # ${terminal.name}
+    foreground = ${terminal.foreground}
+    background = ${terminal.background}
+    selection-foreground = ${terminal.foreground}
+    selection-background = ${terminal.selectionBackground}
+    cursor-color = ${terminal.cursor}
+    ${concatStringsSep "\n" (
+      imap0 (index: color: "palette = ${toString index}=${color}") (terminal.regular ++ terminal.bright)
+    )}
   '';
-  ghosttyOpacityFallback = pkgs.writeText "dotdots-ghostty-opacity" ''
-    background-opacity = ${toString style.opacity.terminal.dark}
-  '';
-  kittyOpacityFallback = pkgs.writeText "dotdots-kitty-opacity.conf" ''
-    background_opacity ${toString style.opacity.terminal.dark}
-  '';
-  syncDmsAppearance = pkgs.writeShellScript "sync-dms-desktop-appearance" ''
-    mode="$(${dms-shell}/bin/dms ipc call theme getMode 2>/dev/null || true)"
-    settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
 
-    case "$mode" in
-      dark)
-        cursor=${escapeShellArg darkCursorTheme}
-        icons=${escapeShellArg darkIconTheme}
-        color_scheme=prefer-dark
-        terminal_opacity=${toString style.opacity.terminal.dark}
-        btop_theme=adwaita-dark
-        foot_signal=USR1
-        ;;
-      light)
-        cursor=${escapeShellArg lightCursorTheme}
-        icons=${escapeShellArg lightIconTheme}
-        color_scheme=prefer-light
-        terminal_opacity=${toString style.opacity.terminal.light}
-        btop_theme=adwaita
-        foot_signal=USR2
-        ;;
-      *) exit 0 ;;
-    esac
+  mkThemeEntry = home: spec: {
+    "${home}/${spec.file}".source = spec.path;
+  };
 
-    # DMS regenerates Hyprland's cursor.lua from this mutable setting.
-    # Only write when it differs, so the settings path cannot retrigger forever.
-    if [ -f "$settings" ] && [ ! -L "$settings" ] &&
-       ${jq}/bin/jq -e --arg cursor "$cursor" --argjson size ${toString cursorSize} \
-         '.cursorSettings.theme != $cursor or .cursorSettings.size != $size' \
-         "$settings" >/dev/null; then
-      if tmp="$(${coreutils}/bin/mktemp "$settings.tmp.XXXXXX")"; then
-        trap '${coreutils}/bin/rm -f "$tmp"' EXIT
-        if ${jq}/bin/jq --arg cursor "$cursor" --argjson size ${toString cursorSize} \
-          '.cursorSettings = ((.cursorSettings // {}) + {theme: $cursor, size: $size})' \
-          "$settings" > "$tmp"; then
-          ${coreutils}/bin/chmod --reference="$settings" "$tmp"
-          ${coreutils}/bin/mv -f "$tmp" "$settings"
-        fi
-        trap - EXIT
-        ${coreutils}/bin/rm -f "$tmp"
-      fi
-    fi
+  mkThemeModals = {
+    modes ? attrNames modes,
+    types ? ["icons" "cursors"],
+  }: let
+    mk = mode: type: let
+      selected = getAttr mode (getAttr type {inherit icons cursors;});
+    in {"icons/${selected.theme}" = {inherit (selected) source;};};
+  in
+    concatMap (type: map (mode: mk mode type) modes) types;
 
-    xresources="$HOME/.Xresources"
-    if [ ! -L "$xresources" ] && { [ ! -e "$xresources" ] || [ -w "$xresources" ]; } &&
-       { [ ! -f "$xresources" ] ||
-         ! ${gnugrep}/bin/grep -Fxq "Xcursor.theme: $cursor" "$xresources" ||
-         ! ${gnugrep}/bin/grep -Fxq 'Xcursor.size: ${toString cursorSize}' "$xresources"; }; then
-      if tmp="$(${coreutils}/bin/mktemp "$xresources.tmp.XXXXXX")"; then
-        trap '${coreutils}/bin/rm -f "$tmp"' EXIT
-        if [ ! -f "$xresources" ] ||
-           ${jq}/bin/jq -Rr 'select(test("^[[:space:]]*Xcursor\\.(theme|size):") | not)' \
-             "$xresources" > "$tmp"; then
-          printf 'Xcursor.theme: %s\nXcursor.size: %s\n' "$cursor" ${toString cursorSize} >> "$tmp"
-          if [ -f "$xresources" ]; then
-            ${coreutils}/bin/chmod --reference="$xresources" "$tmp"
+  tools = pkgsFrom {
+    inherit inputs pkgs;
+    sources = {
+      coreutils = null;
+      dms-shell = null;
+      glib = null;
+      jaq = null;
+      procps = null;
+      ripgrep = null;
+      sd = null;
+    };
+    required = true;
+  };
+
+  bins = let
+    inherit (tools) binaries;
+    coreutils = "${tools.coreutils.paths.bin}";
+    glib = "${tools.glib.paths.bin}";
+  in rec {
+    inherit (binaries) jaq sd;
+    cat = "${coreutils}/cat";
+    cmp = "${coreutils}/cmp";
+    dirname = "${coreutils}/dirname";
+    dms = binaries.dms-shell;
+    dmsCall = "${dms} ipc call";
+    dmsSet = "${dmsCall} settings set";
+    gCall = "${glib}/gdbus call";
+    gSet = "${gsettings} set";
+    gSetDI = "${gSet} org.gnome.desktop.interface";
+    gsettings = "${glib}/gsettings";
+    install = "${coreutils}/install";
+    mkdir = "${coreutils}/mkdir";
+    mktemp = "${coreutils}/mktemp";
+    pkill = binaries.procps;
+    rg = binaries.ripgrep;
+  };
+
+  cursors = {
+    dark = rec {
+      name = escapeShellArg theme;
+      theme = "material_dark_cursors";
+      source = "${pkgs.material-cursors}/share/icons/${theme}";
+      size = 32;
+    };
+    light = rec {
+      name = escapeShellArg theme;
+      theme = "catppuccin-latte-mauve-cursors";
+      source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${theme}";
+      size = 24;
+    };
+  };
+
+  icons = {
+    dark = rec {
+      theme = style.icons.dark.name;
+      name = escapeShellArg theme;
+      source = "${style.icons.dark.package}/share/icons/${theme}";
+    };
+    light = rec {
+      theme = style.icons.light.name;
+      name = escapeShellArg theme;
+      source = "${pkgs.candy-icons}/share/icons/${theme}";
+    };
+    resolved = style.icons.dark;
+  };
+
+  apps = {
+    catppuccin = let
+      name = "catppuccin";
+      theme = {
+      };
+      path = concat {
+        root = configHome;
+        stem = ["DankMaterialShell" "themes" "${name}.json"];
+      };
+      source = ./dms-catppuccin.json;
+      pathStr = escapeShellArg path;
+    in {inherit name path pathStr source;};
+
+    foot = let
+      name = "foot";
+      path = concat {
+        root = configHome;
+        stem = [name "dank-colors.ini"];
+      };
+      theme = {
+        mutagen = let
+          tag = "${name}-matugen-theme";
+          file = "${tag}.toml";
+        in {
+          name = tag;
+          target = concat {
+            root = configHome;
+            stem = ["matugen" "dms" "configs" file];
+          };
+          source = writeText file ''
+            [templates.${tag}]
+            input_path = '${./${tag}.ini}'
+            output_path = '${path}'
+          '';
+        };
+
+        fallback = let
+          tag = "${name}-fallback-theme";
+          file = "${tag}.ini";
+        in {
+          name = tag;
+          target = path;
+          source = writeText file (concatStringsSep "\n" (
+            map mkFootPalette (with modes; [dark light])
+          ));
+        };
+      };
+    in {inherit theme;};
+
+    hermes = let
+      name = "hermes";
+      home = ".hermes";
+    in {
+      source = let
+        tag = "${name}-matugen";
+        template = ./${tag}.yaml;
+      in
+        writeText "dotdots-${tag}.toml" ''
+          [templates.dotdots_${name}]
+          input_path = '${template}'
+          output_path = '${concat {
+            root = config.home.homeDirectory;
+            stem = [home "skins" "dms-wallpaper.yaml"];
+          }}'
+          # output_path = '${config.home.homeDirectory}/.hermes/skins/dms-wallpaper.yaml'
+        '';
+    };
+
+    ghostty = {
+      opacity = {
+        fallback = writeText "dotdots-ghostty-opacity" ''
+          background-opacity = ${toString style.opacity.terminal.dark}
+        '';
+      };
+    };
+
+    kitty = {
+      opacity = {
+        fallback = writeText "dotdots-kitty-opacity.conf" ''
+          background_opacity ${toString style.opacity.terminal.dark}
+        '';
+      };
+    };
+
+    dms = {
+      theme = apps.catppuccin; #TODO: This needs to be schema driven
+      sync = writeShellScript "sync-dms-desktop-appearance" ''
+        mode="$(${bins.dmsCall} theme getMode 2>/dev/null || true)"
+        settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
+
+        case "$mode" in
+          dark)
+            cursor=${cursors.dark.name}
+            cursor_size=${toString cursors.dark.size}
+            icons=${icons.dark.name}
+            color_scheme=prefer-dark
+            terminal_opacity=${toString style.opacity.terminal.dark}
+            btop_theme=adwaita-dark
+            foot_signal=USR1
+            ;;
+          light)
+            cursor=${cursors.light.name}
+            cursor_size=${toString cursors.light.size}
+            icons=${icons.light.name}
+            color_scheme=prefer-light
+            terminal_opacity=${toString style.opacity.terminal.light}
+            btop_theme=adwaita
+            foot_signal=USR2
+            ;;
+          *) exit 0 ;;
+        esac
+
+        # DMS regenerates Hyprland's cursor.lua from this mutable setting.
+        # Only write when it differs, so the settings path cannot retrigger forever.
+        if [ -f "$settings" ] && [ ! -L "$settings" ] &&
+          ${bins.jaq} -e \
+            --arg cursor "$cursor" \
+            --argjson size "$cursor_size" \
+            '.cursorSettings.theme != $cursor or .cursorSettings.size != $size' \
+            "$settings" >/dev/null; then
+
+          if tmp="$(${bins.mktemp} "$settings.tmp.XXXXXX")"; then
+            trap '${bins.rm} -f "$tmp"' EXIT
+            if
+              ${bins.jaq} \
+                --arg cursor "$cursor" \
+                --argjson size "$cursor_size" \
+                '.cursorSettings = ((.cursorSettings // {}) + {theme: $cursor, size: $size})' \
+                "$settings" > "$tmp"
+            then
+              ${bins.chmod} --reference="$settings" "$tmp"
+              ${bins.mv} -f "$tmp" "$settings"
+            fi
+            trap - EXIT
+            ${bins.rm} -f "$tmp"
           fi
-          ${coreutils}/bin/mv -f "$tmp" "$xresources"
-          command -v xrdb >/dev/null 2>&1 && xrdb -merge "$xresources" >/dev/null 2>&1 || true
         fi
-        trap - EXIT
-        ${coreutils}/bin/rm -f "$tmp"
-      fi
-    fi
 
-    export GSETTINGS_SCHEMA_DIR="${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas"
-    ${glib}/bin/gsettings set org.gnome.desktop.interface color-scheme "$color_scheme" || true
-    ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-theme "$cursor" || true
-    ${glib}/bin/gsettings set org.gnome.desktop.interface cursor-size ${toString cursorSize} || true
-    ${glib}/bin/gsettings set org.gnome.desktop.interface icon-theme "$icons" || true
-    command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" ${toString cursorSize} >/dev/null 2>&1 || true
+        xresources="$HOME/.Xresources"
+        xresources_writable=false
+        if [ -L "$xresources" ]; then
+          :
+        elif [ -e "$xresources" ] && [ -w "$xresources" ]; then
+            xresources_writable=true
+        else
+          :
+        fi
 
-    write_opacity_file() {
-      local target="$1" setting="$2" tmp
-      if [ -L "$target" ]; then
-        echo "Refusing to replace managed terminal opacity symlink: $target" >&2
-        return 1
-      fi
-      if [ -f "$target" ] && [ "$(${coreutils}/bin/cat "$target")" = "$setting" ]; then
-        return 1
-      fi
-      ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$target")"
-      tmp="$(${coreutils}/bin/mktemp "$target.tmp.XXXXXX")" || return 1
-      printf '%s\n' "$setting" > "$tmp"
-      ${coreutils}/bin/chmod 0644 "$tmp"
-      ${coreutils}/bin/mv -f "$tmp" "$target"
-    }
-
-    ghostty_opacity=${escapeShellArg "${config.xdg.configHome}/ghostty/dotdots-opacity"}
-    kitty_opacity=${escapeShellArg "${config.xdg.configHome}/kitty/dotdots-opacity.conf"}
-    if write_opacity_file "$ghostty_opacity" "background-opacity = $terminal_opacity"; then
-      ${glib}/bin/gdbus call --session --dest com.mitchellh.ghostty \
-        --object-path /com/mitchellh/ghostty \
-        --method org.gtk.Actions.Activate reload-config '[]' '{}' >/dev/null 2>&1 || true
-    fi
-    if write_opacity_file "$kitty_opacity" "background_opacity $terminal_opacity"; then
-      ${procps}/bin/pkill -USR1 -x kitty || true
-    fi
-
-    btop_config=${escapeShellArg "${config.xdg.configHome}/btop/btop.conf"}
-    if [ -L "$btop_config" ]; then
-      echo "Refusing to replace managed btop config symlink: $btop_config" >&2
-    else
-      ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$btop_config")"
-      if tmp="$(${coreutils}/bin/mktemp "$btop_config.tmp.XXXXXX")"; then
-        if [ -f "$btop_config" ]; then
-          if ! ${gnused}/bin/sed -E \
-            -e "s/^[[:space:]]*color_theme[[:space:]]*=.*/color_theme = \"$btop_theme\"/" \
-            -e 's/^[[:space:]]*theme_background[[:space:]]*=.*/theme_background = false/' \
-            "$btop_config" > "$tmp"; then
-            ${coreutils}/bin/rm -f "$tmp"
-            tmp=
+        xresources_needs_update=false
+        if [ -f "$xresources" ]; then
+          if ${bins.rg} -Fxq "Xcursor.theme: $cursor" "$xresources" &&
+            ${bins.rg} -Fxq "Xcursor.size: $cursor_size" "$xresources"; then
+            :
           else
-            ${gnugrep}/bin/grep -Eq '^[[:space:]]*color_theme[[:space:]]*=' "$btop_config" ||
-              printf 'color_theme = "%s"\n' "$btop_theme" >> "$tmp"
-            ${gnugrep}/bin/grep -Eq '^[[:space:]]*theme_background[[:space:]]*=' "$btop_config" ||
-              printf 'theme_background = false\n' >> "$tmp"
-            ${coreutils}/bin/chmod --reference="$btop_config" "$tmp"
+            xresources_needs_update=true
           fi
         else
-          printf 'color_theme = "%s"\ntheme_background = false\n' "$btop_theme" > "$tmp"
-          ${coreutils}/bin/chmod 0644 "$tmp"
+          xresources_needs_update=true
         fi
-        if [ -n "$tmp" ]; then
-          if [ ! -f "$btop_config" ] || ! ${coreutils}/bin/cmp -s "$tmp" "$btop_config"; then
-            if ${coreutils}/bin/mv -f "$tmp" "$btop_config"; then
-              ${procps}/bin/pkill -USR2 -x btop || true
+
+        if [ "$xresources_writable" = true ] && [ "$xresources_needs_update" = true ]; then
+          if tmp="$(${bins.mktemp} "$xresources.tmp.XXXXXX")"; then
+            trap '${bins.rm} -f "$tmp"' EXIT
+            xresources_filtered=true
+            if [ -f "$xresources" ]; then
+              if ${bins.jaq} -Rr 'select(test("^[[:space:]]*Xcursor\\.(theme|size):") | not)' \
+                  "$xresources" > "$tmp"; then
+                :
+              else
+                xresources_filtered=false
+              fi
             else
-              ${coreutils}/bin/rm -f "$tmp"
+              : > "$tmp"
             fi
-          else
-            ${coreutils}/bin/rm -f "$tmp"
+            if [ "$xresources_filtered" = true ]; then
+              printf 'Xcursor.theme: %s\nXcursor.size: %s\n' "$cursor" "$cursor_size" >> "$tmp"
+              if [ -f "$xresources" ]; then
+                ${bins.chmod} --reference="$xresources" "$tmp"
+              fi
+              ${bins.mv} -f "$tmp" "$xresources"
+              command -v xrdb >/dev/null 2>&1 && xrdb -merge "$xresources" >/dev/null 2>&1 || true
+            fi
+            trap - EXIT
+            ${bins.rm} -f "$tmp"
           fi
         fi
-      fi
-    fi
-    ${procps}/bin/pkill -"$foot_signal" -x foot || true
-  '';
+
+        export GSETTINGS_SCHEMA_DIR="${gds}/share/gsettings-schemas/${gds.name}/glib-2.0/schemas"
+        ${bins.gSetDI} color-scheme "$color_scheme" || true
+        ${bins.gSetDI} cursor-theme "$cursor" || true
+        ${bins.gSetDI} cursor-size "$cursor_size" || true
+        ${bins.gSetDI} icon-theme "$icons" || true
+        command -v hyprctl >/dev/null 2>&1 && hyprctl setcursor "$cursor" "$cursor_size" >/dev/null 2>&1 || true
+
+        write_opacity_file() {
+          local target="$1" setting="$2" tmp
+          if [ -L "$target" ]; then
+            echo "Refusing to replace managed terminal opacity symlink: $target" >&2
+            return 1
+          fi
+          if [ -f "$target" ] && [ "$(${bins.cat} "$target")" = "$setting" ]; then
+            return 1
+          fi
+          ${bins.mkdir} -p "$(${bins.dirname} "$target")"
+          tmp="$(${bins.mktemp} "$target.tmp.XXXXXX")" || return 1
+          printf '%s\n' "$setting" > "$tmp"
+          ${bins.chmod} 0644 "$tmp"
+          ${bins.mv} -f "$tmp" "$target"
+        }
+
+        ghostty_opacity=${escapeShellArg "${config.xdg.configHome}/ghostty/dotdots-opacity"}
+        kitty_opacity=${escapeShellArg "${config.xdg.configHome}/kitty/dotdots-opacity.conf"}
+        if write_opacity_file "$ghostty_opacity" "background-opacity = $terminal_opacity"; then
+          ${bins.gCall} \
+            --session \
+            --dest com.mitchellh.ghostty \
+            --object-path /com/mitchellh/ghostty \
+            --method org.gtk.Actions.Activate reload-config '[]' '{}' >/dev/null 2>&1 || true
+        fi
+        if write_opacity_file "$kitty_opacity" "background_opacity $terminal_opacity"; then
+          ${bins.pkill} -USR1 -x kitty || true
+        fi
+
+        btop_config=${escapeShellArg "${config.xdg.configHome}/btop/btop.conf"}
+        if [ -L "$btop_config" ]; then
+          echo "Refusing to replace managed btop config symlink: $btop_config" >&2
+        else
+          ${bins.mkdir} -p "$(${bins.dirname} "$btop_config")"
+          if tmp="$(${bins.mktemp} "$btop_config.tmp.XXXXXX")"; then
+            if [ -f "$btop_config" ]; then
+              if ! ${bins.cat} "$btop_config" |
+                ${bins.sd} '^\\s*color_theme\\s*=.*' "color_theme = \"$btop_theme\"" |
+                ${bins.sd} '^\\s*theme_background\\s*=.*' 'theme_background = false' > "$tmp"; then
+                ${bins.rm} -f "$tmp"
+                tmp=
+              else
+                ${bins.rg} -q '^[[:space:]]*color_theme[[:space:]]*=' "$btop_config" ||
+                  printf 'color_theme = "%s"\n' "$btop_theme" >> "$tmp"
+                ${bins.rg} -q '^[[:space:]]*theme_background[[:space:]]*=' "$btop_config" ||
+                  printf 'theme_background = false\n' >> "$tmp"
+                ${bins.chmod} --reference="$btop_config" "$tmp"
+              fi
+            else
+              printf 'color_theme = "%s"\ntheme_background = false\n' "$btop_theme" > "$tmp"
+              ${bins.chmod} 0644 "$tmp"
+            fi
+            if [ -n "$tmp" ]; then
+              if [ ! -f "$btop_config" ] || ! ${bins.cmp} -s "$tmp" "$btop_config"; then
+                if ${bins.mv} -f "$tmp" "$btop_config"; then
+                  ${bins.pkill} -USR2 -x btop || true
+                else
+                  ${bins.rm} -f "$tmp"
+                fi
+              else
+                ${bins.rm} -f "$tmp"
+              fi
+            fi
+          fi
+        fi
+        ${bins.pkill} -"$foot_signal" -x foot || true
+      '';
+    };
+  };
 in
   mkConfig {
     inherit context;
@@ -261,11 +587,12 @@ in
       enable = mkEnable ({inherit context;} // ctx.wantsDmsShell);
       icons = mkOption {
         description = "Resolved DMS desktop icon contract";
-        default = resolvedIcons;
-        type = lix.styles.icons.types.icon.home;
+        default = icons.resolved;
+        type = icon.home;
         readOnly = true;
       };
     };
+
     outputs = {
       programs.dank-material-shell = {
         inherit (cfg) enable;
@@ -274,8 +601,8 @@ in
         # pinned package closure is expensive to rebuild locally. Victus tracks
         # nixos-unstable, where both packages are available from nixpkgs and can
         # normally be substituted from cache.nixos.org.
-        package = dms-shell;
-        quickshell.package = quickshell;
+        inherit (tools.dms-shell) package;
+        quickshell = {inherit (tools.quickshell) package;};
 
         systemd = {
           enable = true;
@@ -284,91 +611,87 @@ in
       };
 
       xdg = {
-        configFile = {
-          "DankMaterialShell/themes/${themeName}.json".source = themeFile;
-          "matugen/dms/configs/dotdots-foot.toml".source = footMatugenConfig;
-          "matugen/dms/configs/dotdots-hermes.toml".source = hermesMatugenConfig;
-        };
-        dataFile = {
-          "icons/${darkIconTheme}".source = "${buufIcons}/share/icons/${darkIconTheme}";
-          "icons/${lightIconTheme}".source = "${pkgs.candy-icons}/share/icons/${lightIconTheme}";
-          "icons/${darkCursorTheme}".source = "${pkgs.material-cursors}/share/icons/${darkCursorTheme}";
-          "icons/${lightCursorTheme}".source = "${pkgs.catppuccin-cursors.latteMauve}/share/icons/${lightCursorTheme}";
-        };
+        configFile = mergeSafe (with apps; [
+          # (mkThemeEntry "DankMaterialShell/themes" dms.theme)
+          (mkThemeEntry "matugen/dms/configs" foot.theme.mutagen.source)
+          # (with apps.foot.theme; {"${target}" = {inherit source;};})
+          # (mkThemeEntry "matugen/dms/configs" hermes.theme)
+        ]);
+        dataFile = mergeSafe (mkThemeModals {});
       };
-
-      home.packages = [
-        pkgs.material-cursors
-        pkgs.catppuccin-cursors.latteMauve
-      ];
 
       gtk = {
         enable = mkForce true;
         iconTheme = mkForce {inherit (cfg.icons) package name;};
       };
 
-      home.sessionVariables.QS_ICON_THEME = darkIconTheme;
-
-      systemd.user = {
-        services.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Apply DMS appearance to desktop and terminals";
-          Unit.StartLimitIntervalSec = 0;
-          Service = {
-            Type = "oneshot";
-            ExecStart = syncDmsAppearance;
-          };
-          Install.WantedBy = ["graphical-session.target"];
+      home = {
+        packages = [style.cursors.dark.package style.cursors.light.package];
+        sessionVariables = {
+          # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
+          QS_ICON_THEME = icons.dark.theme;
         };
 
-        paths.dotdots-foot-dms-theme-reload = {
-          Unit.Description = "Watch DMS appearance settings and terminal palettes";
-          Path = {
-            PathChanged = [
-              "%h/.config/DankMaterialShell/settings.json"
-              "%h/.config/foot/dank-colors.ini"
-              "%h/.config/btop/btop.conf"
-            ];
-          };
-          Install.WantedBy = ["graphical-session.target"];
-        };
-      };
+        activation.configureDmsTheme = entryAfter ["writeBoundary"] ''
+          settings="$HOME/.config/DankMaterialShell/settings.json"
+          foot_theme="$HOME/.config/foot/dank-colors.ini"
+          ghostty_opacity="$HOME/.config/ghostty/dotdots-opacity"
+          kitty_opacity="$HOME/.config/kitty/dotdots-opacity.conf"
+          theme="${apps.dms.theme.pathStr}"
+          dark_icons="${icons.dark.name}"
+          light_icons="${icons.light.name}"
+          tmp="$(${bins.mktemp})"
+          trap '${bins.rm} -f "$tmp"' EXIT
 
-      # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
-      # settings and only assert the declarative dotDots theme selection.
-      home.activation.configureDmsTheme = entryAfter ["writeBoundary"] ''
-        settings="$HOME/.config/DankMaterialShell/settings.json"
-        foot_theme="$HOME/.config/foot/dank-colors.ini"
-        ghostty_opacity="$HOME/.config/ghostty/dotdots-opacity"
-        kitty_opacity="$HOME/.config/kitty/dotdots-opacity.conf"
-        theme=${escapeShellArg themePath}
-        dark_icons=${darkIcons}
-        light_icons=${lightIcons}
-        tmp="$(${coreutils}/bin/mktemp)"
-        trap '${coreutils}/bin/rm -f "$tmp"' EXIT
+          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$settings")"
+          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$foot_theme")"
+          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$ghostty_opacity")"
+          $DRY_RUN_CMD ${bins.mkdir} -p "$(${bins.dirname} "$kitty_opacity")"
+          $DRY_RUN_CMD ${bins.mkdir} -p "$HOME/.hermes/skins"
+          if [ -e "$foot_theme" ]; then :; else
+            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.foot.fallback} "$foot_theme"
+          fi
+          if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
+            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.ghostty.opacity.fallback} "$ghostty_opacity"
+          fi
+          if [ -e "$ghostty_opacity" ] || [ -L "$ghostty_opacity" ]; then :; else
+            $DRY_RUN_CMD ${bins.install} -m 0644 ${apps.kitty.opacity.fallback} "$kitty_opacity"
+          fi
 
-        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$settings")"
-        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$foot_theme")"
-        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$ghostty_opacity")"
-        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$(${coreutils}/bin/dirname "$kitty_opacity")"
-        $DRY_RUN_CMD ${coreutils}/bin/mkdir -p "$HOME/.hermes/skins"
-        if [ ! -e "$foot_theme" ]; then
-          $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${footFallback} "$foot_theme"
-        fi
-        if [ ! -e "$ghostty_opacity" ] && [ ! -L "$ghostty_opacity" ]; then
-          $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${ghosttyOpacityFallback} "$ghostty_opacity"
-        fi
-        if [ ! -e "$kitty_opacity" ] && [ ! -L "$kitty_opacity" ]; then
-          $DRY_RUN_CMD ${coreutils}/bin/install -m 0644 ${kittyOpacityFallback} "$kitty_opacity"
-        fi
+          if [ -L "$settings" ]; then
+            echo "Refusing to replace managed DMS settings symlink: $settings" >&2
+            exit 1
+          fi
 
-        if [ -L "$settings" ]; then
-          echo "Refusing to replace managed DMS settings symlink: $settings" >&2
-          exit 1
-        fi
-
-        if [ -f "$settings" ]; then
-          ${jq}/bin/jq --arg theme "$theme" --arg darkIcons "$dark_icons" --arg lightIcons "$light_icons" '
-            . + {
+          if [ -f "$settings" ]; then
+            ${bins.jaq} \
+              --arg theme "$theme" \
+              --arg darkIcons "$dark_icons" \
+              --arg lightIcons "$light_icons" '
+              . + {
+                currentThemeName: "dynamic",
+                currentThemeCategory: "dynamic",
+                customThemeFile: $theme,
+                matugenScheme: "scheme-smart",
+                matugenContrast: -0.35,
+                screenPreferences: {wallpaper: ["all"]},
+                runDmsMatugenTemplates: true,
+                matugenTemplateGtk: true,
+                matugenTemplateGhostty: true,
+                matugenTemplateFoot: false,
+                matugenTemplateVscode: true,
+                matugenTemplateZed: true,
+                matugenTemplateZenBrowser: true,
+                iconThemeDark: $darkIcons,
+                iconThemeLight: $lightIcons,
+                iconThemePerMode: true
+              }
+            ' "$settings" > "$tmp"
+          else
+            ${bins.jaq} -n \
+              --arg theme "$theme" \
+              --arg darkIcons "$dark_icons" \
+              --arg lightIcons "$light_icons" '{
               currentThemeName: "dynamic",
               currentThemeCategory: "dynamic",
               customThemeFile: $theme,
@@ -385,48 +708,55 @@ in
               iconThemeDark: $darkIcons,
               iconThemeLight: $lightIcons,
               iconThemePerMode: true
-            }
-          ' "$settings" > "$tmp"
-        else
-          ${jq}/bin/jq -n --arg theme "$theme" --arg darkIcons "$dark_icons" --arg lightIcons "$light_icons" '{
-            currentThemeName: "dynamic",
-            currentThemeCategory: "dynamic",
-            customThemeFile: $theme,
-            matugenScheme: "scheme-smart",
-            matugenContrast: -0.35,
-            screenPreferences: {wallpaper: ["all"]},
-            runDmsMatugenTemplates: true,
-            matugenTemplateGtk: true,
-            matugenTemplateGhostty: true,
-            matugenTemplateFoot: false,
-            matugenTemplateVscode: true,
-            matugenTemplateZed: true,
-            matugenTemplateZenBrowser: true,
-            iconThemeDark: $darkIcons,
-            iconThemeLight: $lightIcons,
-            iconThemePerMode: true
-          }' > "$tmp"
-        fi
+            }' > "$tmp"
+          fi
 
-        $DRY_RUN_CMD ${coreutils}/bin/install -m 0600 "$tmp" "$settings"
+          $DRY_RUN_CMD ${bins.install} -m 0600 "$tmp" "$settings"
 
-        # Set the theme category before its name. Selecting the dynamic theme
-        # makes subsequent DMS wallpaper changes drive Matugen regeneration.
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set customThemeFile "$theme" >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenScheme scheme-smart >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenContrast -0.35 >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set runDmsMatugenTemplates true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGtk true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateGhostty true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateFoot false >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateVscode true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZed true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set matugenTemplateZenBrowser true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeDark "$dark_icons" >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemeLight "$light_icons" >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set iconThemePerMode true >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeCategory dynamic >/dev/null 2>&1 || true
-        $DRY_RUN_CMD ${dms-shell}/bin/dms ipc call settings set currentThemeName dynamic >/dev/null 2>&1 || true
-      '';
+          # Set the theme category before its name. Selecting the dynamic theme
+          # makes subsequent DMS wallpaper changes drive Matugen regeneration.
+          $DRY_RUN_CMD ${bins.dmsSet} customThemeFile "$theme" >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenScheme scheme-smart >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenContrast -0.35 >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} runDmsMatugenTemplates true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateGtk true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateGhostty true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateFoot false >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateVscode true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateZed true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} matugenTemplateZenBrowser true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} iconThemeDark "$dark_icons" >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} iconThemeLight "$light_icons" >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} iconThemePerMode true >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} currentThemeCategory dynamic >/dev/null 2>&1 || true
+          $DRY_RUN_CMD ${bins.dmsSet} currentThemeName dynamic >/dev/null 2>&1 || true
+        '';
+      };
+
+      systemd = {
+        user = {
+          services.dotdots-foot-dms-theme-reload = {
+            Unit = {
+              Description = "Apply DMS appearance to desktop and terminals";
+              StartLimitIntervalSec = 0;
+            };
+            Service = {
+              Type = "oneshot";
+              ExecStart = apps.dms.sync;
+            };
+            Install.WantedBy = ["graphical-session.target"];
+          };
+
+          paths.dotdots-foot-dms-theme-reload = {
+            Unit.Description = "Watch DMS appearance settings and terminal palettes";
+            Path.PathChanged = [
+              "%h/.config/DankMaterialShell/settings.json"
+              "%h/.config/foot/dank-colors.ini"
+              "%h/.config/btop/btop.conf"
+            ];
+            Install.WantedBy = ["graphical-session.target"];
+          };
+        };
+      };
     };
   }

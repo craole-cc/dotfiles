@@ -39,4 +39,4 @@
     normalize = "normalize"
     colors = "colors"
     authorize = "authorize"
-equalize = "equalize"
+    equalize = "equalize"

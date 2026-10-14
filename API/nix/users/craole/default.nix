@@ -168,6 +168,47 @@
         dark = "frappe";
       };
     };
+
+    palettes = {
+      dark = {
+        accent = "magenta";
+        background = "#303446";
+        regular = {
+          black = "#51576d";
+          red = "#e78284";
+          green = "#a6d189";
+          yellow = "#e5c890";
+          blue = "#8caaee";
+          magenta = "#ca9ee6";
+          cyan = "#81c8be";
+          white = "#b5bfe2";
+        };
+        bright = {
+          black = "#626880";
+          white = "#c6d0f5";
+        };
+      };
+
+      light = {
+        accent = "cyan";
+        cursor = "#dc8a78";
+        background = "#eff1f5";
+        regular = {
+          black = "#acb0be";
+          red = "#d20f39";
+          green = "#40a02b";
+          yellow = "#df8e1d";
+          blue = "#1e66f5";
+          magenta = "#ea76cb";
+          cyan = "#179299";
+          white = "#5c5f77";
+        };
+        bright = {
+          black = "#9ca0b0";
+          white = "#4c4f69";
+        };
+      };
+    };
     fonts = {
       emoji = "Noto Color Emoji";
       monospace = "Maple Mono NF";
