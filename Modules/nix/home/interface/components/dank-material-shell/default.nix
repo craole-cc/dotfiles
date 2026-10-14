@@ -1,5 +1,6 @@
 {
   config,
+  iconThemes,
   lib,
   lix,
   user,
@@ -176,19 +177,19 @@
 
   icons = {
     dark = rec {
-      theme = style.icons.dark.name;
+      theme = iconThemes.dark.name;
       name = escapeShellArg theme;
       source = concat {
-        root = style.icons.dark.package;
+        root = iconThemes.dark.package;
         stem = ["share" "icons" theme];
       };
     };
     light = rec {
-      theme = style.icons.light.name;
+      theme = iconThemes.light.name;
       name = escapeShellArg theme;
-      source = "${pkgs.candy-icons}/share/icons/${theme}";
+      source = "${iconThemes.light.package}/share/icons/${theme}";
     };
-    resolved = style.icons.dark;
+    resolved = iconThemes.dark;
   };
 
   apps = {
@@ -502,7 +503,7 @@ in
       };
 
       home = {
-        packages = with style.cursors; [dark.package light.package];
+        packages = [pkgs.material-cursors pkgs.catppuccin-cursors.latteMauve];
         sessionVariables = {
           # DMS owns its mutable settings file. Preserve the user's bar/widget/etc.
           QS_ICON_THEME = icons.dark.theme;
