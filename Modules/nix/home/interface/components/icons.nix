@@ -41,17 +41,18 @@
         icon = requested;
       };
 in {
-  options.themes.modes.dark.icon = mkOption {
-    type = str;
-    default = style.icons.dark;
-    description = "Icon theme requested for dark mode";
-    apply = resolveIcon "dark";
-  };
-
-  options.themes.modes.light.icon = mkOption {
-    type = str;
-    default = style.icons.light;
-    description = "Icon theme requested for light mode";
-    apply = resolveIcon "light";
+  options.themes.icons = {
+    dark = mkOption {
+      type = str;
+      default = style.icons.dark;
+      description = "Icon theme requested for dark mode";
+      apply = resolveIcon "dark";
+    };
+    light = mkOption {
+      type = str;
+      default = style.icons.light;
+      description = "Icon theme requested for light mode";
+      apply = resolveIcon "light";
+    };
   };
 }

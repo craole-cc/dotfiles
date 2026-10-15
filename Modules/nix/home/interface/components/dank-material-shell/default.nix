@@ -53,40 +53,37 @@
     regular = resolve palette.ansi.regular;
     bright = regular // resolve palette.ansi.bright;
     ordered = slots:
-      map (slot: slots.${slot}) [
-        "black"
-        "red"
-        "green"
-        "yellow"
-        "blue"
-        "magenta"
-        "cyan"
-        "white"
-      ];
+      map (slot: slots.${slot})
+      ["black" "red" "green" "yellow" "blue" "magenta" "cyan" "white"];
   in {
     inherit (palette) name variant foreground background;
     selectionBackground = palette.surface;
     cursor = palette.accent;
-    regular = ordered regular; # list of 8, ANSI order
-    bright = ordered bright; # list of 8, ANSI order
+    regular = ordered regular;
+    bright = ordered bright;
   };
 
   mkFootPalette = palette: let
     terminal = mkTerminalPalette palette;
-    hex = stripHash;
   in ''
     # ${terminal.name}
     [colors-${terminal.variant}]
-    foreground=${hex terminal.foreground}
-    background=${hex terminal.background}
-    selection-foreground=${hex terminal.foreground}
-    selection-background=${hex terminal.selectionBackground}
-    cursor=${hex terminal.background} ${hex terminal.cursor}
+    foreground=${stripHash terminal.foreground}
+    background=${stripHash terminal.background}
+    selection-foreground=${stripHash terminal.foreground}
+    selection-background=${stripHash terminal.selectionBackground}
+    cursor=${stripHash terminal.background} ${stripHash terminal.cursor}
 
-    ${concatStringsSep "\n" (
-      imap0 (index: color: "regular${toString index}=${hex color}") terminal.regular
-      ++ imap0 (index: color: "bright${toString index}=${hex color}") terminal.bright
-    )}
+    ${concatStringsSep "\n" ((
+        imap0
+        (index: color: "regular${toString index}=${stripHash color}")
+        terminal.regular
+      )
+      ++ (
+        imap0
+        (index: color: "bright${toString index}=${stripHash color}")
+        terminal.bright
+      ))}
   '';
 
   mkKittyPalette = palette: let
@@ -100,7 +97,9 @@
     cursor ${terminal.cursor}
 
     ${concatStringsSep "\n" (
-      imap0 (index: color: "color${toString index} ${color}") (terminal.regular ++ terminal.bright)
+      imap0
+      (index: color: "color${toString index} ${color}")
+      (terminal.regular ++ terminal.bright)
     )}
   '';
 
@@ -114,7 +113,9 @@
     selection-background = ${terminal.selectionBackground}
     cursor-color = ${terminal.cursor}
     ${concatStringsSep "\n" (
-      imap0 (index: color: "palette = ${toString index}=${color}") (terminal.regular ++ terminal.bright)
+      imap0
+      (index: color: "palette = ${toString index}=${color}")
+      (terminal.regular ++ terminal.bright)
     )}
   '';
 
