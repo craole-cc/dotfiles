@@ -45,7 +45,7 @@
     multimedia = {};
   };
 
-  applications = {
+  packages = {
     ai-agent = [
       "hermes-desktop"
       "chatgpt"

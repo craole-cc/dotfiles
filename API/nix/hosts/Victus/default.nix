@@ -1,17 +1,37 @@
-# {imports = [./hardware-configuration.nix];}
-# // fromTOML (builtins.readFile ./config.toml)
+# Legend:  #>  command to get the value    #?  explanation
 let
-  arch = "x86_64";
-  os = "linux";
-  admin = "craole";
+  arch = "x86_64"; #> uname -m
+  os = "linux"; #> uname -s | tr A-Z a-z
+  admin = "craole"; #? Primary admin user
 in {
   imports = [./hardware-configuration.nix];
 
-  stateVersion = "25.05";
-  system = "${arch}-${os}";
-  type = "laptop";
+  stateVersion = "25.05"; #? Release first installed; don't bump on upgrades
   class = "nixos";
-  id = "d2c1db8e"; # > head -c8 /etc/machine-id'
+  system = "${arch}-${os}"; #> nix eval --impure --expr builtins.currentSystem
+  type = "laptop"; #> cat /sys/class/dmi/id/chassis_type  #? (8/9/10/14 = laptop, 3/4/6/7 = desktop, 23 = server)
+  id = "d2c1db8e"; #> head -c8 /etc/machine-id
+  description = "Victus by HP Gaming 15-fb1013dx"; #? Free text; model number is on the underside label
+  vendor = "HP"; #> cat /sys/class/dmi/id/sys_vendor
+  product = "Victus by HP Gaming Laptop 15-fb1xxx"; #> cat /sys/class/dmi/id/product_name
+  sku = "845A2UA#ABA"; #> cat /sys/class/dmi/id/product_sku
+
+  cpu = {
+    inherit arch;
+    brand = "amd"; #> lscpu | grep 'Vendor ID'  #? (AuthenticAMD -> amd, GenuineIntel -> intel)
+    name = "Ryzen 5 7535HS"; #> lscpu | grep 'Model name'
+    family = 25; #> lscpu | grep 'CPU family'
+    model = 68; #> lscpu | grep -E '^\s*Model:'
+    microarch = "znver3"; #> gcc -march=native -Q --help=target | grep -E '^\s*-march=\s'
+    x86_64_level = "v3"; #> /lib64/ld-linux-x86-64.so.2 --help | awk '/supported/ { sub(/.*-v/, "v", $1); print $1; exit }'
+    powerMode = "performance"; #? "performance" | "powersave" | "schedutil" ...
+    cores = 6; #> lscpu | grep 'Core(s) per socket'  (physical)
+    threads = 12; #> nproc  (logical)
+  };
+
+  gpu = {
+    mode = "hybrid"; #? "offload" | "sync" | "reverse-sync" | "primary-nvidia" ...
+  };
 
   paths = {
     roots.repo = "/home/${admin}/.dots";
@@ -51,33 +71,22 @@ in {
     "rtsx_pci_sdmmc"
   ];
 
-  specs = {
-    machine = "laptop";
-
-    cpu = {
-      inherit arch;
-      brand = "amd"; # TODO: Change this to allow multiple
-      powerMode = "performance";
-      cores = 12;
-    };
-
-    gpu = {
-      # TODO: Change this to not use named attrsets
-      primary = {
+  devices = {
+    gpu = [
+      # First entry = primary (the GPU driving the display).
+      #> lspci | grep -Ei 'vga|3d|display'
+      #? busId: lspci prints hex "06:00.0"; NixOS wants decimal "PCI:6:0:0" (0a -> 10, 0e -> 14)
+      {
         brand = "amd";
         busId = "PCI:6:0:0";
         model = "Radeon 680M";
-      };
-      secondary = {
+      }
+      {
         brand = "nvidia";
         busId = "PCI:1:0:0";
         model = "RTX 2050";
-      };
-      mode = "hybrid"; # or "offload", "sync", "primary-nvidia", etc.
-    };
-  };
-
-  devices = {
+      }
+    ];
     storage = {
       boot = {
         "luks-03a38b8f-5279-4c0f-9172-a7878fbcc92d" = {
@@ -100,7 +109,9 @@ in {
         };
       };
 
-      swap = [{device = "/dev/disk/by-uuid/d9e04286-b70c-4c8a-8691-a9a9cbcf57fe";}];
+      swap = [
+        {device = "/dev/disk/by-uuid/d9e04286-b70c-4c8a-8691-a9a9cbcf57fe";}
+      ];
     };
 
     network = [
@@ -229,11 +240,12 @@ in {
     };
   };
 
-  network.backend = "networkmanager";
+  # network.backend = "networkmanager";
 
   principals = [
     {
       name = admin;
+      uid = 1000;
       enable = true;
       autoLogin = false;
       role = "administrator";
@@ -256,16 +268,15 @@ in {
   ];
 
   interface = {
-    # bootLoader = "systemd-boot";
-    bootLoader = "limine";
-    bootLoaderTimeout = 1;
-    # desktopEnvironment = "gnome";
-    windowManager = "hyprland";
-    # displayProtocol = "wayland";
-    # session = "niri";
-    # keyboard = {
-    #   modifier = "SUPER";
-    #   swapCapsEscape = true;
-    # };
+    boot = {
+      loader = "limine";
+      # loader = "systemd-boot";
+      timeout = 1;
+    };
+    desktops = [
+      # "plasma"
+      # "niri"
+      "hyprland"
+    ];
   };
 }

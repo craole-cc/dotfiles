@@ -13,16 +13,16 @@
     ;
 in {
   "$MOD" = keyboard.mod;
-  "$BROWSER" = browser.primary.command;
-  "$BROWSER_SEC" = browser.secondary.command;
-  "$VISUAL" = editor.primary.command;
-  "$VISUAL_SEC" = editor.secondary.command;
-  "$FILE_MANAGER" = explorer.primary.command;
-  "$FILE_MANAGER_SEC" = explorer.secondary.command;
-  "$LAUNCHER" = launcher.primary.command;
-  "$LAUNCHER_SEC" = launcher.secondary.command;
-  "$TERMINAL" = terminal.primary.command;
-  "$TERMINAL_SEC" = terminal.secondary.command;
+  "$BROWSER" = browser.primary.command or "";
+  "$BROWSER_SEC" = browser.secondary.command or "";
+  "$VISUAL" = editor.primary.command or "";
+  "$VISUAL_SEC" = editor.secondary.command or "";
+  "$FILE_MANAGER" = explorer.primary.command or "";
+  "$FILE_MANAGER_SEC" = explorer.secondary.command or "";
+  "$LAUNCHER" = launcher.primary.command or "";
+  "$LAUNCHER_SEC" = launcher.secondary.command or "";
+  "$TERMINAL" = terminal.primary.command or "";
+  "$TERMINAL_SEC" = terminal.secondary.command or "";
 
   env = ["XDG_CURRENT_DESKTOP,Hyprland"];
   general = {

@@ -23,6 +23,8 @@
   [default.extend-identifiers]
     "color" = "color"
     "favorites" = "favorites"
+    # Hyprland event identifier.
+    "maximize" = "maximize"
 
   [default.extend-words]
     ags = "ags"

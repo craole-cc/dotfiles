@@ -358,10 +358,9 @@
     # The portal identifies native apps by their app-named systemd unit. Start
     # Ghostty through its packaged service so global keybind registration has
     # the required application ID, even before any terminal window opens.
-    xdg.configFile."systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service" =
-      mkIf (dmsEnabled && (config.programs.ghostty.enable or false)) {
-        source = "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
-      };
+    xdg.configFile."systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service" = mkIf (dmsEnabled && (config.programs.ghostty.enable or false)) {
+      source = "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
+    };
 
     programs = mkAddons "programs";
     services = mkAddons "services";
