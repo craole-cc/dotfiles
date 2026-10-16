@@ -34,6 +34,7 @@
   inherit (_.lists.access) head;
   inherit (_.lists.construction) optional toList;
   inherit (_.lists.predicates) elem;
+  inherit (_.lists.selection) filter;
   inherit (_.lists.aggregation) concatMap;
   inherit (_.lists.transformation) unique;
   inherit
@@ -670,7 +671,14 @@
     set,
     interface,
   }: let
-    rawVal = interface.${key} or interface.session.${key} or null;
+    candidates = filter (name: hasAttr name set) (toList (interface.desktops or []));
+    rawVal =
+      if interface ? desktops
+      then
+        if candidates == []
+        then null
+        else head candidates
+      else interface.${key} or interface.session.${key} or null;
     name =
       if isAttrs rawVal
       then rawVal.name or null

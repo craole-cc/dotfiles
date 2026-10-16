@@ -389,6 +389,7 @@
 
       dms-plugin-registry = {
         names = [
+          "dms-plugin-registry"
           "shellDankMaterialPlugins"
           "dankMaterialShellPlugins"
           "shellDankPlugins"
