@@ -245,7 +245,7 @@ log_wallpaper() {
     #{ Add default wallpaper, if valid but not in the log
     if
       [ "$(pathof "${wallpaper_lnk_path}")" != "${wallpaper_lnk_path}" ] \
-        && [ -f "${wallpaper_lnk_path}" ] && [ ! -n "${wallpaper_src_path}" ]
+        && [ -f "${wallpaper_lnk_path}" ] && [ -z "${wallpaper_src_path}" ]
     then
       #{ Set wallpaper as default
       wallpaper="$(pathof "${wallpaper_lnk_path}")"
@@ -278,8 +278,8 @@ log_wallpaper() {
 
     #{ Change to previous wallpaper in the log
     [ "${wallpaper_action}" = "previous" ] && {
-      if [ ! -n "$(log_entry)" ] || [ "$(log_entries)" -eq 1 ]; then
-        [ ! -n "$(log_entry)" ] && __msg__ --log-empty
+      if [ -z "$(log_entry)" ] || [ "$(log_entries)" -eq 1 ]; then
+        [ -z "$(log_entry)" ] && __msg__ --log-empty
         [ "$(log_entries)" -eq 1 ] && __msg__ --one-entry
         wallpaper_src_path="$(awk 'NR==1' "${wallpaper_log_path}")"
       elif [ "$(log_entry)" -eq 1 ]; then
@@ -292,7 +292,7 @@ log_wallpaper() {
     #{ Generate a new wallpaper or move up in the log
     [ "${wallpaper_action}" = "next" ] && {
       if
-        [ ! -n "$(log_entry)" ] \
+        [ -z "$(log_entry)" ] \
           || [ "$(log_entry)" -eq "$(log_entries)" ]
       then
         # wallpaper_src_path="$(get_wallpaper)" && log__new
