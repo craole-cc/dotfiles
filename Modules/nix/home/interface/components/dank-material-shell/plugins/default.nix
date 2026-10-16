@@ -5,33 +5,20 @@
   lix,
   pkgs,
 }: let
-  inherit (lix.attrsets.construction) genAttrs optionalAttrs;
-  inherit (lix.modules.construction) mkForce;
+  inherit (lix.lists.aggregation) concatMap foldl';
+  inherit (lix.lists.transformation) unique;
 
-  chat = import ./packages.nix {inherit inputs pkgs;};
-  selected = [
-    # Chat Manager hosts the WhatsApp bridge.
-    "chatManager"
-    "whatsappChat"
-
-    # Official Dank plugins from the pinned registry.
-    "dankActions"
-    "dankClight"
-    "dankDesktopWeather"
-    "dankGifSearch"
-    "dankHooks"
-    "dankHyprlandWindows"
-    "dankKDEConnect"
-    "dankLauncherKeys"
-    "dankNotepadModule"
-    "dankPomodoroTimer"
-    "dankStickerSearch"
+  categories = [
+    (import ./desktop.nix {inherit config pkgs;})
+    (import ./media.nix pkgs)
+    (import ./messengers.nix {inherit inputs lix pkgs;})
+    (import ./monitoring.nix pkgs)
+    (import ./productivity.nix)
+    (import ./utilities.nix)
+    (import ./wallpapers.nix pkgs)
   ];
 in {
-  plugins = genAttrs selected (name:
-    {enable = true;}
-    // optionalAttrs (chat ? ${name}) {src = mkForce chat.${name};});
-
-  packages = with pkgs; [clight curl go qt6.qtimageformats];
+  plugins = foldl' (plugins: category: plugins // category.plugins) {} categories;
+  packages = unique (concatMap (category: category.packages or []) categories);
   activation = import ./activation.nix {inherit bins config inputs lix pkgs;};
 }

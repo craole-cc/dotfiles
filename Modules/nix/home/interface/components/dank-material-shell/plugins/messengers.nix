@@ -1,7 +1,12 @@
 {
   inputs,
+  lix,
   pkgs,
 }: let
+  inherit (lix.modules.construction) mkForce;
+  inherit (pkgs) go;
+  inherit (pkgs.kdePackages) kdeconnect-kde;
+
   registry = inputs.dms-plugin-registry.packages.${pkgs.stdenv.hostPlatform.system};
   mkChatPlugin = {
     name,
@@ -30,14 +35,25 @@
       '';
     };
 in {
-  chatManager = mkChatPlugin {
-    name = "chatManager";
-    binary = "chat-managerd";
-    vendorHash = "sha256-BJ+d4p5HCuR2816YKvRwbHZEWEe0B3rOH7TXWvQzauo=";
+  plugins = {
+    chatManager = {
+      enable = true;
+      src = mkForce (mkChatPlugin {
+        name = "chatManager";
+        binary = "chat-managerd";
+        vendorHash = "sha256-BJ+d4p5HCuR2816YKvRwbHZEWEe0B3rOH7TXWvQzauo=";
+      });
+    };
+    whatsappChat = {
+      enable = true;
+      src = mkForce (mkChatPlugin {
+        name = "whatsappChat";
+        binary = "whatsapp-chat-bridge";
+        vendorHash = "sha256-RhARfSVPm/HV2T0MIkQSRrigJhWqCqhEzyyW0mPNuwI=";
+      });
+    };
+    dankKDEConnect.enable = true;
   };
-  whatsappChat = mkChatPlugin {
-    name = "whatsappChat";
-    binary = "whatsapp-chat-bridge";
-    vendorHash = "sha256-RhARfSVPm/HV2T0MIkQSRrigJhWqCqhEzyyW0mPNuwI=";
-  };
+
+  packages = [go kdeconnect-kde];
 }
