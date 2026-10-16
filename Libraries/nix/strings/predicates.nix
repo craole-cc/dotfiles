@@ -389,7 +389,13 @@
   isBinary 1      # => false
   ```
   */
-  isBinary = s: typeOf s == "string" && ((s == "0" || s == "1") || (s || !s));
+  isBinary = input:
+    typeOf input
+    == "string"
+    && (
+      ((input == "0") || (input == "1"))
+      || (input || !input)
+    );
 
   /**
   Check whether a value can be converted to a string via `toString`.

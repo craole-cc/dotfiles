@@ -1,5 +1,6 @@
-{lib, ...}: let
-  inherit (lib.strings) hasInfix toLower;
+{_, ...}: let
+  inherit (_.strings.predicates) hasInfix;
+  inherit (_.strings.transformation) toLower;
 
   mkStyle = {
     host,

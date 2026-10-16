@@ -1,11 +1,9 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.applications.registry) resolve;
-  inherit (lib.attrsets) attrByPath recursiveUpdate;
-  inherit (lib.strings) hasInfix toLower;
+  inherit (_.attrsets.access) attrByPath;
+  inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.debug.tracing) tryEval;
+  inherit (_.strings.transformation) hasInfix toLower;
 
   __exports = {
     internal = {inherit defaults uiDefaults mkApplications;};
@@ -36,24 +34,24 @@
         tertiary = null;
       };
       gui = {
-        primary = "vscode";
-        secondary = "zed";
+        primary = "vscode-fhs";
+        secondary = "zed-editor-fhs";
         tertiary = null;
       };
     };
     launcher = {
       primary = "vicinae";
-      secondary = "fuzzel";
+      secondary = null;
       tertiary = null;
     };
     explorer = {
       primary = "yazi";
-      secondary = "nautilus";
-      tertiary = null;
+      secondary = "doublecmd";
+      tertiary = "nautilus";
     };
     ai = {
-      primary = null;
-      secondary = null;
+      primary = "chatgpt";
+      secondary = "claude-desktop";
       tertiary = null;
     };
     bar = null;
@@ -223,7 +221,7 @@
     else category;
 
   getMeta = category: name: let
-    result = builtins.tryEval (resolve {
+    result = tryEval (resolve {
       value = name;
       category = registryCategory category;
     });

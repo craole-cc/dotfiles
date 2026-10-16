@@ -23,7 +23,7 @@
       traceValSeqN
       addErrorContext
       ;
-    inherit (trivial) id;
+    inherit (trivial) id deepSeq;
     inherit (builtins) tryEval;
   };
 

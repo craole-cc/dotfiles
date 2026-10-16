@@ -1,8 +1,4 @@
-{
-  lib,
-  # paths,
-  ...
-}: let
+{_, ...}: let
   meta = let
     doc = ''
       # Core Style [Layer 3]
@@ -85,12 +81,14 @@
   in {
     inherit doc exports;
   };
-  inherit (lib.attrsets) optionalAttrs recursiveUpdate;
-  inherit (lib.modules) mkForce mkMerge;
-  inherit (lib.strings) hasInfix toUpper substring;
+  inherit (_.attrsets) optionalAttrs recursiveUpdate;
+  inherit (_.modules) mkForce mkMerge;
+  inherit (_.strings.access) substring;
+  inherit (_.strings.predicates) hasInfix;
+  inherit (_.strings.transformation) toUpper;
 
   isIn = check: value: hasInfix (toUpper check) (toUpper value);
-  toPascal = s: toUpper (substring 0 1 s) + substring 1 (-1) s;
+  toPascal = input: toUpper (substring 0 1 input) + substring 1 (-1) input;
 
   resolveWallpapers = {
     tree,

@@ -1,11 +1,7 @@
 # Trace helpers - print debug info to stderr during evaluation, return a value.
 # All functions are lazy: they only fire if the result is actually demanded.
 # TODO: Update the function docs to match the style and detail of `traceIfNot`
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   exports = {
     inherit
       trace'
@@ -18,8 +14,8 @@
   };
 
   inherit (_.debug.format) renderDebugValue;
-  inherit (lib.strings) typeOf;
-  inherit (lib.debug) trace traceIf;
+  inherit (_.debug.tracing) trace traceIf;
+  inherit (_.types.access) typeOf;
 
   renderType = value:
     if typeOf value == "lambda"

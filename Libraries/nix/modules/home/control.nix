@@ -1,5 +1,5 @@
-{lib, ...}: let
-  inherit (lib.strings) toUpper;
+{_, ...}: let
+  inherit (_.strings.transformation) toUpper;
 
   mkKeyboard = {
     host,

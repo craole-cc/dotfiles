@@ -664,26 +664,15 @@ in
           desired = false;
           command = ''(mkDenyValidator { list = ["admin" "root"]; }).check "ADMIN"'';
           outcome =
-            (mkDenyValidator {
-              list = [
-                "admin"
-                "root"
-              ];
-            }).check
-            "ADMIN";
+            (mkDenyValidator {list = ["admin" "root"];}).check "ADMIN";
         };
         caseSensitiveWithExact = mkTest {
           desired = true;
           command = ''(mkDenyValidator { list = ["admin" "root"]; exact = true; }).check "ADMIN"'';
-          outcome =
-            (mkDenyValidator {
-              list = [
-                "admin"
-                "root"
-              ];
-              exact = true;
-            }).check
-            "ADMIN";
+          outcome = (mkDenyValidator {
+            list = ["admin" "root"];
+            exact = true;
+          }).check "ADMIN";
         };
       };
 

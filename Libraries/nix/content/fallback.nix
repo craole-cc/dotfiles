@@ -1,6 +1,5 @@
 {
   _,
-  lib,
   __moduleRef,
   ...
 }: let
@@ -8,8 +7,9 @@
   inherit (_.debug.assertions) mkTest;
   inherit (_.debug.module) mkModuleDebug;
   inherit (_.debug.runners) runTests;
-  inherit (builtins) tryEval;
-  inherit (lib.lists) findFirst length;
+  inherit (_.debug.tracing) tryEval;
+  inherit (_.lists.access) findFirst;
+  inherit (_.lists.access) length;
 
   exports = rec {
     internal = {

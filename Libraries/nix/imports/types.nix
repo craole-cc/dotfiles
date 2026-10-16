@@ -70,14 +70,7 @@
     inherit (filesystem) isPath;
     inherit (options) isOption;
     inherit (lists) isList;
-    inherit
-      (strings)
-      isString
-      isConvertibleWithToString
-      isStringLike
-      isValidPosixName
-      isStorePath
-      ;
+    inherit (strings) isString isConvertibleWithToString isStringLike isValidPosixName isStorePath;
   };
 in
   if flatten

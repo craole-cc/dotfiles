@@ -128,7 +128,7 @@
       then toDomainName domain
       else null;
 
-    raw = sourceImport path;
+    raw = (sourceImport path).value;
     explicit = filter isNotEmpty [
       entries
       groups
@@ -144,7 +144,9 @@
     value =
       if length explicit == 0
       then
-        if isNotEmpty name && hasAttr name raw
+        if isNotEmpty domain && hasAttr domain raw
+        then getAttr domain raw
+        else if isNotEmpty name && hasAttr name raw
         then getAttr name raw
         else raw
       else
@@ -207,7 +209,18 @@
         ;
     };
 
-    lookup = key: getAttr key registry.entries;
+    lookup = key: let
+      matches = filter (name:
+        isIn key ([name] ++ (registry.entries.${name}.aliases or [])))
+      (attrNames registry.entries);
+    in
+      if hasAttr key registry.entries
+      then getAttr key registry.entries
+      else if length matches == 1
+      then getAttr (elemAt matches 0) registry.entries
+      else if matches == []
+      then throw "Unknown style entry '${key}' in registry '${registry.name}'."
+      else throw "Ambiguous style alias '${key}' in registry '${registry.name}': ${toString matches}";
 
     normalize = args @ {
       value,

@@ -1,6 +1,6 @@
 {_, ...}: let
   inherit (_.attrsets.access) attrNames attrValues;
-  inherit (_.attrsets.construction) listToAttrs;
+  inherit (_.attrsets.construction) listToAttrs optionalAttrs;
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.transformation) mapAttrs filterAttrs;
   inherit (_.lists.access) head length;
@@ -26,8 +26,10 @@
         };
   in
     user
+    // optionalAttrs (user ? interface) {interface = removeAttrs user.interface ["theme"];}
     // {
       inherit uid;
+      theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});
       paths = mkTree {
         stems = recursiveUpdate stems (user.paths.stems or {});
         roots =

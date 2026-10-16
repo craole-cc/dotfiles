@@ -1,12 +1,10 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   e = _.lists.enums;
   inherit (_.trivial.tests) mkTest runTests;
-  inherit (lib.attrsets) attrNames hasAttrByPath;
-  inherit (lib.lists) isList length;
+  inherit (_.attrsets.access) attrNames;
+  inherit (_.attrsets.predicates) hasAttrByPath;
+  inherit (_.lists.access) length;
+  inherit (_.lists.predicates) isList;
 
   /**
       Enum aggregator - provides flat access to all enums.

@@ -1,7 +1,6 @@
 {
   _,
   src,
-  lib,
   ...
 }: let
   __doc = ''
@@ -25,9 +24,9 @@
 
   inherit (_.filesystem.flake) getFlake;
   inherit (_.hardware.system) getSystems;
-  inherit (lib.attrsets) attrValues;
-  inherit (lib.debug) traceIf;
-  inherit (lib.lists) findFirst;
+  inherit (_.attrsets.access) attrValues;
+  inherit (_.debug.tracing) traceIf;
+  inherit (_.lists.access) findFirst;
 
   /**
   Finds the corresponding NixOS configuration for a given system.

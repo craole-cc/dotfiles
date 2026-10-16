@@ -24,6 +24,7 @@
       (attrsets)
       attrNames
       attrValues
+      catAttrs
       getAttr
       attrByPath
       getAttrFromPath

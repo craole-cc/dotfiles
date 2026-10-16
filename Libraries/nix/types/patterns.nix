@@ -1,5 +1,5 @@
-{lib, ...}: let
-  inherit (lib.types) str strMatching;
+{_, ...}: let
+  inherit (_.types.primitives) str strMatching;
 
   # Email-like string
   email = strMatching "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
