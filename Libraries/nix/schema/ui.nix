@@ -47,6 +47,7 @@
   inherit (_.schema) io;
   appSchema = _.schema.applications;
   inherit (_.schema.io) keyboardDefaults normalizeKeyboard;
+  inherit (_.schema.fonts) getFonts mkFonts;
   inherit (_.strings.construction) optionalString;
   inherit (_.types.combinators) submodule attrsOf;
   inherit (_.types.primitives) str anything;
@@ -805,6 +806,7 @@
         shell
         session
         ;
+      fonts = getFonts {inherit interface;};
       defaultSession = session;
       desktopEnvironment = desktopEnvironment.name;
       windowManager = windowManager.name;
@@ -828,7 +830,8 @@
     user ? {},
     host,
   }:
-    normalize (recursiveUpdate (host.interface or {}) (user.interface or {}));
+    (normalize (recursiveUpdate (host.interface or {}) (user.interface or {})))
+    // {fonts = mkFonts {inherit host user;};};
 
   requireUI = {
     host ? null,

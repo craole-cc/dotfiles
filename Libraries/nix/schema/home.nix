@@ -8,6 +8,7 @@
   inherit (_.lists.transformation) sort;
   inherit (_.strings.construction) hashToInt;
   inherit (_.filesystem.construction) mkTree;
+  inherit (_.schema.fonts) getFonts;
 
   mkUser = {
     name,
@@ -26,7 +27,9 @@
         };
   in
     user
-    // optionalAttrs (user ? interface) {interface = removeAttrs user.interface ["theme"];}
+    // optionalAttrs (user ? interface) {
+      interface = (removeAttrs user.interface ["theme"]) // {fonts = getFonts user;};
+    }
     // {
       inherit uid;
       theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});

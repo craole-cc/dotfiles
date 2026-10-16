@@ -1,4 +1,7 @@
 {_, ...}: let
+  inherit (_.attrsets.transformation) mapAttrs;
+  inherit (_.lists.access) head;
+  inherit (_.schema.fonts) mkFonts;
   inherit (_.strings.predicates) hasInfix;
   inherit (_.strings.transformation) toLower;
 
@@ -29,15 +32,12 @@
       then "frappe"
       else "latte";
     catppuccin = hasInfix "catppuccin" variant;
-    fonts =
-      user.interface.style.fonts or host.interface.style.fonts or {
-        emoji = "Noto Color Emoji";
-        monospace = "Maple Mono NF";
-        sans = "Monaspace Radon Frozen";
-        serif = "Noto Serif";
-        material = "Material Symbols Sharp";
-        clock = "Rubik";
-      };
+    fontLists = mapAttrs (_: entries: map (entry: entry.name) entries) (mkFonts {inherit host user;});
+    fonts = mapAttrs (_: names:
+      if names == []
+      then ""
+      else head names)
+    fontLists;
     icons = {
       dark =
         user.theme.modes.dark.icon
@@ -85,6 +85,7 @@
   in {
     inherit
       fonts
+      fontLists
       mode
       variant
       accent

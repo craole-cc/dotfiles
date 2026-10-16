@@ -6,172 +6,95 @@
   top ? "_",
   ...
 }: let
-  dom = "interface";
-  sub = "style";
-  mod = "fonts";
-
-  inherit (lix.attrsets.access) attrValues;
-  inherit (lix.attrsets.aggregation) recursiveUpdate;
+  inherit (lix.attrsets.access) attrByPath attrValues;
   inherit (lix.attrsets.transformation) mapAttrs;
-  inherit (lix.lists.aggregation) concatMap foldl';
+  inherit (lix.lists.access) head;
+  inherit (lix.lists.aggregation) concatMap;
+  inherit (lix.lists.construction) toList;
   inherit (lix.lists.transformation) unique;
   inherit (lix.modules.construction) mkConfig mkContext;
-  inherit (lix.options.construction) literalExpression mkOption mkTrue;
-  inherit (lix.types.combinators) listOf;
+  inherit (lix.options.construction) mkOption mkTrue;
+  inherit (lix.schema.fonts) mkFonts;
+  inherit (lix.strings.construction) splitString;
+  inherit (lix.types.combinators) either listOf;
+  inherit (lix.types.predicates) isString;
   inherit (lix.types.primitives) package str;
 
-  context = mkContext {inherit config dom sub mod top;};
-
-  registry = with pkgs; {
-    clock = {
-      default = "Rubik";
-      packages = {
-        "Rubik" = [rubik];
-      };
-    };
-
-    emoji = {
-      default = "Noto Color Emoji";
-      packages = {
-        "Noto Color Emoji" = [noto-fonts-color-emoji];
-      };
-    };
-
-    material = {
-      default = "Material Symbols Sharp";
-      packages = {
-        "Material Symbols Sharp" = [material-symbols];
-        "Material Icons" = [material-icons];
-      };
-    };
-
-    monospace = {
-      default = "Maple Mono NF";
-      packages = {
-        "Maple Mono NF" = [maple-mono.NF-unhinted];
-        "Victor Mono" = [victor-mono];
-      };
-    };
-
-    sansSerif = {
-      default = "Monaspace Radon Frozen";
-      packages = {
-        "Monaspace Radon Frozen" = [monaspace];
-      };
-    };
-
-    serif = {
-      default = "Noto Serif";
-      packages = {
-        "Noto Serif" = [noto-fonts];
-      };
-    };
-
-    cjk = {
-      default = "Noto Sans CJK";
-      packages = {
-        "Noto Sans CJK" = [noto-fonts-cjk-sans];
-      };
-    };
+  context = mkContext {
+    inherit config top;
+    dom = "interface";
+    sub = "style";
+    mod = "fonts";
   };
+  inherit (context) cfg;
 
-  seed = let
-    fonts =
-      recursiveUpdate (mapAttrs (_: role: role.default) registry)
-      (host.users.data.primary.interface.fonts or {});
+  selected = mkFonts {
+    inherit host;
+    user = host.users.data.primary or {};
+  };
+  names = mapAttrs (_: entries: unique (map (entry: entry.name) entries)) selected;
+  roles = (removeAttrs names ["sans"]) // {sansSerif = names.sans;};
 
-    packages = let
-      pkgsMap = foldl' (acc: role: acc // role.packages) {} (attrValues registry);
-    in
-      unique (concatMap (name: pkgsMap.${name} or []) (attrValues fonts));
-  in
-    fonts // {inherit packages;};
+  resolvePackage = entry:
+    if entry.package == null
+    then []
+    else [
+      (
+        if isString entry.package
+        then
+          attrByPath (splitString "." entry.package)
+          (throw "Unknown font package '${entry.package}' for '${entry.name}'.")
+          pkgs
+        else entry.package
+      )
+    ];
+  users = attrValues (host.users.data.enabled or {});
+  selections = [selected] ++ map (user: mkFonts {inherit host user;}) users;
+  packages = unique (concatMap (fonts: concatMap resolvePackage (concatMap toList (attrValues fonts))) selections);
+  first = role:
+    if cfg.${role} == []
+    then ""
+    else head cfg.${role};
 in
   mkConfig {
     inherit context;
+    options =
+      {
+        enable = mkTrue "fonts";
+        packages = mkOption {
+          description = "Font packages for every ordered selection of enabled users";
+          default = packages;
+          type = listOf package;
+        };
+      }
+      // mapAttrs (role: default:
+        mkOption {
+          description = "Ordered ${role} font families, with the preferred family first";
+          inherit default;
+          type = either str (listOf str);
+          apply = toList;
+        })
+      roles;
 
-    options = {
-      enable = mkTrue mod;
-
-      clock = mkOption {
-        description = "Clock/UI font";
-        default = seed.clock;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.clock or "Rubik"'';
-        type = str;
-      };
-
-      emoji = mkOption {
-        description = "Emoji font";
-        default = seed.emoji;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.emoji or "Noto Color Emoji"'';
-        type = str;
-      };
-
-      material = mkOption {
-        description = "Material icons/symbols font";
-        default = seed.material;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.material or "Material Symbols Sharp"'';
-        type = str;
-      };
-
-      monospace = mkOption {
-        description = "Monospace font";
-        default = seed.monospace;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.monospace or "Maple Mono NF"'';
-        type = str;
-      };
-
-      sansSerif = mkOption {
-        description = "Sans-serif font";
-        default = seed.sansSerif;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.sansSerif or "Monaspace Radon Frozen"'';
-        type = str;
-      };
-
-      serif = mkOption {
-        description = "Serif font";
-        default = seed.serif;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.serif or "Noto Serif"'';
-        type = str;
-      };
-
-      cjk = mkOption {
-        description = "CJK font";
-        default = seed.cjk;
-        defaultText = literalExpression ''host.users.data.primary.interface.fonts.cjk or "Noto Sans CJK"'';
-        type = str;
-      };
-
-      packages = mkOption {
-        description = "Font packages to install, derived from active font selections";
-        default = seed.packages;
-        defaultText = literalExpression "unique (concatMap derived from active selections)";
-        type = listOf package;
-      };
-    };
-
-    outputs = with context.cfg; {
+    outputs = {
       fonts = {
-        inherit packages;
+        inherit (cfg) packages;
         enableDefaultPackages = true;
         fontconfig = {
           enable = true;
           defaultFonts = {
-            monospace = [monospace];
-            sansSerif = [sansSerif];
-            serif = [serif];
-            emoji = [emoji];
+            inherit (cfg) monospace sansSerif serif emoji;
           };
         };
       };
-
       environment.sessionVariables = {
-        FONT_CLOCK = clock;
-        FONT_EMOJI = emoji;
-        FONT_MATERIAL = material;
-        FONT_MONO = monospace;
-        FONT_SANS = sansSerif;
-        FONT_SERIF = serif;
+        FONT_CLOCK = first "clock";
+        FONT_EMOJI = first "emoji";
+        FONT_MATERIAL = first "material";
+        FONT_MONO = first "monospace";
+        FONT_MONOSPACE = first "monospace";
+        FONT_SANS = first "sansSerif";
+        FONT_SERIF = first "serif";
       };
     };
   }
