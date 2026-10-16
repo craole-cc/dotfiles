@@ -4,8 +4,6 @@
   pkgs,
 }: let
   inherit (lix.modules.construction) mkForce;
-  inherit (pkgs) go;
-  inherit (pkgs.kdePackages) kdeconnect-kde;
 
   registry = inputs.dms-plugin-registry.packages.${pkgs.stdenv.hostPlatform.system};
   mkChatPlugin = {
@@ -55,5 +53,5 @@ in {
     dankKDEConnect.enable = true;
   };
 
-  packages = [go kdeconnect-kde];
+  packages = with pkgs; [go kdePackages.kdeconnect-kde];
 }

@@ -1,7 +1,4 @@
-pkgs: let
-  inherit (pkgs) curl gpu-screen-recorder;
-  inherit (pkgs.qt6) qtimageformats;
-in {
+pkgs: {
   plugins = {
     audioSwitcher.enable = true;
     volumeMixer.enable = true;
@@ -10,5 +7,10 @@ in {
     dankStickerSearch.enable = true;
   };
 
-  packages = [curl gpu-screen-recorder qtimageformats];
+  packages = with pkgs; [
+    curl
+    gpu-screen-recorder
+    qt6.qtimageformats
+    # kdePackages.qtimageformats
+  ];
 }

@@ -1,10 +1,8 @@
-pkgs: let
-  inherit (pkgs) dgop;
-in {
+pkgs: {
   plugins = {
     nixMonitor.enable = true;
     systemMonitor.enable = true;
   };
 
-  packages = [dgop];
+  packages = with pkgs; [dgop];
 }

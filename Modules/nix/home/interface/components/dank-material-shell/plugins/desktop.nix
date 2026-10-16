@@ -2,7 +2,6 @@
   config,
   pkgs,
 }: let
-  inherit (pkgs) clight;
   hyprland = config._.resolved.interface.managers.hyprland.explicit.enable or false;
 in {
   plugins = {
@@ -14,5 +13,5 @@ in {
     dmsScreenshot.enable = true;
   };
 
-  packages = [clight];
+  packages = with pkgs; [clight];
 }

@@ -9,6 +9,7 @@
     sources = {
       coreutils = null;
       dms-shell = null;
+      gum = null;
       glib = null;
       jaq = null;
       procps = {exe = "pkill";};
@@ -24,7 +25,7 @@
     coreutils = "${tools.coreutils.paths.binary}";
     glib = "${tools.glib.paths.binary}";
   in rec {
-    inherit (binaries) jaq sd;
+    inherit (binaries) gum jaq sd;
     cat = "${coreutils}/cat";
     chmod = "${coreutils}/chmod";
     cmp = "${coreutils}/cmp";

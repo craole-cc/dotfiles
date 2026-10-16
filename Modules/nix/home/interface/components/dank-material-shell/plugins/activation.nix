@@ -9,7 +9,8 @@
   inherit (lix.attrsets.transformation) filterAttrs mapAttrs;
   inherit (lix.modules.construction) mkIf;
   inherit (lix.strings.transformation) escapeShellArg;
-  inherit (bins) install jaq mkdir mktemp rm;
+  inherit (bins) gum install jaq mkdir mktemp rm;
+  inherit (config.xdg) configHome;
 
   cfg = config.programs.dank-material-shell;
   enabled = filterAttrs (_: plugin: plugin.enable) cfg.plugins;
@@ -18,15 +19,15 @@
   );
 in
   mkIf (!cfg.managePluginSettings) (entryAfter ["configureDmsTheme"] ''
-    settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/plugin_settings.json"}
+    settings=${escapeShellArg "${configHome}/DankMaterialShell/plugin_settings.json"}
     if [ -n "$DRY_RUN_CMD" ]; then
-      echo "Would enable declared DMS plugins in $settings"
+      ${gum} log --level info "Would enable declared DMS plugins in $settings"
     else
       if [ -L "$settings" ]; then
-        echo "Refusing to replace managed DMS plugin settings symlink: $settings" >&2
+        ${gum} log --level error "Refusing to replace managed DMS plugin settings symlink: $settings" >&2
         exit 1
       fi
-      ${mkdir} -p ${escapeShellArg "${config.xdg.configHome}/DankMaterialShell"}
+      ${mkdir} -p ${escapeShellArg "${configHome}/DankMaterialShell"}
       tmp="$(${mktemp} "$settings.tmp.XXXXXX")"
       trap '${rm} -f "$tmp"' EXIT
       if [ -f "$settings" ]; then
