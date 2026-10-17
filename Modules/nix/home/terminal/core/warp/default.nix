@@ -2,9 +2,7 @@
   config,
   lix,
   inputs,
-  packages,
   pkgs,
-  system,
   user,
   ...
 }: let
@@ -33,7 +31,6 @@
     required = true;
   };
   exe = pkgs.writeShellScriptBin "warp-terminal" ''
-    # exec ${tool.package}/bin/warp "$@"
     exec ${tool.exe} "$@"
   '';
 in
@@ -47,7 +44,7 @@ in
     };
     outputs = {
       home = {
-        packages = [tool.package];
+        packages = [tool.package exe];
       };
     };
   }
