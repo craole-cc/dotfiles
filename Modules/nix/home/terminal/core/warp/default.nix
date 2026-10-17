@@ -31,15 +31,15 @@ in
         ));
       };
       enableAlias = mkTrue "${mod} command alias";
-      package = mkOption {
-        inherit (cfg.pkg) description;
-        default = cfg.pkg.package;
-        type = pkgType;
-      };
       alias = mkOption {
         description = "Alias (${mod}) for the executable";
         default = cfg.pkg.alias;
         readOnly = true;
+        type = pkgType;
+      };
+      package = mkOption {
+        inherit (cfg.pkg) description;
+        default = cfg.pkg.package;
         type = pkgType;
       };
       pkg = mkOption {
