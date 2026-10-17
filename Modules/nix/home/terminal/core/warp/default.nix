@@ -28,6 +28,7 @@
   tool = pkgOf {
     inherit inputs pkgs;
     input = "warp-terminal";
+    exe = "warp";
     required = true;
   };
   exe = pkgs.writeShellScriptBin "warp-terminal" ''
