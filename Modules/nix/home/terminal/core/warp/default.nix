@@ -36,14 +36,19 @@ in
         type = pkgType;
       };
       alias = mkOption {
-        default = pkgs.writeShellScriptBin mod ''exec ${cfg.pkg.exe} "$@"'';
+        default = pkgs.linkFarm mod [
+          {
+            # name = "bin/${mod}";
+            name = mod;
+            path = cfg.pkg.paths.executable;
+          }
+        ];
         type = pkgType;
       };
       pkg = mkOption {
         default = pkgOf {
           inherit inputs pkgs;
           input = "warp-terminal";
-          target = "default";
           exe = "warp";
           required = true;
         };
