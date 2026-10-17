@@ -25,60 +25,11 @@
   dmsEnabled = config.programs.dank-material-shell.enable or false;
   dmsEmbedded = "${pkgs.dms-shell.src}/core/internal/config/embedded";
 
-  # Scratchpad keys/modifiers are normalized by the schema. Application roles
-  # come from the same resolved contract used by the session variables, while
-  # launch metadata handles app-specific new-window and terminal wrapping.
   scratchpads = user.interface.keyboard.scratchpads or {};
-  scratchpadRoles = [
-    "primary"
-    "secondary"
-    "tertiary"
-  ];
-
-  scratchpadApps = {
-    inherit (apps) ai terminal browser;
-    inherit (apps) editor;
-    inherit (apps) explorer;
-  };
-
   terminalLaunch = keyboard.bindings.terminal or {};
   windowClose = keyboard.bindings.close or {};
   windowCycle = keyboard.bindings.windowCycle or {};
   windowLast = keyboard.bindings.windowLast or {};
-  primaryTerminal = apps.terminal.primary or null;
-
-  wrapTerminalCommand = entry: command:
-    if command == null
-    then null
-    else if (entry.needsTerminal or false) && builtins.isAttrs primaryTerminal
-    then let
-      terminalCommand = primaryTerminal.command or null;
-      execFlag = primaryTerminal.wrap.execFlag or "-e";
-    in
-      if terminalCommand == null
-      then command
-      else "${terminalCommand} ${execFlag} ${command}"
-    else command;
-
-  defaultScratchpadCommand = category: role: let
-    categoryApps = scratchpadApps.${category} or {};
-    entry = categoryApps.${role} or null;
-    command =
-      if builtins.isAttrs entry
-      then entry.launch.scratchpad or entry.command or null
-      else null;
-  in
-    if builtins.isAttrs entry
-    then wrapTerminalCommand entry command
-    else null;
-
-  scratchpadCommand = category: role: roleConfig: let
-    configured = roleConfig.command or null;
-  in
-    if configured != null
-    then configured
-    else defaultScratchpadCommand category role;
-
   mkDmsChordWith = key: binding: extraMods:
     lib.concatStringsSep " + " (
       builtins.filter (part: part != "") (lib.splitString " " (binding.mod or ""))
@@ -88,50 +39,9 @@
 
   mkDmsChord = key: binding: mkDmsChordWith key binding [];
 
-  mkDmsScratchpadRoleBind = category: scratchpad: role: let
-    key = scratchpad.key or null;
-    roleConfig = scratchpad.${role} or {};
-    mod = roleConfig.mod or null;
-    command = scratchpadCommand category role roleConfig;
-  in
-    if key == null || mod == null || command == null || command == ""
-    then ""
-    else let
-      chord = mkDmsChord key roleConfig;
-      workspace = "${category}-${role}";
-    in ''
-      hl.workspace_rule({ workspace = ${builtins.toJSON "special:${workspace}"}, on_created_empty = ${builtins.toJSON command} })
-      hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.workspace.toggle_special(${builtins.toJSON workspace}), { description = ${builtins.toJSON "Toggle ${category} ${role} scratchpad"} })
-    '';
-
-  mkDmsScratchpadBinds = category: scratchpad:
-    lib.concatStringsSep "" (
-      map (role: mkDmsScratchpadRoleBind category scratchpad role) scratchpadRoles
-    );
-
-  mkDmsTerminalBind = role: extraMods: let
-    key = terminalLaunch.key or null;
-    mod = terminalLaunch.mod or null;
-    terminal = apps.terminal.${role} or null;
-    command =
-      if builtins.isAttrs terminal
-      then terminal.command or null
-      else null;
-  in
-    if key == null || mod == null || command == null || command == ""
-    then ""
-    else let
-      chord = mkDmsChordWith key terminalLaunch extraMods;
-    in ''
-      hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.exec_cmd(${builtins.toJSON command}), { description = ${builtins.toJSON "Open ${role} terminal"} })
-    '';
-
-  dmsTerminalBinds =
-    mkDmsTerminalBind "primary" []
-    + mkDmsTerminalBind "secondary" ["SHIFT"]
-    + mkDmsTerminalBind "tertiary" ["ALT"];
+  applicationBinds = import ./applications.nix {
+    inherit apps lix scratchpads terminalLaunch;
+  };
 
   dmsWindowCloseBind = let
     key = windowClose.key or null;
@@ -280,12 +190,12 @@
       -- remain authoritative even if DMS has persisted older bindings.
     ''
     + dmsKittyWindowRule
-    + dmsTerminalBinds
+    + applicationBinds.terminals
     + dmsWindowCloseBind
     + dmsGhosttyQuickTerminalBind
     + dmsWindowLastBind
     + dmsWindowCycleBinds
-    + lib.concatStringsSep "" (lib.mapAttrsToList mkDmsScratchpadBinds scratchpads)
+    + applicationBinds.scratchpads
   );
 
   dmsRoot = pkgs.runCommand "dms-hyprland.lua" {} ''

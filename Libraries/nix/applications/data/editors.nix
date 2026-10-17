@@ -322,6 +322,7 @@ _: {
   };
 
   vscode = {
+    aliases = ["vscode-fhs"];
     names = {
       package = "vscode";
       command = "code";
@@ -399,6 +400,7 @@ _: {
   };
 
   zed = {
+    aliases = ["zed-editor-fhs"];
     names = {
       package = "zed-editor";
       command = "zeditor";

@@ -50,6 +50,11 @@
 
       scratchpadRole = submodule {
         options = {
+          key = mkOption {
+            description = "Optional key override for an indexed scratchpad";
+            type = nullOr str;
+            default = null;
+          };
           mod = mkOption {
             type = nullOr str;
             default = null;
@@ -64,6 +69,11 @@
 
       scratchpad = submodule {
         options = {
+          entries = mkOption {
+            description = "Scratchpad overrides keyed by one-based application position";
+            type = attrsOf scratchpadRole;
+            default = {};
+          };
           key = mkOption {
             type = nullOr str;
             default = null;

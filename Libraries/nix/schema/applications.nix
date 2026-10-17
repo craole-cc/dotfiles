@@ -1,7 +1,15 @@
 {_, ...}: let
   inherit (_.applications.registry) resolve;
-  inherit (_.attrsets.access) attrByPath;
+  inherit (_.attrsets.access) attrByPath attrValues;
   inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.attrsets.construction) optionalAttrs;
+  inherit (_.attrsets.transformation) mapAttrs;
+  inherit (_.lists.access) elemAt length;
+  inherit (_.lists.aggregation) concatMap;
+  inherit (_.lists.construction) toList;
+  inherit (_.lists.selection) drop filter;
+  inherit (_.lists.transformation) unique;
+  inherit (_.types.predicates) isAttrs isString;
   inherit (_.debug.tracing) tryEval;
   inherit (_.strings.transformation) hasInfix toLower;
 
@@ -112,10 +120,12 @@
       "neovim" = "nvim";
       "nvim" = "nvim";
       "vscode" = "code";
+      "vscode-fhs" = "code";
       "vscode-insiders" = "code-insiders";
       "code-insiders" = "code-insiders";
       "vscodium" = "codium";
       "zed" = "zeditor";
+      "zed-editor-fhs" = "zeditor";
       "zeditor" = "zeditor";
       "vim" = "vim";
       "nano" = "nano";
@@ -257,21 +267,12 @@
     launch.scratchpad = scratchpadCommand category meta command;
   };
 
-  mkMaybeEntry = category: name:
-    if name == null
-    then null
-    else mkEntry category name;
-
   # ── Resolution ───────────────────────────────────────────────────────────────
 
   mkApplications = {
     host,
     user ? {},
   }: let
-    merged = recursiveUpdate (recursiveUpdate defaults (host.applications or {})) (
-      user.applications or {}
-    );
-
     userProtocol = (user.interface or {}).displayProtocol or null;
     hostProtocol = (host.interface or {}).displayProtocol or null;
     protocol =
@@ -279,74 +280,173 @@
       then userProtocol
       else hostProtocol;
 
-    # App contracts may refine a category by display protocol. The selected
-    # protocol override is folded into the normalized category and the
-    # conditional branches are then removed from the consumer-facing contract.
-    resolveProtocol = value: let
-      override =
-        if protocol != null
-        then value.${protocol} or {}
-        else {};
-    in
-      removeAttrs (recursiveUpdate value override) ["wayland" "x11" "xorg"];
+    ranks = ["primary" "secondary" "tertiary"];
+    resolveProtocol = value:
+      if isAttrs value
+      then
+        removeAttrs (recursiveUpdate value (
+          if protocol != null
+          then value.${protocol} or {}
+          else {}
+        )) ["wayland" "x11" "xorg"]
+      else value;
 
-    raw =
-      merged
-      // {
-        browser = resolveProtocol merged.browser;
-        terminal = resolveProtocol merged.terminal;
-        editor = resolveProtocol merged.editor;
-        launcher = resolveProtocol merged.launcher;
-        explorer = resolveProtocol merged.explorer;
-      };
-  in {
-    ai = {
-      primary = mkMaybeEntry "ai" raw.ai.primary;
-      secondary = mkMaybeEntry "ai" raw.ai.secondary;
-      tertiary = mkMaybeEntry "ai" raw.ai.tertiary;
+    # Explicit legacy ranks precede the ordered tail; a string is one entry.
+    normalizeSelection = value: let
+      resolved = resolveProtocol value;
+      entries =
+        if isAttrs resolved
+        then
+          concatMap (rank: toList (resolved.${rank} or [])) ranks
+          ++ toList (resolved.ordered or resolved.list or [])
+        else toList resolved;
+    in
+      unique (filter (entry: isString entry && entry != "") entries);
+
+    selection = values: {
+      ordered = values;
+      primary =
+        if length values > 0
+        then elemAt values 0
+        else null;
+      secondary =
+        if length values > 1
+        then elemAt values 1
+        else null;
+      tertiary =
+        if length values > 2
+        then elemAt values 2
+        else null;
     };
-    browser = {
-      primary = mkEntry "browser" raw.browser.primary;
-      secondary = mkMaybeEntry "browser" raw.browser.secondary;
-      tertiary = mkMaybeEntry "browser" raw.browser.tertiary;
-    };
-    terminal = {
-      primary = mkEntry "terminal" raw.terminal.primary;
-      secondary = mkMaybeEntry "terminal" raw.terminal.secondary;
-      tertiary = mkMaybeEntry "terminal" raw.terminal.tertiary;
-    };
-    editor = {
-      tty = {
-        primary = mkEntry "editor" raw.editor.tty.primary;
-        secondary = mkMaybeEntry "editor" raw.editor.tty.secondary;
-        tertiary = mkMaybeEntry "editor" raw.editor.tty.tertiary;
-      };
-      gui = {
-        primary = mkEntry "editor" raw.editor.gui.primary;
-        secondary = mkMaybeEntry "editor" raw.editor.gui.secondary;
-        tertiary = mkMaybeEntry "editor" raw.editor.gui.tertiary;
-      };
-      primary = mkEntry "editor" raw.editor.gui.primary;
-      secondary = mkMaybeEntry "editor" raw.editor.gui.secondary;
-      tertiary = mkMaybeEntry "editor" raw.editor.gui.tertiary;
-    };
-    launcher = {
-      primary = mkEntry "launcher" raw.launcher.primary;
-      secondary = mkMaybeEntry "launcher" raw.launcher.secondary;
-      tertiary = mkMaybeEntry "launcher" raw.launcher.tertiary;
-    };
-    explorer = {
-      primary = mkEntry "explorer" raw.explorer.primary;
-      secondary = mkMaybeEntry "explorer" raw.explorer.secondary;
-      tertiary = mkMaybeEntry "explorer" raw.explorer.tertiary;
-    };
-    bar = {
-      primary = mkEntry "bar" (
-        if raw.bar == null
-        then "waybar"
-        else raw.bar
+
+    # Normalise each scope before merging: a user's list replaces the host's
+    # list as a whole. Only ranks explicitly declared in that scope move ahead
+    # of a new packages list; schema defaults never displace that list.
+    normalizeLegacy = previous: value: let
+      resolved = resolveProtocol value;
+    in
+      normalizeSelection (
+        if isAttrs resolved && !(resolved ? ordered || resolved ? list)
+        then (selection previous) // {ordered = drop 3 previous;} // resolved
+        else resolved
       );
-    };
+
+    normalizePackage = previous: value:
+      normalizeSelection (
+        if isAttrs value && !(value ? ordered || value ? list)
+        then value // {ordered = previous;}
+        else value
+      );
+
+    getSelections = definition: previous: let
+      legacy = definition.applications or {};
+      packages = definition.packages or {};
+      group = name: packageName: let
+        old = legacy.${name} or null;
+        current = packages.${packageName} or null;
+        ranked =
+          if isAttrs old
+          then concatMap (rank: toList ((resolveProtocol old).${rank} or [])) ranks
+          else [];
+      in
+        optionalAttrs (legacy ? ${name} || packages ? ${packageName}) {
+          ${name} =
+            if packages ? ${packageName}
+            then normalizeSelection {ordered = ranked ++ normalizePackage previous.${name} current;}
+            else normalizeLegacy previous.${name} old;
+        };
+      oldEditor = resolveProtocol (legacy.editor or {});
+      editorGroup = kind: packageName: let
+        old = oldEditor.${kind} or null;
+        ranked =
+          if isAttrs old
+          then concatMap (rank: toList ((resolveProtocol old).${rank} or [])) ranks
+          else [];
+      in
+        optionalAttrs (oldEditor ? ${kind} || packages ? ${packageName}) {
+          ${kind} =
+            if packages ? ${packageName}
+            then normalizeSelection {ordered = ranked ++ normalizePackage previous.editor.${kind} packages.${packageName};}
+            else normalizeLegacy previous.editor.${kind} old;
+        };
+    in
+      group "terminal" "terminal"
+      // group "browser" "browser"
+      // group "launcher" "launcher"
+      // group "explorer" "explorer"
+      // group "ai" "ai-agent"
+      // group "bar" "bar"
+      // group "prompt" "prompt"
+      // {editor = editorGroup "tty" "editor" // editorGroup "gui" "ide";};
+
+    base =
+      (mapAttrs (_: normalizeSelection) (removeAttrs defaults ["editor" "allowed"]))
+      // {
+        editor = mapAttrs (_: normalizeSelection) defaults.editor;
+      };
+    hostSelections = recursiveUpdate base (getSelections host base);
+    ordered = recursiveUpdate hostSelections (getSelections user hostSelections);
+    selected =
+      concatMap (name: ordered.${name}) ["terminal" "browser" "launcher" "explorer" "ai" "bar" "prompt"]
+      ++ ordered.editor.tty ++ ordered.editor.gui;
+    extraGroups = definition:
+      removeAttrs (definition.packages or {}) [
+        "kernel"
+        "unstable"
+        "allowUnfree"
+        "allowBroken"
+        "config"
+        "overlays"
+        "terminal"
+        "browser"
+        "editor"
+        "ide"
+        "explorer"
+        "ai-agent"
+        "launcher"
+        "bar"
+        "prompt"
+      ];
+    hostExtras = mapAttrs (_: normalizeSelection) (extraGroups host);
+    extras =
+      hostExtras
+      // (mapAttrs (
+        name: value:
+          normalizePackage (hostExtras.${name} or []) value
+      ) (extraGroups user));
+    requestedPackages = concatMap normalizeSelection (attrValues extras);
+    raw =
+      (mapAttrs (_: selection) (removeAttrs ordered ["editor" "bar" "prompt"]))
+      // {
+        editor = mapAttrs (_: selection) ordered.editor;
+        bar = (selection ordered.bar).primary;
+        prompt = (selection ordered.prompt).primary;
+        allowed = unique (
+          toList (host.applications.allowed or [])
+          ++ toList (user.applications.allowed or [])
+          ++ requestedPackages ++ selected
+        );
+      };
+    enrich = category: values: let
+      entries = map (mkEntry category) values;
+    in (selection entries);
+  in {
+    ai = enrich "ai" ordered.ai;
+    browser = enrich "browser" ordered.browser;
+    terminal = enrich "terminal" ordered.terminal;
+    editor =
+      (enrich "editor" ordered.editor.gui)
+      // {
+        tty = enrich "editor" ordered.editor.tty;
+        gui = enrich "editor" ordered.editor.gui;
+      };
+    launcher = enrich "launcher" ordered.launcher;
+    explorer = enrich "explorer" ordered.explorer;
+    bar.primary = mkEntry "bar" (
+      if raw.bar == null
+      then "waybar"
+      else raw.bar
+    );
     inherit raw;
     inherit (raw) prompt allowed;
   };
