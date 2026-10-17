@@ -70,7 +70,7 @@ in
       };
     };
     outputs = {
-      warnings = kernel.warnings;
+      inherit (kernel) warnings;
       assertions = [
         {
           assertion = any (pattern: hasInfix pattern cfg.loader) validPatterns;

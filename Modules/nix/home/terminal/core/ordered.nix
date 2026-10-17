@@ -20,7 +20,7 @@ in {
       entry:
         (userApplicationConfig {
           inherit config pkgs user;
-          name = entry.name;
+          inherit (entry) name;
           kind = "terminal";
         }).home.packages
     )

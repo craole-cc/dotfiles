@@ -98,8 +98,8 @@
       "shortwave"
     ];
     ide = [
-      "zed-editor-fhs"
       "vscode-fhs"
+      "zed-editor-fhs"
       "vscode-insiders"
     ];
     launcher = [
@@ -290,146 +290,149 @@
 
     fonts = let
       #~@ Packages
-      fira-code = {
-        name = "Fira Code";
-        package = "fira-code";
-      };
-      fira-code-nf = {
-        name = "Fira Code Nerd Font";
-        package = "nerd-fonts.fira-code";
-      };
-      ibm-plex-sans = {
-        name = "IBM Plex Sans";
-        package = "ibm-plex";
-      };
-      ibm-plex-serif = {
-        name = "IBM Plex Serif";
-        package = "ibm-plex";
-      };
-      jetbrains-mono = {
-        name = "JetBrains Mono";
-        package = "jetbrains-mono";
-      };
-      jetbrains-mono-nf = {
-        name = "JetBrains Mono Nerd Font";
-        package = "nerd-fonts.jetbrains-mono";
-      };
-      lilex = {
-        name = "Lilex";
-        package = "lilex";
-      };
-      lilex-nf = {
-        name = "Lilex Nerd Font";
-        package = "nerd-fonts.lilex";
-      };
-      maple-mono = {
-        name = "Maple Mono";
-        package = "maple-mono";
-      };
-      maple-mono-nf = {
-        name = "Maple Mono NF";
-        package = "maple-mono.NF-unhinted";
-      };
-      material-symbols-outlined = {
-        name = "Material Symbols Outlined";
-        package = "material-symbols";
-      };
-      material-symbols-rounded = {
-        name = "Material Symbols Rounded";
-        package = "material-symbols";
-      };
-      material-symbols-sharp = {
-        name = "Material Symbols Sharp";
-        package = "material-symbols";
-      };
-      monaspace-argon = {
-        name = "Monaspace Argon Frozen";
-        package = "monaspace";
-      };
-      monaspace-krypton = {
-        name = "Monaspace Krypton Frozen";
-        package = "monaspace";
-      };
-      monaspace-radon = {
-        name = "Monaspace Radon Frozen";
-        package = "monaspace";
-      };
-      noto-color-emoji = {
-        name = "Noto Color Emoji";
-        package = "noto-fonts-color-emoji";
-      };
-      noto-serif = {
-        name = "Noto Serif";
-        package = "noto-fonts";
-      };
-      noto-sans = {
-        name = "Noto Sans";
-        package = "noto-fonts";
-      };
-      overpass = {
-        name = "Overpass";
-        package = "overpass";
-      };
-      rubik = {
-        name = "Rubik";
-        package = "rubik";
-      };
-      source-code-pro = {
-        name = "Source Code Pro";
-        package = "source-code-pro";
-      };
-      source-code-pro-nf = {
-        name = "Source Code Pro Nerd Font";
-        package = "nerd-fonts.source-code-pro";
-      };
-      source-sans-pro = {
-        name = "Source Sans Pro";
-        package = "source-sans-pro";
-      };
-      source-serif-pro = {
-        name = "Source Serif Pro";
-        package = "source-serif-pro";
+      packages = {
+        fira-code = {
+          name = "Fira Code";
+          package = "fira-code";
+        };
+        fira-code-nf = {
+          name = "Fira Code Nerd Font";
+          package = "nerd-fonts.fira-code";
+        };
+        ibm-plex-sans = {
+          name = "IBM Plex Sans";
+          package = "ibm-plex";
+        };
+        ibm-plex-serif = {
+          name = "IBM Plex Serif";
+          package = "ibm-plex";
+        };
+        jetbrains-mono = {
+          name = "JetBrains Mono";
+          package = "jetbrains-mono";
+        };
+        jetbrains-mono-nf = {
+          name = "JetBrains Mono Nerd Font";
+          package = "nerd-fonts.jetbrains-mono";
+        };
+        lilex = {
+          name = "Lilex";
+          package = "lilex";
+        };
+        lilex-nf = {
+          name = "Lilex Nerd Font";
+          package = "nerd-fonts.lilex";
+        };
+        maple-mono = {
+          name = "Maple Mono";
+          package = "maple-mono";
+        };
+        maple-mono-nf = {
+          name = "Maple Mono NF";
+          package = "maple-mono.NF-unhinted";
+        };
+        material-symbols-outlined = {
+          name = "Material Symbols Outlined";
+          package = "material-symbols";
+        };
+        material-symbols-rounded = {
+          name = "Material Symbols Rounded";
+          package = "material-symbols";
+        };
+        material-symbols-sharp = {
+          name = "Material Symbols Sharp";
+          package = "material-symbols";
+        };
+        monaspace-argon = {
+          name = "Monaspace Argon Frozen";
+          package = "monaspace";
+        };
+        monaspace-krypton = {
+          name = "Monaspace Krypton Frozen";
+          package = "monaspace";
+        };
+        monaspace-radon = {
+          name = "Monaspace Radon Frozen";
+          package = "monaspace";
+        };
+        noto-color-emoji = {
+          name = "Noto Color Emoji";
+          package = "noto-fonts-color-emoji";
+        };
+        noto-serif = {
+          name = "Noto Serif";
+          package = "noto-fonts";
+        };
+        noto-sans = {
+          name = "Noto Sans";
+          package = "noto-fonts";
+        };
+        overpass = {
+          name = "Overpass";
+          package = "overpass";
+        };
+        rubik = {
+          name = "Rubik";
+          package = "rubik";
+        };
+        source-code-pro = {
+          name = "Source Code Pro";
+          package = "source-code-pro";
+        };
+        source-code-pro-nf = {
+          name = "Source Code Pro Nerd Font";
+          package = "nerd-fonts.source-code-pro";
+        };
+        source-sans-pro = {
+          name = "Source Sans Pro";
+          package = "source-sans-pro";
+        };
+        source-serif-pro = {
+          name = "Source Serif Pro";
+          package = "source-serif-pro";
+        };
       };
 
-      #~@ Categories
-      clock = [
-        rubik
-        monaspace-krypton
-        source-code-pro
-      ];
-      emoji =
-        [noto-color-emoji] ++ material;
-      material = [
-        material-symbols-sharp
-        material-symbols-outlined
-        material-symbols-rounded
-      ];
-      monospace = [
-        lilex-nf
-        lilex
-        maple-mono-nf
-        maple-mono
-        jetbrains-mono-nf
-        jetbrains-mono
-        fira-code-nf
-        fira-code
-        source-code-pro-nf
-        source-code-pro
-      ];
-      sans = [
-        monaspace-radon
-        monaspace-argon
-        ibm-plex-sans
-        source-sans-pro
-        overpass
-        noto-sans
-      ];
-      serif = [
-        ibm-plex-serif
-        noto-serif
-        source-serif-pro
-      ];
-    in {inherit clock sans serif emoji material monospace;};
+      categories = with packages; rec {
+        clock = [
+          rubik
+          monaspace-krypton
+          source-code-pro
+        ];
+        emoji = [noto-color-emoji] ++ material;
+        material = [
+          material-symbols-sharp
+          material-symbols-outlined
+          material-symbols-rounded
+        ];
+        monospace = [
+          lilex-nf
+          lilex
+          maple-mono-nf
+          maple-mono
+          jetbrains-mono-nf
+          jetbrains-mono
+          fira-code-nf
+          fira-code
+          source-code-pro-nf
+          source-code-pro
+        ];
+        sans = [
+          monaspace-radon
+          monaspace-argon
+          ibm-plex-sans
+          source-sans-pro
+          overpass
+          noto-sans
+        ];
+        serif = [
+          ibm-plex-serif
+          noto-serif
+          source-serif-pro
+        ];
+      };
+    in
+      categories;
 
     keyboard = {
       layout = "us";
@@ -472,14 +475,14 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Scrathpad";
-          })
-          (mkBinding common {
             description = description + ": Primary";
-            modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
             description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];
@@ -491,14 +494,14 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Scrathpad";
-          })
-          (mkBinding common {
             description = description + ": Primary";
-            modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
             description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];
@@ -510,14 +513,14 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Scrathpad";
-          })
-          (mkBinding common {
             description = description + ": Primary";
-            modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
             description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];
@@ -529,14 +532,14 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Scrathpad";
-          })
-          (mkBinding common {
             description = description + ": Primary";
-            modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
             description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];
@@ -548,14 +551,14 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Scrathpad";
-          })
-          (mkBinding common {
             description = description + ": Primary";
-            modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
             description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];

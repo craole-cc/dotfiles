@@ -85,7 +85,7 @@
           // {
             applications = enrichedApplications.raw;
             packages = (user.packages or {}) // enrichedApplications.packages;
-            theme = enrichedInterface.theme;
+            inherit (enrichedInterface) theme;
           };
 
         inputs' = mkApps {

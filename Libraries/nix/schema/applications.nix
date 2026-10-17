@@ -456,7 +456,8 @@
       };
     enrich = category: values: let
       entries = map (mkEntry category) values;
-    in (selection entries);
+    in
+      selection entries;
   in {
     ai = enrich "ai" ordered.ai;
     browser = enrich "browser" ordered.browser;

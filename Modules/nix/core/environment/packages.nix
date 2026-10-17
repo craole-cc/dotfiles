@@ -200,6 +200,8 @@
       lolcat
       lshw
       pciutils
+      jq
+      jaq
       procs
       usbutils
       uutils-coreutils-noprefix
@@ -236,6 +238,11 @@
       nomacs
       qimgv
       viu
+      yazi
+      ffmpeg-headless
+      ffmpegthumbnailer
+      poppler
+      resvg
     ];
 
     #~@ Platform Helpers

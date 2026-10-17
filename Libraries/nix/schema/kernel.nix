@@ -56,7 +56,7 @@
       }
       ++ optional (compatible && cpu.level != null) {
         name = "linuxPackages_cachyos-${cpu.arch}-${cpu.level}";
-        level = cpu.level;
+        inherit (cpu) level;
       }
       ++ [
         {

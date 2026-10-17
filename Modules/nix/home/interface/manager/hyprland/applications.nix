@@ -24,7 +24,7 @@
 
   scratchpadBind = category: scratchpad: binding: let
     entries = (apps.${category} or {}).ordered or [];
-    application = binding.application;
+    inherit (binding) application;
     entry =
       if application > 0 && application <= length entries
       then elemAt entries (application - 1)

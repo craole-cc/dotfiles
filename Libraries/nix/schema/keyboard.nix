@@ -180,7 +180,7 @@
         (mapAttrs (_: legacyScratchpad) (scope.scratchpads or {}));
     };
 
-  finalizeKeyboard = keyboard: let
+  finaliseKeyboard = keyboard: let
     normalized = normalizeValue keyboard;
   in
     normalized
@@ -188,6 +188,6 @@
       scratchpads = mapAttrs (_: legacyScratchpad) (normalized.scratchpads or {});
     };
 
-  mergeKeyboards = scopes: finalizeKeyboard (foldl' applyScope {} scopes);
+  mergeKeyboards = scopes: finaliseKeyboard (foldl' applyScope {} scopes);
   normalizeKeyboard = keyboard: mergeKeyboards [keyboard];
 in {inherit mergeKeyboards normalizeKeyboard;}

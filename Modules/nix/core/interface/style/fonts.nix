@@ -63,7 +63,7 @@ in
         enable = mkTrue "fonts";
         packages = mkOption {
           description = "Font packages for every ordered selection of enabled users";
-          default = packages;
+          default = packages ++ [pkgs.corefonts];
           type = listOf package;
         };
       }
@@ -80,6 +80,9 @@ in
       fonts = {
         inherit (cfg) packages;
         enableDefaultPackages = true;
+        enableFontDir = true;
+        enableGhostscriptFonts = true;
+        fontDir.enable = true;
         fontconfig = {
           enable = true;
           defaultFonts = {

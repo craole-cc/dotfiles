@@ -154,7 +154,7 @@
       user = host.users.data.primary or {};
     };
   in {
-    warnings = kernel.warnings;
+    inherit (kernel) warnings;
     assertions = [
       {
         assertion = hasValidBootLoader;
