@@ -4,7 +4,6 @@
     inkscape
     # microsoft-edge
     qbittorrent-enhanced
-    warp-terminal
     kdePackages.yakuake
     swaybg
     cachix

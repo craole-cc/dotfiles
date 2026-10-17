@@ -112,7 +112,7 @@
       "kitty" = "kitty";
       "alacritty" = "alacritty";
       "wezterm" = "wezterm";
-      "warp-terminal" = "warp-terminal";
+      "warp-terminal" = "warp";
       "rio" = "rio";
     };
     editor = {

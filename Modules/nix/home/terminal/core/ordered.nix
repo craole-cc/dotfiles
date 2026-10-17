@@ -12,7 +12,7 @@
   inherit (lix.lists.selection) filter;
   # These modules configure and install their own packages. Other selected
   # terminals still need to be installed, regardless of their list position.
-  dedicated = ["ghostty" "foot" "kitty"];
+  dedicated = ["ghostty" "foot" "kitty" "warp-terminal"];
   additional = filter (entry: !(elem entry.name dedicated)) apps.terminal.ordered;
 in {
   home.packages =

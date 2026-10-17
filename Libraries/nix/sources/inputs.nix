@@ -548,6 +548,19 @@
         ];
       };
 
+      warp-terminal = {
+        names = [
+          "warp"
+          "warp-preview"
+          "warpPreview"
+          "terminalWarp"
+          "warp-terminal-experimental"
+          "warpTerm"
+          "warpTerminal"
+          "warp-terminal"
+        ];
+      };
+
       zen-browser = {
         names = [
           "browserZen"

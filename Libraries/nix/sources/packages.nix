@@ -102,6 +102,7 @@
         "treefmt"
         "typix"
         "vscode-insiders"
+        "warp-terminal"
         "zen-browser"
       ];
     };
