@@ -2,85 +2,59 @@
   apps,
   lix,
   scratchpads,
-  terminalLaunch,
 }: let
-  inherit (lix.attrsets.transformation) filterAttrs mapAttrsToList;
+  inherit (lix.attrsets.transformation) mapAttrsToList;
   inherit (lix.lists.access) elemAt length;
-  inherit (lix.lists.transformation) imap0;
+  inherit (lix.lists.selection) filter;
   inherit (lix.strings.construction) concatStringsSep splitString toJSON;
   inherit (lix.types.predicates) isAttrs;
 
-  roles = ["primary" "secondary" "tertiary"];
-  modifiers = [[] ["SHIFT"] ["ALT"] ["SHIFT" "ALT"] ["CTRL"] ["CTRL" "SHIFT"] ["CTRL" "ALT"] ["CTRL" "SHIFT" "ALT"]];
-  roleAt = index:
-    if index < length roles
-    then elemAt roles index
-    else toString (index + 1);
-  extraMods = index:
-    if index < length modifiers
-    then elemAt modifiers index
-    else null;
-  chord = mod: key: concatStringsSep " + " ((splitString " " mod) ++ [key]);
-  entriesFor = category: (apps.${category} or {}).ordered or [];
   primaryTerminal = apps.terminal.primary or null;
   wrapCommand = entry: command:
     if (entry.needsTerminal or false) && isAttrs primaryTerminal
     then "${primaryTerminal.command} ${primaryTerminal.wrap.execFlag or "-e"} ${command}"
     else command;
+  workspaceName = category: application: let
+    legacy = ["primary" "secondary" "tertiary"];
+    suffix =
+      if application <= length legacy
+      then elemAt legacy (application - 1)
+      else toString application;
+  in "${category}-${suffix}";
 
-  scratchpadBind = category: scratchpad: index: entry: let
-    role = roleAt index;
-    nonNull = filterAttrs (_: value: value != null);
-    configured = (nonNull (scratchpad.${role} or {})) // (nonNull (scratchpad.entries.${toString (index + 1)} or {}));
-    extra = extraMods index;
-    key = configured.key or scratchpad.key or null;
-    mod =
-      configured.mod or (
-        if extra == null
-        then null
-        else concatStringsSep " " ([(scratchpad.primary.mod or "SUPER")] ++ extra)
-      );
-    command = configured.command or null;
-    resolvedCommand =
-      if command != null
-      then command
-      else wrapCommand entry (entry.launch.scratchpad or entry.command);
-    workspace = "${category}-${role}";
+  scratchpadBind = category: scratchpad: binding: let
+    entries = (apps.${category} or {}).ordered or [];
+    application = binding.application;
+    entry =
+      if application > 0 && application <= length entries
+      then elemAt entries (application - 1)
+      else null;
+    key =
+      if (binding.key or null) != null
+      then binding.key
+      else scratchpad.key or null;
+    mod = binding.mod or null;
+    configured = binding.command or null;
+    command =
+      if configured != null
+      then configured
+      else if entry != null
+      then wrapCommand entry (entry.launch.scratchpad or entry.command)
+      else null;
+    workspace = workspaceName category application;
+    description = binding.description or "Toggle ${category} ${toString application}";
+    chord = concatStringsSep " + " ((filter (part: part != "") (splitString " " mod)) ++ [key]);
   in
-    # Every selected app gets a workspace. Entries beyond the automatic modifier
-    # combinations can define their own key/mod through scratchpads.<group>.entries.
-    ''
-      hl.workspace_rule({ workspace = ${toJSON "special:${workspace}"}, on_created_empty = ${toJSON resolvedCommand} })
-    ''
-    + (
-      if key == null || mod == null
-      then ""
-      else ''
-        hl.unbind(${toJSON (chord mod key)})
-        hl.bind(${toJSON (chord mod key)}, hl.dsp.workspace.toggle_special(${toJSON workspace}), { description = ${toJSON "Toggle ${category} ${toString (index + 1)}: ${entry.name}"} })
-      ''
-    );
-
-  terminalBind = index: entry: let
-    extra = extraMods index;
-    key = terminalLaunch.key or null;
-    mod = terminalLaunch.mod or null;
-    binding =
-      if mod == null || extra == null
-      then null
-      else concatStringsSep " + " ((splitString " " mod) ++ extra ++ [key]);
-  in
-    if key == null || binding == null
+    if key == null || mod == null || command == null || command == ""
     then ""
     else ''
-      hl.unbind(${toJSON binding})
-      hl.bind(${toJSON binding}, hl.dsp.exec_cmd(${toJSON entry.command}), { description = ${toJSON "Open terminal ${toString (index + 1)}: ${entry.name}"} })
+      hl.workspace_rule({ workspace = ${toJSON "special:${workspace}"}, on_created_empty = ${toJSON command} })
+      hl.unbind(${toJSON chord})
+      hl.bind(${toJSON chord}, hl.dsp.workspace.toggle_special(${toJSON workspace}), { description = ${toJSON description} })
     '';
-in {
-  terminals = concatStringsSep "" (imap0 terminalBind apps.terminal.ordered);
-  scratchpads = concatStringsSep "" (mapAttrsToList (
+in
+  concatStringsSep "" (mapAttrsToList (
       category: scratchpad:
-        concatStringsSep "" (imap0 (scratchpadBind category scratchpad) (entriesFor category))
+        concatStringsSep "" (mapAttrsToList (_: scratchpadBind category scratchpad) (scratchpad.entries or {}))
     )
-    scratchpads);
-}
+    scratchpads)

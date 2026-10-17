@@ -1,22 +1,19 @@
 {_, ...}: let
-  inherit (_.strings.transformation) toUpper;
+  inherit (_.schema.io) mkKeyboard;
 
-  mkKeyboard = {
+  resolveKeyboard = {
     host,
     user,
-  }: {
-    mod = toUpper (user.interface.keyboard.modifier or host.interface.keyboard.modifier or "Super");
-    swapCapsEscape =
-      user.interface.keyboard.swapCapsEscape or host.interface.keyboard.swapCapsEscape or null;
-    vimKeybinds = user.interface.keyboard.vimKeybinds or host.interface.keyboard.vimKeybinds or false;
-    bindings = user.interface.keyboard.bindings or host.interface.keyboard.bindings or {};
-  };
+  }: let
+    keyboard = mkKeyboard {inherit host user;};
+  in
+    keyboard // {mod = keyboard.modifier;};
 
-  exports = {inherit mkKeyboard;};
+  exports.mkKeyboard = resolveKeyboard;
 in
   exports
   // {
     __rootAliases = {
-      mkUserKeyboard = mkKeyboard;
+      mkUserKeyboard = resolveKeyboard;
     };
   }

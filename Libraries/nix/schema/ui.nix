@@ -46,7 +46,7 @@
     ;
   inherit (_.schema) io;
   appSchema = _.schema.applications;
-  inherit (_.schema.io) keyboardDefaults normalizeKeyboard;
+  inherit (_.schema.io) keyboardDefaults mergeKeyboards normalizeKeyboard;
   inherit (_.schema.fonts) getFonts mkFonts;
   inherit (_.strings.construction) optionalString;
   inherit (_.types.combinators) submodule attrsOf;
@@ -238,6 +238,7 @@
       description = "Keyboard config and bindings";
       default = defaults.keyboard;
       type = io.types.keyboard;
+      apply = normalizeKeyboard;
     };
     apps = let
       app = submodule {
@@ -708,7 +709,12 @@
     configs,
   }:
     interface.${key} or configs.wm.${key} or configs.de.${key} or defaults.${key};
-  normalize = interface: let
+  normalize = interface: normalizeWith {inherit interface;};
+
+  normalizeWith = {
+    interface,
+    keyboardScopes ? [interface.keyboard or {}],
+  }: let
     inherit
       (genAttrs (attrNames keys.selection) (
         n:
@@ -790,13 +796,12 @@
       enhancements = interface.shell.enhancements or defaults.shell.enhancements;
     };
 
-    #? Merge order: io defaults → DE overrides → WM overrides → user overrides
-    #? normalizeKeyboard converts all mod lists to strings at the boundary
-    keyboard = normalizeKeyboard (
-      recursiveUpdate (recursiveUpdate (recursiveUpdate keyboardDefaults (configs.de.keyboard or {})) (
-        configs.wm.keyboard or {}
-      )) (interface.keyboard or {})
-    );
+    keyboard = mergeKeyboards ([
+        keyboardDefaults
+        (configs.de.keyboard or {})
+        (configs.wm.keyboard or {})
+      ]
+      ++ keyboardScopes);
   in
     composites
     // {
@@ -830,7 +835,15 @@
     user ? {},
     host,
   }:
-    (normalize (recursiveUpdate (host.interface or {}) (user.interface or {})))
+    (normalizeWith {
+      interface = recursiveUpdate (host.interface or {}) (user.interface or {});
+      keyboardScopes = [
+        (host.keyboard or {})
+        (host.interface.keyboard or {})
+        (user.keyboard or {})
+        (user.interface.keyboard or {})
+      ];
+    })
     // {fonts = mkFonts {inherit host user;};};
 
   requireUI = {
