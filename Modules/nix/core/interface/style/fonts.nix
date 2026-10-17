@@ -84,9 +84,7 @@ in
         fontDir.enable = true;
         fontconfig = {
           enable = true;
-          defaultFonts = {
-            inherit (cfg) monospace sansSerif serif emoji;
-          };
+          defaultFonts = {inherit (cfg) monospace sansSerif serif emoji;};
         };
       };
       environment.sessionVariables = {

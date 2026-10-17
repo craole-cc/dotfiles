@@ -8,7 +8,7 @@
 }: let
   inherit (lix.attrsets.access) attrByPath attrValues;
   inherit (lix.attrsets.transformation) mapAttrs;
-  inherit (lix.lists.access) head;
+  inherit (lix.lists.access) findFirst head;
   inherit (lix.lists.aggregation) concatMap;
   inherit (lix.lists.construction) toList;
   inherit (lix.lists.transformation) unique;
@@ -51,10 +51,90 @@
   users = attrValues (host.users.data.enabled or {});
   selections = [selected] ++ map (user: mkFonts {inherit host user;}) users;
   packages = unique (concatMap (fonts: concatMap resolvePackage (concatMap toList (attrValues fonts))) selections);
+
   first = role:
     if cfg.${role} == []
     then ""
     else head cfg.${role};
+
+  # Helper to resolve the matching package derivation for application options requiring it
+  firstPackage = role: let
+    preferredName = first role;
+    allEntries = concatMap toList (attrValues selected);
+    matchingEntry = findFirst (e: e.name == preferredName) null allEntries;
+  in
+    if matchingEntry != null && matchingEntry.package != null
+    then
+      (
+        if isString matchingEntry.package
+        then attrByPath (splitString "." matchingEntry.package) null pkgs
+        else matchingEntry.package
+      )
+    else null;
+
+  resolved = {
+    clock = let
+      tag = "clock";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_CLOCK = name;
+    };
+
+    emoji = let
+      tag = "emoji";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_EMOJI = name;
+    };
+
+    material = let
+      tag = "material";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_MATERIAL = name;
+    };
+
+    monospace = let
+      tag = "monospace";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_MONO = name;
+      FONT_MONOSPACE = name;
+    };
+
+    sansSerif = let
+      tag = "sansSerif";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_SANS = name;
+      FONT_SANSSERIF = name;
+    };
+
+    serif = let
+      tag = "serif";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_SERIF = name;
+    };
+  };
 in
   mkConfig {
     inherit context;
@@ -77,28 +157,67 @@ in
       roles;
 
     outputs = {
-      fonts = {
-        # inherit (cfg) packages;
-        # enableDefaultPackages = true;
-        # enableFontDir = true;
-        # enableGhostscriptFonts = true;
-        # fontDir.enable = true;
-        fontconfig = {
-          antialiasing = true;
-          enable = true;
-          defaultFonts = {
-            inherit (cfg) monospace sansSerif serif emoji;
-          };
-        };
+      home.packages = cfg.packages;
+
+      fonts.fontconfig = {
+        antialiasing = true;
+        enable = true;
+        defaultFonts = {inherit (cfg) monospace sansSerif serif emoji;};
       };
-      home.sessionVariables = {
-        FONT_CLOCK = first "clock";
-        FONT_EMOJI = first "emoji";
-        FONT_MATERIAL = first "material";
-        FONT_MONO = first "monospace";
-        FONT_MONOSPACE = first "monospace";
-        FONT_SANS = first "sansSerif";
-        FONT_SERIF = first "serif";
+
+      xdg.configFile."fontconfig/conf.d/99-monospace-override.conf".text = ''
+        <?xml version="1.0"?>
+        <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+        <fontconfig>
+          <match target="pattern">
+            <test qual="any" name="family"><string>monospace</string></test>
+            <edit name="family" mode="prepend" binding="strong">
+              <string>${resolved.monospace.name}</string>
+            </edit>
+          </match>
+        </fontconfig>
+      '';
+
+      home.sessionVariables = with resolved; {
+        inherit (clock) FONT_CLOCK;
+        inherit (emoji) FONT_EMOJI;
+        inherit (material) FONT_MATERIAL;
+        inherit (monospace) FONT_MONO FONT_MONOSPACE;
+        inherit (sansSerif) FONT_SANS FONT_SANSSERIF;
+        inherit (serif) FONT_SERIF;
+      };
+
+      gtk.font = {inherit (resolved.sans) name package size;};
+
+      dconf.settings."org/gnome/desktop/interface" = {
+        font-name = with resolved.sansSerif; "${name} ${toString size}";
+        document-font-name = with resolved.serif; "${name} ${toString size}";
+        monospace-font-name = with resolved.monospace; "${name} ${toString size}";
+      };
+
+      programs = let
+        inherit (resolved.monospace) name package size;
+      in {
+        ghostty.settings = {
+          font-family = name;
+          font-size = size;
+        };
+        kitty.font = {inherit name package size;};
+        foot.settings.main.font = "${name} ${toString size}";
+        termite.font = "${name} ${toString size}";
+        urxvt.fonts = ["xft:${name}:size=${toString size}"];
+        vscode.userSettings = {
+          "editor.fontFamily" = "'${name}', monospace";
+          "editor.fontSize" = size;
+          "editor.fontLigatures" = true;
+          "terminal.integrated.fontFamily" = name;
+          "terminal.integrated.fontSize" = size + 3;
+        };
+        zed-editor.userSettings = {
+          ui_font_size = size + 3;
+          buffer_font_family = name;
+          buffer_font_size = size;
+        };
       };
     };
   }
