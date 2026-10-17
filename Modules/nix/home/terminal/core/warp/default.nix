@@ -34,7 +34,7 @@
     required = true;
   };
   warpTerminalCommand = pkgs.writeShellScriptBin "warp-terminal" ''
-    exec ${warp.package}/bin/warp "$@"
+    exec ${warp.warp.package}/bin/warp "$@"
   '';
 in
   mkConfig {
@@ -43,9 +43,11 @@ in
       inherit context;
       condition = isEnabled;
     };
-    outputs.home.file.".config/warp-terminal-preview/settings.toml".text = ''
-      [terminal.input]
-      honor_ps1 = true
-    '';
-    outputs.home.packages = [warp.warp.package warpTerminalCommand];
+    outputs.home = {
+      # file.".config/warp-terminal-preview/settings.toml".text = ''
+      #   [terminal.input]
+      #   honor_ps1 = true
+      # '';
+      packages = [warp.warp.package warpTerminalCommand];
+    };
   }
