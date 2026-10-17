@@ -577,7 +577,7 @@
           })
           (mkBinding common {
             description = description + ": Session";
-            modifier = modifier ++ ["Shift"];
+            modifier = modifier ++ ["Ctrl" "Shift"];
           })
           (mkBinding common {
             description = description + ": System";
