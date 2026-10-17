@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lix,
   packages,
   pkgs,
@@ -8,7 +9,7 @@
   ...
 }: let
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.sources.packages) pkgOf;
+  inherit (lix.sources.packages) pkgsFrom;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable;
 
@@ -25,10 +26,11 @@
     isIn ["warp-terminal" "warp-preview"]
     (user.applications.allowed or []);
   isEnabled = isSelected && isAllowed;
-  warp = pkgOf {
+  warp = pkgsFrom {
+    inherit inputs system;
     pkgs = packages.warp-terminal.${system};
-    inherit system;
-    target = "default";
+    sources.default = null;
+    aliases.warp = "default";
     required = true;
   };
   warpTerminalCommand = pkgs.writeShellScriptBin "warp-terminal" ''
@@ -42,11 +44,8 @@ in
       condition = isEnabled;
     };
     outputs.home.file.".config/warp-terminal-preview/settings.toml".text = ''
-      [session]
-      startup_shell_override = "${pkgs.zsh}/bin/zsh"
-
       [terminal.input]
       honor_ps1 = true
     '';
-    outputs.home.packages = [warp.package warpTerminalCommand];
+    outputs.home.packages = [warp.warp.package warpTerminalCommand];
   }
