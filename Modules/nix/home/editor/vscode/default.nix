@@ -140,8 +140,7 @@
       # vscode-insiders-nix derives from nixpkgs' stable VS Code package and keeps
       # its passthru metadata. Correct that metadata so desktop/icon/CLI identity is
       # Insiders rather than stable `code`.
-      inputs.vscode-insiders.packages.${system}.vscode-insiders.overrideAttrs
-      (old: {
+      (inputs.vscode-insiders.packages.${system}.vscode-insiders.overrideAttrs (old: {
         passthru =
           (old.passthru or {})
           // {
@@ -149,7 +148,7 @@
             longName = "Visual Studio Code - Insiders";
             iconName = "vscode-insiders";
           };
-      })
+      }))
     ];
     debug = false;
   };

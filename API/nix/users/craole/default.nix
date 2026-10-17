@@ -49,6 +49,7 @@
     ai-agent = [
       "hermes-desktop"
       "chatgpt"
+      "claude-desktop"
       "claude-code"
       "codex"
       "ollama"
