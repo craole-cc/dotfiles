@@ -10,7 +10,8 @@
   inherit (lix.sources.packages) pkgOf;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable mkOption;
-  pkgType = with lix.types; combinators.nullOr primitives.package;
+  inherit (lix.types.combinators) nullOr attrs;
+  pkgType = nullOr lix.types.primitives.package;
 
   context = mkContext {
     inherit config;
@@ -19,14 +20,6 @@
     mod = "warp-terminal";
   };
   inherit (context) cfg mod;
-
-  tool = pkgOf {
-    inherit inputs pkgs;
-    input = "warp-terminal";
-    target = "default";
-    exe = "warp";
-    required = true;
-  };
 in
   mkConfig {
     inherit context;
@@ -38,13 +31,24 @@ in
         ));
       };
       package = mkOption {
-        description = "The Warp Terminal package to use.";
-        default = tool.package;
+        inherit (cfg.pkg) description;
+        default = cfg.pkg.package;
         type = pkgType;
       };
       alias = mkOption {
-        default = pkgs.writeShellScriptBin mod ''exec ${tool.exe} "$@"'';
+        default = pkgs.writeShellScriptBin mod ''exec ${cfg.pkg.exe} "$@"'';
         type = pkgType;
+      };
+      pkg = mkOption {
+        default = pkgOf {
+          inherit inputs pkgs;
+          input = "warp-terminal";
+          target = "default";
+          exe = "warp";
+          required = true;
+        };
+        readOnly = true;
+        type = attrs;
       };
     };
     outputs = {
