@@ -333,6 +333,9 @@
     via `getExe'`; when omitted, `.exe` is `getExe value` (the package's
     own main binary)
 
+  `alias`
+  : optional command name to expose as a symlink package in `.alias`
+
   `pkgs`
   : an already-instantiated `pkgs` to fall back to and to derive `system`
     from; default `null` (falls back to importing `inputs.nixpkgs`
@@ -347,7 +350,7 @@
     default `false`
 
   # Type
-  > pkgOf :: { inputs :: AttrSet, input :: string, target :: string?, exe :: string?, pkgs :: AttrSet?, system :: string?, required :: bool? } -> { name :: string, value :: derivation, pkg :: derivation, exe :: string, paths :: { bin :: path, store :: path } } | null
+  > pkgOf :: { inputs :: AttrSet, input :: string, target :: string?, exe :: string?, alias :: string?, pkgs :: AttrSet?, system :: string?, required :: bool? } -> { name :: string, value :: derivation, pkg :: derivation, exe :: string, alias :: derivation?, paths :: { bin :: path, store :: path } } | null
 
   # Examples
   > pkgOf { inherit `inputs` `pkgs`; `input` = _"treefmt-nix"_; `target` = _"treefmt"_; }
@@ -382,6 +385,7 @@
     input ? null,
     target ? null,
     exe ? null,
+    alias ? null,
     pkgs ? null,
     description ? null,
     system ?
@@ -515,6 +519,17 @@
           revision
           version
           ;
+
+        alias =
+          if alias == null
+          then null
+          else
+            init.source.legacy.linkFarm alias [
+              {
+                name = "bin/${alias}";
+                path = paths.executable;
+              }
+            ];
 
         description =
           if description != null && description != ""
