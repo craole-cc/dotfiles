@@ -20,13 +20,15 @@
     mod = "warp-terminal";
   };
   inherit (context) cfg mod;
+  name = mod;
+  path = cfg.pkg.paths.executable;
 in
   mkConfig {
     inherit context;
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn [mod "warp-preview" "warp"] (with user; (
+        condition = isIn [name "warp-preview" "warp"] (with user; (
           (packages.terminal or []) ++ (applications.allowed or [])
         ));
       };
@@ -36,12 +38,7 @@ in
         type = pkgType;
       };
       symLink = mkOption {
-        default = pkgs.linkFarm mod [
-          {
-            name = mod;
-            path = cfg.pkg.paths.executable;
-          }
-        ];
+        default = pkgs.linkFarm name [{inherit name path;}];
         readOnly = true;
         type = pkgType;
       };
