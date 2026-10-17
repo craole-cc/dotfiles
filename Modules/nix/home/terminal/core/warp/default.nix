@@ -1,20 +1,22 @@
 {
   config,
-  inputs,
   lix,
+  inputs,
+  packages,
   pkgs,
+  system,
   user,
   ...
 }: let
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.sources.packages) pkgsFrom;
+  inherit (lix.sources.packages) pkgOf;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable;
 
   context = mkContext {
     inherit config;
     dom = "terminal";
-    sub = "tools";
+    sub = "emulators";
     mod = "warp-terminal";
   };
   isSelected =
@@ -24,18 +26,28 @@
     isIn ["warp-terminal" "warp-preview"]
     (user.applications.allowed or []);
   isEnabled = isSelected && isAllowed;
-  warp = pkgsFrom {
+
+  tool = pkgOf {
     inherit inputs pkgs;
-    sources.warp = "warp-terminal";
+    input = "warp-terminal";
+    required = true;
   };
+  exe = pkgs.writeShellScriptBin "warp-terminal" ''
+    # exec ${tool.package}/bin/warp "$@"
+    exec ${tool.exe} "$@"
+  '';
 in
   mkConfig {
     inherit context;
-    options.enable = mkEnable {
-      inherit context;
-      condition = isEnabled;
+    options = {
+      enable = mkEnable {
+        inherit context;
+        condition = isEnabled;
+      };
     };
-    outputs.home = {
-      packages = warp.packages;
+    outputs = {
+      home = {
+        packages = [tool.package];
+      };
     };
   }
