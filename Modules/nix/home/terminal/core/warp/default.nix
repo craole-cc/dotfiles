@@ -35,14 +35,14 @@ in
         default = cfg.pkg.package;
         type = pkgType;
       };
-      alias = mkOption {
+      symLink = mkOption {
         default = pkgs.linkFarm mod [
           {
-            # name = "bin/${mod}";
             name = mod;
             path = cfg.pkg.paths.executable;
           }
         ];
+        readOnly = true;
         type = pkgType;
       };
       pkg = mkOption {
@@ -57,6 +57,6 @@ in
       };
     };
     outputs = {
-      home.packages = with cfg; [package alias];
+      home.packages = with cfg; [package symLink];
     };
   }
