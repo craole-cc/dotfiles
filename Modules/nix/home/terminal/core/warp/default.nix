@@ -43,7 +43,7 @@ in
     };
     outputs.home.file.".config/warp-terminal-preview/settings.toml".text = ''
       [session]
-      startup_shell_override = "/run/current-system/sw/bin/bash"
+      startup_shell_override = "${pkgs.zsh}/bin/zsh"
 
       [terminal.input]
       honor_ps1 = true
