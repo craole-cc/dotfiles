@@ -187,7 +187,7 @@ in
         inherit (serif) FONT_SERIF;
       };
 
-      gtk.font = {inherit (resolved.sans) name package size;};
+      gtk.font = {inherit (resolved.sansSerif) name package size;};
 
       dconf.settings."org/gnome/desktop/interface" = {
         font-name = with resolved.sansSerif; "${name} ${toString size}";
