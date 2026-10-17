@@ -812,6 +812,7 @@
         session
         ;
       fonts = getFonts {inherit interface;};
+      desktops = interface.desktops or enabled;
       defaultSession = session;
       desktopEnvironment = desktopEnvironment.name;
       windowManager = windowManager.name;
@@ -834,17 +835,24 @@
   mkUI = {
     user ? {},
     host,
-  }:
+  }: let
+    hostInterface = host.defaults.interface or (host.interface or {});
+    interface = recursiveUpdate hostInterface (user.interface or {});
+  in
     (normalizeWith {
-      interface = recursiveUpdate (host.interface or {}) (user.interface or {});
+      inherit interface;
       keyboardScopes = [
         (host.keyboard or {})
-        (host.interface.keyboard or {})
+        (hostInterface.keyboard or {})
         (user.keyboard or {})
         (user.interface.keyboard or {})
       ];
     })
-    // {fonts = mkFonts {inherit host user;};};
+    // {
+      fonts = mkFonts {inherit host user;};
+      theme = _.schema.theme.mkTheme {inherit host user;};
+      boot = interface.boot or {};
+    };
 
   requireUI = {
     host ? null,

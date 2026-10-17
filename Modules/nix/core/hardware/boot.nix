@@ -11,9 +11,6 @@
     mod = "boot";
   };
   inherit (context) cfg mod;
-  inherit (lix.attrsets.access) getAttr;
-  inherit (lix.attrsets.predicates) hasAttr;
-  inherit (lix.debug.tracing) traceIf;
   inherit (lix.lists.access) length;
   inherit (lix.lists.enums.gui) bootLoaders;
   inherit (lix.lists.predicates) any;
@@ -24,7 +21,6 @@
   inherit (lix.strings.predicates) hasInfix hasPrefix isString;
   inherit (lix.types.combinators) enum;
   inherit (lix.types.primitives) int str;
-  inherit (pkgs) linuxPackages;
 
   hw = host.hardware;
   isX86 = pkgs.stdenv.hostPlatform.isx86;
@@ -36,24 +32,9 @@
     "limine"
   ];
 
-  kernel = let
-    selection = host.packages.kernel or null;
-    exists = selection != null && hasAttr selection pkgs;
-    pkgs' =
-      if exists
-      then getAttr selection pkgs
-      else linuxPackages;
-
-    msg =
-      if selection == null
-      then "ℹ Using default kernel"
-      else if exists
-      then "✓ Using kernel: ${selection}"
-      else "⚠️ Kernel '${selection}' not found in pkgs, falling back to default";
-
-    packages = traceIf true msg pkgs';
-  in {
-    inherit packages;
+  kernel = lix.schema.kernel.resolve {
+    inherit host pkgs;
+    user = host.users.data.primary or {};
   };
 
   isSystemd = hasInfix "system" cfg.loader;
@@ -89,6 +70,7 @@ in
       };
     };
     outputs = {
+      warnings = kernel.warnings;
       assertions = [
         {
           assertion = any (pattern: hasInfix pattern cfg.loader) validPatterns;

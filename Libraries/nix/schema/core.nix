@@ -189,6 +189,9 @@
         then host.id
         else generateHexId {inherit name;};
 
+      defaults.interface = host.defaults.interface or (host.interface or {});
+      theme = _.schema.theme.mkTheme {inherit host;};
+
       interface = mkUI {
         inherit host;
         inherit (derived) user;

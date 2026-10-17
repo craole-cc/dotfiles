@@ -93,10 +93,10 @@
         (de != null && de != "none" && isIn de desktopEnvironments.values)
         || (wm != null && wm != "none" && isIn wm windowManagers.values);
       boot = {
-        loader = iface.bootLoader or defaults.boot.loader;
-        timeout = iface.bootLoaderTimeout or defaults.boot.timeout;
+        loader = iface.boot.loader or iface.bootLoader or defaults.boot.loader;
+        timeout = iface.boot.timeout or iface.bootLoaderTimeout or defaults.boot.timeout;
         efiMount =
-          boot.efiSysMountPoint or (
+          iface.boot.efiMount or boot.efiSysMountPoint or (
             if mounts ? "/boot"
             then "/boot"
             else defaults.boot.efiMount

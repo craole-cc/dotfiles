@@ -85,7 +85,9 @@
     host ? {},
     user ? {},
   }:
-    recursiveUpdate defaults (recursiveUpdate (getFonts host) (getFonts user));
+    recursiveUpdate defaults (recursiveUpdate
+      (getFonts (host // {interface = host.defaults.interface or (host.interface or {});}))
+      (getFonts user));
 in {
   inherit defaults getFonts mkFonts normalizeFonts;
 }

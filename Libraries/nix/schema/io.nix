@@ -478,7 +478,7 @@
     mergeKeyboards [
       defaults.keyboard
       (host.keyboard or {})
-      (host.interface.keyboard or {})
+      ((host.defaults.interface or (host.interface or {})).keyboard or {})
       (user.keyboard or {})
       (user.interface.keyboard or {})
     ];

@@ -80,7 +80,13 @@
           inherit host;
           user = interfaceUser;
         };
-        moduleUser = interfaceUser // {applications = enrichedApplications.raw;};
+        moduleUser =
+          interfaceUser
+          // {
+            applications = enrichedApplications.raw;
+            packages = (user.packages or {}) // enrichedApplications.packages;
+            theme = enrichedInterface.theme;
+          };
 
         inputs' = mkApps {
           inherit inputs modules;

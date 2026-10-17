@@ -319,8 +319,8 @@
         else null;
     };
 
-    # Normalise each scope before merging: a user's list replaces the host's
-    # list as a whole. Only ranks explicitly declared in that scope move ahead
+    # Normalise each scope before merging. User preferences lead the host's
+    # requirements. Only ranks explicitly declared in that scope move ahead
     # of a new packages list; schema defaults never displace that list.
     normalizeLegacy = previous: value: let
       resolved = resolveProtocol value;
@@ -385,13 +385,26 @@
         editor = mapAttrs (_: normalizeSelection) defaults.editor;
       };
     hostSelections = recursiveUpdate base (getSelections host base);
-    ordered = recursiveUpdate hostSelections (getSelections user hostSelections);
+    userSelections = getSelections user hostSelections;
+    preferred = recursiveUpdate hostSelections userSelections;
+    # User order leads; explicit host requirements remain at the tail. Schema
+    # defaults are fallbacks, so they are not appended to declared groups.
+    required = getSelections host base;
+    ordered =
+      (mapAttrs (name: values: unique (values ++ (required.${name} or [])))
+        (removeAttrs preferred ["editor"]))
+      // {
+        editor = mapAttrs (kind: values: unique (values ++ (required.editor.${kind} or []))) preferred.editor;
+      };
     selected =
       concatMap (name: ordered.${name}) ["terminal" "browser" "launcher" "explorer" "ai" "bar" "prompt"]
       ++ ordered.editor.tty ++ ordered.editor.gui;
     extraGroups = definition:
       removeAttrs (definition.packages or {}) [
         "kernel"
+        "core"
+        "home"
+        "allowUnsupportedSystem"
         "unstable"
         "allowUnfree"
         "allowBroken"
@@ -408,12 +421,26 @@
         "prompt"
       ];
     hostExtras = mapAttrs (_: normalizeSelection) (extraGroups host);
+    requiredPackages = unique (
+      concatMap (name: required.${name} or []) ["terminal" "browser" "launcher" "explorer" "ai" "bar" "prompt"]
+      ++ (required.editor.tty or [])
+      ++ (required.editor.gui or [])
+      ++ concatMap normalizeSelection (attrValues (removeAttrs hostExtras ["coding"]))
+    );
     extras =
       hostExtras
       // (mapAttrs (
         name: value:
-          normalizePackage (hostExtras.${name} or []) value
+          unique (normalizePackage (hostExtras.${name} or []) value ++ (hostExtras.${name} or []))
       ) (extraGroups user));
+    packages =
+      extras
+      // {
+        inherit (ordered) terminal browser launcher explorer bar prompt;
+        ai-agent = ordered.ai;
+        editor = ordered.editor.tty;
+        ide = ordered.editor.gui;
+      };
     requestedPackages = concatMap normalizeSelection (attrValues extras);
     raw =
       (mapAttrs (_: selection) (removeAttrs ordered ["editor" "bar" "prompt"]))
@@ -447,7 +474,7 @@
       then "waybar"
       else raw.bar
     );
-    inherit raw;
+    inherit raw packages requiredPackages;
     inherit (raw) prompt allowed;
   };
 in

@@ -9,6 +9,8 @@
   inherit (_.strings.construction) hashToInt;
   inherit (_.filesystem.construction) mkTree;
   inherit (_.schema.fonts) getFonts;
+  inherit (_.schema.applications) mkApplications;
+  inherit (_.schema.theme) mkTheme;
 
   mkUser = {
     name,
@@ -248,7 +250,22 @@
     stems ? {},
     roots ? {},
   }: let
-    enrich = mapAttrs (name: user: mkUser {inherit name user stems roots;});
+    enrich = mapAttrs (name: user: let
+      profile = mkUser {inherit name user stems roots;};
+      applications = mkApplications {
+        inherit host;
+        user = profile;
+      };
+    in
+      profile
+      // {
+        applications = applications.raw;
+        packages = (profile.packages or {}) // applications.packages;
+        theme = mkTheme {
+          inherit host;
+          user = profile;
+        };
+      });
 
     all = enrich (getAll {inherit host users;});
     enabled = getEnabled (enrich (getAllWithDefault {
