@@ -2,9 +2,7 @@
   config,
   inputs,
   lix,
-  packages,
   pkgs,
-  system,
   user,
   ...
 }: let
@@ -27,15 +25,9 @@
     (user.applications.allowed or []);
   isEnabled = isSelected && isAllowed;
   warp = pkgsFrom {
-    inherit inputs system;
-    pkgs = packages.warp-terminal.${system};
-    sources.default = null;
-    aliases.warp = "default";
-    required = true;
+    inherit inputs pkgs;
+    sources.warp = "warp-terminal";
   };
-  warpTerminalCommand = pkgs.writeShellScriptBin "warp-terminal" ''
-    exec ${warp.warp.package}/bin/warp "$@"
-  '';
 in
   mkConfig {
     inherit context;
@@ -44,10 +36,6 @@ in
       condition = isEnabled;
     };
     outputs.home = {
-      # file.".config/warp-terminal-preview/settings.toml".text = ''
-      #   [terminal.input]
-      #   honor_ps1 = true
-      # '';
-      packages = [warp.warp.package warpTerminalCommand];
+      packages = warp.packages;
     };
   }
