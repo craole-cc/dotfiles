@@ -80,7 +80,6 @@ in
       fonts = {
         inherit (cfg) packages;
         enableDefaultPackages = true;
-        enableFontDir = true;
         enableGhostscriptFonts = true;
         fontDir.enable = true;
         fontconfig = {

@@ -78,12 +78,13 @@ in
 
     outputs = {
       fonts = {
-        inherit (cfg) packages;
-        enableDefaultPackages = true;
-        enableFontDir = true;
-        enableGhostscriptFonts = true;
-        fontDir.enable = true;
+        # inherit (cfg) packages;
+        # enableDefaultPackages = true;
+        # enableFontDir = true;
+        # enableGhostscriptFonts = true;
+        # fontDir.enable = true;
         fontconfig = {
+          antialiasing = true;
           enable = true;
           defaultFonts = {
             inherit (cfg) monospace sansSerif serif emoji;
