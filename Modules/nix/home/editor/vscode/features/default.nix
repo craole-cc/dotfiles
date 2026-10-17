@@ -1,6 +1,5 @@
 {
   lix,
-  lib,
   pkgs,
   inputs,
   ...
@@ -10,12 +9,10 @@
 
   load = path:
     import path {
-      inherit
-        lix
-        lib
-        pkgs
-        inputs
-        ;
+      inherit lix pkgs inputs;
+      inherit (lix.modules.construction) mkDefault mkMerge;
+      inherit (lix.lists.transformation) flatten;
+      inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
     };
 
   allFeatures = map load [

@@ -233,6 +233,13 @@
       type = "github";
       inputs.nixpkgs.follows = "nixPackages";
     };
+
+    warp = {
+      repo = "warp";
+      owner = "warpdotdev";
+      type = "github";
+      inputs.nixpkgs.follows = "nixPackages";
+    };
   };
 
   nixConfig = {

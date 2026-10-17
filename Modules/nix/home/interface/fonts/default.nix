@@ -195,29 +195,29 @@ in
         monospace-font-name = with resolved.monospace; "${name} ${toString size}";
       };
 
-      programs = let
-        inherit (resolved.monospace) name package size;
-      in {
-        ghostty.settings = {
-          font-family = name;
-          font-size = size;
-        };
-        kitty.font = {inherit name package size;};
-        foot.settings.main.font = "${name} ${toString size}";
-        termite.font = "${name} ${toString size}";
-        urxvt.fonts = ["xft:${name}:size=${toString size}"];
-        vscode.userSettings = {
-          "editor.fontFamily" = "'${name}', monospace";
-          "editor.fontSize" = size;
-          "editor.fontLigatures" = true;
-          "terminal.integrated.fontFamily" = name;
-          "terminal.integrated.fontSize" = size + 3;
-        };
-        zed-editor.userSettings = {
-          ui_font_size = size + 3;
-          buffer_font_family = name;
-          buffer_font_size = size;
-        };
-      };
+      # programs = let
+      #   inherit (resolved.monospace) name package size;
+      # in {
+      #   ghostty.settings = {
+      #     font-family = name;
+      #     font-size = size;
+      #   };
+      #   kitty.font = {inherit name package size;};
+      #   foot.settings.main.font = "${name} ${toString size}";
+      #   termite.font = "${name} ${toString size}";
+      #   urxvt.fonts = ["xft:${name}:size=${toString size}"];
+      #   vscode.profiles.default.userSettings = {
+      #     "editor.fontFamily" = "'${name}', monospace";
+      #     "editor.fontSize" = size;
+      #     "editor.fontLigatures" = true;
+      #     "terminal.integrated.fontFamily" = name;
+      #     "terminal.integrated.fontSize" = size + 3;
+      #   };
+      #   zed-editor.userSettings = {
+      #     ui_font_size = size + 3;
+      #     buffer_font_family = name;
+      #     buffer_font_size = size;
+      #   };
+      # };
     };
   }

@@ -1,14 +1,12 @@
 {
-  lix,
-  lib,
+  mkMerge,
+  flatten,
+  mkVSCodeFeature,
+  mkVSCodeSubFeature,
   pkgs,
   inputs,
   ...
 }: let
-  inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
-  inherit (lib.modules) mkMerge;
-  inherit (lib.lists) flatten;
-
   errorLens = mkVSCodeSubFeature {
     enabled = false;
     extensions = [

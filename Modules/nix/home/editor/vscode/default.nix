@@ -7,11 +7,19 @@
   user,
   ...
 }: let
-  inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
-  inherit (lix.attrsets.access) attrNames;
-  inherit (lix.attrsets.predicates) waylandEnabled;
+  inherit (lib.hm.dag) entryAfter;
   inherit (lix.applications.generators) userApplicationConfig;
-  inherit (lix.options.construction) mkEnable;
+  inherit (lix.attrsets.access) attrNames;
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.attrsets.predicates) waylandEnabled;
+  inherit (lix.lists.aggregation) concatMap;
+  inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
+  inherit (lix.modules.evaluation) evalModules;
+  inherit (lix.options.construction) mkEnable mkOption;
+  inherit (lix.types.combinators) listOf;
+  inherit (lix.types.primitives) package;
+  inherit (lix.strings.transformation) escapeShellArg;
+  inherit (pkgs.stdenv.hostPlatform) system;
 
   context = mkContext {
     inherit config;
@@ -21,35 +29,39 @@
   };
   inherit (context) cfg;
 
-  base = import ./base/default.nix {inherit lib mkDefault;};
-  features = import ./features/default.nix {
-    inherit
-      lib
-      lix
-      inputs
-      pkgs
-      ;
+  bins = let
+    mkCore = cmd: "${pkgs.coreutils}/bin/${cmd}";
+  in {
+    chmod = mkCore "chmod";
+    cp = mkCore "cp";
+    dirname = mkCore "dirname";
+    install = mkCore "install";
+    mkdir = mkCore "mkdir";
+    rm = mkCore "rm";
   };
+
+  base = import ./base/default.nix {inherit lix mkDefault;};
+  features = import ./features/default.nix {inherit lix inputs pkgs;};
 
   # Resolve the existing profile fragments through a small option module so
   # mkDefault/mkMerge semantics are preserved without making stable VS Code's
   # writable user configuration Home Manager-owned.
   jsonFormat = pkgs.formats.json {};
   profile =
-    (lib.evalModules {
+    (evalModules {
       modules = [
         {
           options = {
-            userSettings = lib.mkOption {
+            userSettings = mkOption {
               inherit (jsonFormat) type;
               default = {};
             };
-            keybindings = lib.mkOption {
-              type = lib.types.listOf jsonFormat.type;
+            keybindings = mkOption {
+              type = listOf jsonFormat.type;
               default = [];
             };
-            extensions = lib.mkOption {
-              type = lib.types.listOf lib.types.package;
+            extensions = mkOption {
+              type = listOf package;
               default = [];
             };
           };
@@ -57,27 +69,15 @@
         {
           config = mkMerge (
             [base]
-            ++ map (name: features.features.${name} cfg.withExtensions.${name}) (attrNames features.options)
+            ++ (
+              map
+              (name: features.features.${name} cfg.withExtensions.${name})
+              (attrNames features.options)
+            )
           );
         }
       ];
     }).config;
-
-  system = pkgs.stdenv.hostPlatform.system;
-  insidersRaw = inputs.vscode-insiders.packages.${system}.vscode-insiders;
-
-  # vscode-insiders-nix derives from nixpkgs' stable VS Code package and keeps
-  # its passthru metadata. Correct that metadata so desktop/icon/CLI identity is
-  # Insiders rather than stable `code`.
-  insiders = insidersRaw.overrideAttrs (old: {
-    passthru =
-      (old.passthru or {})
-      // {
-        executableName = "code-insiders";
-        longName = "Visual Studio Code - Insiders";
-        iconName = "vscode-insiders";
-      };
-  });
 
   hasWayland = waylandEnabled {
     inherit config;
@@ -102,7 +102,7 @@
     else attrNames (builtins.readDir "${extension}/share/vscode/extensions");
 
   insidersExtensionFiles = builtins.listToAttrs (
-    lib.concatMap
+    concatMap
     (extension:
       map
       (extensionName: {
@@ -115,7 +115,7 @@
 
   insidersSettings =
     profile.userSettings
-    // lib.optionalAttrs dmsEnabled {
+    // optionalAttrs dmsEnabled {
       # DMS rewrites the default theme in place to follow its own runtime mode.
       # Letting VS Code independently follow the desktop portal races that
       # mechanism and can make it select a light theme while DMS is dark.
@@ -134,12 +134,23 @@
     name = "vscode";
     category = "gui";
     customPackage = pkgs.vscode-fhs;
-    resolutionHints = [
-      "code"
-      "vscode"
-    ];
+    resolutionHints = ["code" "vscode"];
     requiresWayland = true;
-    extraPackages = [insiders];
+    extraPackages = [
+      # vscode-insiders-nix derives from nixpkgs' stable VS Code package and keeps
+      # its passthru metadata. Correct that metadata so desktop/icon/CLI identity is
+      # Insiders rather than stable `code`.
+      inputs.vscode-insiders.packages.${system}.vscode-insiders.overrideAttrs
+      (old: {
+        passthru =
+          (old.passthru or {})
+          // {
+            executableName = "code-insiders";
+            longName = "Visual Studio Code - Insiders";
+            iconName = "vscode-insiders";
+          };
+      })
+    ];
     debug = false;
   };
 in
@@ -181,49 +192,49 @@ in
               # declarative profile as regular files on activation instead of
               # linking them into the Nix store, so runtime saves do not fail
               # EROFS. A future activation restores the declared baseline.
-              materialiseVSCodeInsidersProfile = lib.hm.dag.entryAfter ["linkGeneration"] ''
+              materialiseVSCodeInsidersProfile = entryAfter ["linkGeneration"] ''
                 materialise_json() {
                   source="$1"
                   target="$2"
 
-                  ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-                  ${pkgs.coreutils}/bin/rm -f "$target"
-                  ${pkgs.coreutils}/bin/install -m 0644 "$source" "$target"
+                  ${bins.mkdir} -p "$(${bins.dirname} "$target")"
+                  ${bins.rm} -f "$target"
+                  ${bins.install} -m 0644 "$source" "$target"
                 }
 
                 materialise_json \
-                  ${lib.escapeShellArg insidersSettingsFile} \
+                  ${escapeShellArg insidersSettingsFile} \
                   "$HOME/.config/Code - Insiders/User/settings.json"
                 materialise_json \
-                  ${lib.escapeShellArg insidersKeybindingsFile} \
+                  ${escapeShellArg insidersKeybindingsFile} \
                   "$HOME/.config/Code - Insiders/User/keybindings.json"
               '';
             }
-            // lib.optionalAttrs dmsEnabled {
-              seedDmsVSCodeTheme = lib.hm.dag.entryAfter ["linkGeneration"] ''
-                source=${lib.escapeShellArg dmsThemeSource}
-                theme_dir=${lib.escapeShellArg dmsThemeDir}
+            // optionalAttrs dmsEnabled {
+              seedDmsVSCodeTheme = entryAfter ["linkGeneration"] ''
+                source=${escapeShellArg dmsThemeSource}
+                theme_dir=${escapeShellArg dmsThemeDir}
 
                 seed_dms_theme() {
                   root="$1"
                   target="$root/$theme_dir"
 
-                  ${pkgs.coreutils}/bin/mkdir -p "$root"
+                  ${bins.mkdir} -p "$root"
 
                   # Keep exactly the DMS extension that matches the pinned shell
                   # input. Other user-installed extensions are untouched.
                   for candidate in "$root"/danklinux.dms-theme-*; do
                     [ -e "$candidate" ] || [ -L "$candidate" ] || continue
-                    [ "$candidate" = "$target" ] || ${pkgs.coreutils}/bin/rm -rf "$candidate"
+                    [ "$candidate" = "$target" ] || ${bins.rm} -rf "$candidate"
                   done
 
                   # DMS must be able to rewrite themes/*.json, so never leave
                   # this extension as a Nix-store symlink.
                   if [ -L "$target" ] || [ ! -f "$target/package.json" ]; then
-                    ${pkgs.coreutils}/bin/rm -rf "$target"
-                    ${pkgs.coreutils}/bin/cp -RL "$source" "$target"
+                    ${bins.rm} -rf "$target"
+                    ${bins.cp} -RL "$source" "$target"
                   fi
-                  ${pkgs.coreutils}/bin/chmod -R u+w "$target"
+                  ${bins.chmod} -R u+w "$target"
                 }
 
                 seed_dms_theme "$HOME/.vscode/extensions"
