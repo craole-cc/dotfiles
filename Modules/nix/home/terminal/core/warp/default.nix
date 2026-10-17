@@ -18,7 +18,7 @@
     sub = "emulators";
     mod = "warp-terminal";
   };
-  inherit (context) cfg;
+  inherit (context) cfg mod;
 
   tool = pkgOf {
     inherit inputs pkgs;
@@ -33,7 +33,7 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn ["warp-terminal" "warp-preview"] (with user; (
+        condition = isIn [mod "warp-preview"] (with user; (
           (packages.terminal or []) ++ (applications.allowed or [])
         ));
       };
@@ -43,7 +43,7 @@ in
         type = pkgType;
       };
       alias = mkOption {
-        default = pkgs.writeShellScriptBin "warp-terminal" ''exec ${tool.exe} "$@"'';
+        default = pkgs.writeShellScriptBin mod ''exec ${tool.exe} "$@"'';
         type = pkgType;
       };
     };
