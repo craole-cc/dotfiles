@@ -33,7 +33,7 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn [mod "warp-preview"] (with user; (
+        condition = isIn [mod "warp-preview" "warp"] (with user; (
           (packages.terminal or []) ++ (applications.allowed or [])
         ));
       };
