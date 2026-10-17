@@ -74,6 +74,6 @@ in
         };
       };
 
-      systemd = import ./services.nix {inherit config sync;};
+      systemd = import ./services.nix {inherit config lix sync;};
     };
   }

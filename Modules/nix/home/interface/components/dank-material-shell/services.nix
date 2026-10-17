@@ -1,8 +1,17 @@
 {
   config,
+  lix,
   sync,
-}: {
+}: let
+  inherit (lix.modules.construction) mkForce;
+in {
   user = {
+    # DMS 1.6.3 does not emit the readiness notification newer modules expect.
+    services.dms.Service = {
+      Type = mkForce "simple";
+      NotifyAccess = mkForce "none";
+    };
+
     services.dotdots-foot-dms-theme-reload = {
       Unit = {
         Description = "Apply DMS appearance to desktop and terminals";
