@@ -7,6 +7,7 @@
   ...
 }: let
   inherit (lix.modules.construction) mkConfig mkContext;
+  inherit (lix.lists.predicates) isIn;
   inherit (lix.options.construction) mkEnable;
   inherit (lib.modules) mkMerge;
   inherit (lix.applications.generators) userApplicationConfig;
@@ -22,8 +23,13 @@
     inherit context user pkgs;
     name = "zed-editor";
     category = "gui";
+    customPackage =
+      if isIn "zed-editor-fhs" (user.applications.allowed or [])
+      then pkgs.zed-editor-fhs
+      else pkgs.zed-editor;
     resolutionHints = [
       "zed-editor"
+      "zed-editor-fhs"
       "zeditor"
       "zed"
     ];
