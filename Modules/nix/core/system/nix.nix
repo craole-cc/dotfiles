@@ -113,8 +113,8 @@ in
           Maximum number of concurrent Nix build jobs. Set to "auto" to use
           all available cores.
         '';
-        default = host.specs.cpu.cores or "auto";
-        defaultText = literalExpression ''host.specs.cpu.cores or "auto"'';
+        default = host.hardware.cpu.cores or "auto";
+        defaultText = literalExpression ''host.hardware.cpu.cores or "auto"'';
         example = literalExpression "12";
         type = either int str;
       };

@@ -30,6 +30,7 @@
   };
 
   inherit (_.attrsets.construction) genAttrs optionalAttrs;
+  inherit (_.attrsets.predicates) hasAttr;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.lists.construction) optionals;
   inherit (_.lists.predicates) any isIn elem;
@@ -153,8 +154,27 @@
       inherit host pkgs;
       user = host.users.data.primary or {};
     };
+    bareCachyOS =
+      kernel.requested != null
+      && elem (toLowerCase kernel.requested) ["cachy" "cachyos" "linux-cachyos"];
+    useGenericV3 =
+      bareCachyOS
+      && kernel.cpu.arch == "x86_64"
+      && elem (toLowerCase (kernel.cpu.microarch or "")) ["znver1" "znver2" "znver3"]
+      && kernel.level == "v1"
+      && hasAttr "cachyOverride" kernel.packages;
+    kernelPackages =
+      if useGenericV3
+      then
+        kernel.packages.cachyOverride {
+          cachyVars = kernel.packages.kernel.cachyConfig.cachyVars // {
+            "_processor_opt" = "GENERIC_V3";
+          };
+        }
+      else kernel.packages;
+    kernelWarnings = if useGenericV3 then [] else kernel.warnings;
   in {
-    inherit (kernel) warnings;
+    warnings = kernelWarnings;
     assertions = [
       {
         assertion = hasValidBootLoader;
@@ -206,7 +226,7 @@
     ];
 
     boot = {
-      kernelPackages = kernel.packages;
+      kernelPackages = kernelPackages;
 
       loader = {
         #~@ systemd-boot configuration

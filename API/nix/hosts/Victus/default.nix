@@ -25,8 +25,8 @@ in {
     microarch = "znver3"; #> gcc -march=native -Q --help=target | grep -E '^\s*-march=\s'
     x86_64_level = "v3"; #> /lib64/ld-linux-x86-64.so.2 --help | awk '/supported/ { sub(/.*-v/, "v", $1); print $1; exit }'
     powerMode = "performance"; #? "performance" | "powersave" | "schedutil" ...
-    cores = 6; #> lscpu | grep 'Core(s) per socket'  (physical)
-    threads = 12; #> nproc  (logical)
+    cores = 6; #> lscpu | grep 'Core(s) per socket' #? physical
+    threads = 12; #> nproc #? logical
   };
 
   gpu = {

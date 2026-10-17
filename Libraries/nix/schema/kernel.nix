@@ -1,33 +1,15 @@
 {_, ...}: let
   inherit (_.attrsets.access) attrByPath;
-  inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.predicates) hasAttr;
-  inherit (_.lists.access) head;
   inherit (_.lists.construction) optional range;
+  inherit (_.lists.access) head;
   inherit (_.lists.predicates) elem;
   inherit (_.lists.selection) filter;
   inherit (_.strings.predicates) hasInfix isString;
-  inherit (_.strings.construction) splitString;
   inherit (_.strings.transformation) toLower;
+  inherit (_.schema.hardware) normalizeCpu;
 
-  cpuFor = host: let
-    cpu = recursiveUpdate (host.specs.cpu or {}) (host.cpu or {});
-    microarch = toLower (cpu.microarch or "");
-    declared = cpu.x86_64_level or null;
-    level =
-      if elem declared ["v1" "v2" "v3" "v4"]
-      then declared
-      else if elem microarch ["znver4" "znver5"]
-      then "v4"
-      else if elem microarch ["znver1" "znver2" "znver3"]
-      then "v3"
-      else null;
-  in
-    cpu
-    // {
-      arch = cpu.arch or (head (splitString "-" (host.system or "unknown")));
-      inherit level;
-    };
+  cpuFor = host: normalizeCpu {inherit host;};
 
   # Names come from the package set, rather than assuming CachyOS upstream
   # names are attributes in the pinned Chaotic overlay.

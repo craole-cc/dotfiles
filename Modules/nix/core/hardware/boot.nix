@@ -13,12 +13,14 @@
   inherit (context) cfg mod;
   inherit (lix.lists.access) length;
   inherit (lix.lists.enums.gui) bootLoaders;
-  inherit (lix.lists.predicates) any;
+  inherit (lix.attrsets.predicates) hasAttr;
+  inherit (lix.lists.predicates) any elem;
   inherit (lix.lists.transformation) filter;
   inherit (lix.modules.construction) mkConfig mkContext mkIf;
   inherit (lix.options.construction) mkTrue mkOption;
   inherit (lix.strings.construction) concatStringsSep optionalString;
   inherit (lix.strings.predicates) hasInfix hasPrefix isString;
+  inherit (lix.strings.transformation) toLowerCase;
   inherit (lix.types.combinators) enum;
   inherit (lix.types.primitives) int str;
 
@@ -36,6 +38,25 @@
     inherit host pkgs;
     user = host.users.data.primary or {};
   };
+  bareCachyOS =
+    kernel.requested != null
+    && elem (toLowerCase kernel.requested) ["cachy" "cachyos" "linux-cachyos"];
+  useGenericV3 =
+    bareCachyOS
+    && kernel.cpu.arch == "x86_64"
+    && elem (toLowerCase (kernel.cpu.microarch or "")) ["znver1" "znver2" "znver3"]
+    && kernel.level == "v1"
+    && hasAttr "cachyOverride" kernel.packages;
+  kernelPackages =
+    if useGenericV3
+    then
+      kernel.packages.cachyOverride {
+        cachyVars = kernel.packages.kernel.cachyConfig.cachyVars // {
+          "_processor_opt" = "GENERIC_V3";
+        };
+      }
+    else kernel.packages;
+  kernelWarnings = if useGenericV3 then [] else kernel.warnings;
 
   isSystemd = hasInfix "system" cfg.loader;
   isRefind = hasInfix "refind" cfg.loader;
@@ -70,7 +91,7 @@ in
       };
     };
     outputs = {
-      inherit (kernel) warnings;
+      warnings = kernelWarnings;
       assertions = [
         {
           assertion = any (pattern: hasInfix pattern cfg.loader) validPatterns;
@@ -101,7 +122,7 @@ in
       ];
 
       boot = {
-        kernelPackages = kernel.packages;
+        kernelPackages = kernelPackages;
 
         loader = {
           systemd-boot = mkIf isSystemd {
