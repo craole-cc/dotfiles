@@ -1,8 +1,8 @@
 {
   config,
-  inputs,
   lix,
-  pkgs,
+  packages,
+  system,
   user,
   ...
 }: let
@@ -19,8 +19,9 @@
   };
   isAllowed = isIn "warp-terminal" (user.applications.allowed or []);
   warp = pkgOf {
-    inherit inputs pkgs;
-    input = "terminalWarp";
+    pkgs = packages.warp-terminal.${system};
+    inherit system;
+    target = "default";
     required = true;
   };
 in
