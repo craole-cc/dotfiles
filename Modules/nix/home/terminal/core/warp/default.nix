@@ -9,7 +9,8 @@
   inherit (lix.lists.predicates) isIn;
   inherit (lix.sources.packages) pkgOf;
   inherit (lix.modules.construction) mkConfig mkContext;
-  inherit (lix.options.construction) mkEnable;
+  inherit (lix.options.construction) mkEnable mkOption;
+  pkgType = with lix.types; combinators.nullOr primitives.package;
 
   context = mkContext {
     inherit config;
@@ -17,13 +18,7 @@
     sub = "emulators";
     mod = "warp-terminal";
   };
-  isSelected =
-    isIn ["warp-terminal" "warp-preview"]
-    (user.packages.terminal or []);
-  isAllowed =
-    isIn ["warp-terminal" "warp-preview"]
-    (user.applications.allowed or []);
-  isEnabled = isSelected && isAllowed;
+  inherit (context) cfg;
 
   tool = pkgOf {
     inherit inputs pkgs;
@@ -32,21 +27,27 @@
     exe = "warp";
     required = true;
   };
-  warpTerminalCommand = pkgs.writeShellScriptBin "warp-terminal" ''
-    exec ${tool.exe} "$@"
-  '';
 in
   mkConfig {
     inherit context;
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isEnabled;
+        condition = isIn ["warp-terminal" "warp-preview"] (with user; (
+          (packages.terminal or []) ++ (applications.allowed or [])
+        ));
+      };
+      package = mkOption {
+        description = "The Warp Terminal package to use.";
+        default = tool.package;
+        type = pkgType;
+      };
+      alias = mkOption {
+        default = pkgs.writeShellScriptBin "warp-terminal" ''exec ${tool.exe} "$@"'';
+        type = pkgType;
       };
     };
     outputs = {
-      home = {
-        packages = [tool.package warpTerminalCommand];
-      };
+      home.packages = with cfg; [package alias];
     };
   }
