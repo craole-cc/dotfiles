@@ -28,10 +28,11 @@
   tool = pkgOf {
     inherit inputs pkgs;
     input = "warp-terminal";
+    target = "default";
     exe = "warp";
     required = true;
   };
-  exe = pkgs.writeShellScriptBin "warp-terminal" ''
+  warpTerminalCommand = pkgs.writeShellScriptBin "warp-terminal" ''
     exec ${tool.exe} "$@"
   '';
 in
@@ -45,7 +46,7 @@ in
     };
     outputs = {
       home = {
-        packages = [tool.package exe];
+        packages = [tool.package warpTerminalCommand];
       };
     };
   }
