@@ -9,6 +9,7 @@
     sources = {
       coreutils = null;
       dms-shell = null;
+      diffutils = {exe = "cmp";};
       gum = null;
       glib = null;
       jaq = null;
@@ -20,17 +21,19 @@
     required = true;
   };
 
+  package = import ./package.nix tools.dms-shell.package;
+
   bins = let
     inherit (tools) binaries;
     coreutils = "${tools.coreutils.paths.binary}";
     glib = "${tools.glib.paths.binary}";
   in rec {
     inherit (binaries) gum jaq sd;
+    cmp = binaries.diffutils;
     cat = "${coreutils}/cat";
     chmod = "${coreutils}/chmod";
-    cmp = "${coreutils}/cmp";
     dirname = "${coreutils}/dirname";
-    dms = binaries.dms-shell;
+    dms = "${package}/bin/dms";
     dmsCall = "${dms} ipc call";
     dmsSet = "${dmsCall} settings set";
     gCall = "${glib}/gdbus call";
@@ -44,5 +47,6 @@
     pkill = binaries.procps;
     rg = binaries.ripgrep;
     rm = "${coreutils}/rm";
+    readlink = "${coreutils}/readlink";
   };
-in {inherit tools bins;}
+in {inherit tools bins package;}

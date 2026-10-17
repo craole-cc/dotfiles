@@ -17,7 +17,10 @@
     (import ./utilities.nix)
     (import ./wallpapers.nix pkgs)
   ];
+  migration = import ./migration.nix {inherit bins config inputs lix;};
 in {
+  inherit (migration) files;
+  migration = migration.activation;
   plugins = foldl' (plugins: category: plugins // category.plugins) {} categories;
   packages = unique (concatMap (category: category.packages or []) categories);
   activation = import ./activation.nix {inherit bins config inputs lix pkgs;};

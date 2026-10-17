@@ -13,14 +13,12 @@
 in
   writeShellScript "sync-dms-desktop-appearance" ''
     mode="$(${bins.dmsCall} theme getMode 2>/dev/null || true)"
-    settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
 
     case "$mode" in
       dark)
         cursor=${cursors.dark.name}
         cursor_size=${toString cursors.dark.size}
         icons=${icons.dark.name}
-        color_scheme=prefer-dark
         terminal_opacity=${toString style.opacity.terminal.dark}
         btop_theme=adwaita-dark
         foot_signal=USR1
@@ -29,39 +27,12 @@ in
         cursor=${cursors.light.name}
         cursor_size=${toString cursors.light.size}
         icons=${icons.light.name}
-        color_scheme=prefer-light
         terminal_opacity=${toString style.opacity.terminal.light}
         btop_theme=adwaita
         foot_signal=USR2
         ;;
       *) exit 0 ;;
     esac
-
-    # DMS regenerates Hyprland's cursor.lua from this mutable setting.
-    # Only write when it differs, so the settings path cannot retrigger forever.
-    if [ -f "$settings" ] && [ ! -L "$settings" ] &&
-      ${bins.jaq} -e \
-        --arg cursor "$cursor" \
-        --argjson size "$cursor_size" \
-        '.cursorSettings.theme != $cursor or .cursorSettings.size != $size' \
-        "$settings" >/dev/null; then
-
-      if tmp="$(${bins.mktemp} "$settings.tmp.XXXXXX")"; then
-        trap '${bins.rm} -f "$tmp"' EXIT
-        if
-          ${bins.jaq} \
-            --arg cursor "$cursor" \
-            --argjson size "$cursor_size" \
-            '.cursorSettings = ((.cursorSettings // {}) + {theme: $cursor, size: $size})' \
-            "$settings" > "$tmp"
-        then
-          ${bins.chmod} --reference="$settings" "$tmp"
-          ${bins.mv} -f "$tmp" "$settings"
-        fi
-        trap - EXIT
-        ${bins.rm} -f "$tmp"
-      fi
-    fi
 
     xresources="$HOME/.Xresources"
     xresources_writable=false
@@ -113,7 +84,6 @@ in
     fi
 
     export GSETTINGS_SCHEMA_DIR="${gds}/share/gsettings-schemas/${gds.name}/glib-2.0/schemas"
-    ${bins.gSetDI} color-scheme "$color_scheme" || true
     ${bins.gSetDI} cursor-theme "$cursor" || true
     ${bins.gSetDI} cursor-size "$cursor_size" || true
     ${bins.gSetDI} icon-theme "$icons" || true

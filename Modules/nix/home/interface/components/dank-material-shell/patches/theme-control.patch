@@ -1,0 +1,83 @@
+--- a/core/internal/matugen/matugen.go
++++ b/core/internal/matugen/matugen.go
+@@ -1310,2 +1310,13 @@
+-		signalByName("ghostty", syscall.SIGUSR2)
+-		signalByName(".ghostty-wrappe", syscall.SIGUSR2)
++		// Ghostty can receive a signal before its reload handler is installed.
++		// Ask its GTK application to reload without starting a new instance.
++		conn, err := dbus.ConnectSessionBus()
++		if err != nil {
++			log.Debugf("Failed to connect to Ghostty session bus: %v", err)
++			return
++		}
++		defer conn.Close()
++		obj := conn.Object("com.mitchellh.ghostty", dbus.ObjectPath("/com/mitchellh/ghostty"))
++		if err := obj.Call("org.gtk.Actions.Activate", dbus.FlagNoAutoStart,
++			"reload-config", []dbus.Variant{}, map[string]dbus.Variant{}).Err; err != nil {
++			log.Debugf("Failed to reload Ghostty: %v", err)
++		}
+--- a/quickshell/Services/ThemeAutoService.qml
++++ b/quickshell/Services/ThemeAutoService.qml
+@@ -13,0 +14,16 @@
++    property bool manualOverrideActive: false
++    property var scheduledIsLight: null
++
++    function registerManualOverride() {
++        manualOverrideActive = SessionData.themeModeAutoEnabled;
++    }
++
++    function applyScheduledMode(light) {
++        const transitioned = scheduledIsLight !== null && scheduledIsLight !== light;
++        scheduledIsLight = light;
++        if (manualOverrideActive && !transitioned)
++            return;
++        manualOverrideActive = false;
++        if (Theme.isLightMode !== light)
++            Theme.setLightMode(light, true, true, true);
++    }
+@@ -25,0 +42,2 @@
++            root.manualOverrideActive = false;
++            root.scheduledIsLight = null;
+@@ -33,0 +52,2 @@
++            root.manualOverrideActive = false;
++            root.scheduledIsLight = null;
+@@ -156,3 +176 @@
+-            if (Theme.isLightMode !== DisplayService.gammaIsDay) {
+-                Theme.setLightMode(DisplayService.gammaIsDay, true, true);
+-            }
++            root.applyScheduledMode(DisplayService.gammaIsDay);
+@@ -259,2 +277,2 @@
+-        if (state.isLight !== undefined && Theme.isLightMode !== state.isLight) {
+-            Theme.setLightMode(state.isLight, true, true);
++        if (state.isLight !== undefined) {
++            root.applyScheduledMode(state.isLight);
+@@ -373,3 +391 @@
+-            if (Theme.isLightMode !== shouldBeLight) {
+-                Theme.setLightMode(shouldBeLight, true, true);
+-            }
++            root.applyScheduledMode(shouldBeLight);
+@@ -381,3 +397 @@
+-            if (Theme.isLightMode !== shouldBeLight) {
+-                Theme.setLightMode(shouldBeLight, true, true);
+-            }
++            root.applyScheduledMode(shouldBeLight);
+@@ -416,3 +430 @@
+-        if (Theme.isLightMode !== shouldBeLight) {
+-            Theme.setLightMode(shouldBeLight, true, true);
+-        }
++        root.applyScheduledMode(shouldBeLight);
+--- a/quickshell/Common/Theme.qml
++++ b/quickshell/Common/Theme.qml
+@@ -1261 +1261,5 @@
+-    function setLightMode(light, savePrefs = true, enableTransition = false) {
++    function setLightMode(light, savePrefs = true, enableTransition = false, automatic = false) {
++        if (!automatic) {
++            lightModeTransitionTimer.stop();
++            ThemeAutoService.registerManualOverride();
++        }
+@@ -1270,0 +1275 @@
++            lightModeTransitionTimer.automatic = automatic;
+@@ -2342 +2347,2 @@
+-        onTriggered: root.setLightMode(lightMode, savePrefs, false)
++        property bool automatic: false
++        onTriggered: root.setLightMode(lightMode, savePrefs, false, automatic)
