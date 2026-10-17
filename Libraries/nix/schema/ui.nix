@@ -33,7 +33,8 @@
   inherit (_.attrsets.transformation) filterAttrs;
   inherit (_.lists.access) head;
   inherit (_.lists.construction) optional toList;
-  inherit (_.lists.predicates) elem;
+  inherit (_.lists.predicates) any elem;
+  inherit (_.types.predicates) isList;
   inherit (_.lists.selection) filter;
   inherit (_.lists.aggregation) concatMap;
   inherit (_.lists.transformation) unique;
@@ -502,26 +503,16 @@
       };
   in {
     hyprland = recursiveUpdate (mkWayland "hyprland") {
-      keyboard.bindings = {
-        overview.action = "dms ipc call hypr toggleOverview";
-        workspaceRename.action = "dms ipc call workspace-rename open";
-        keybinds.action = "dms ipc call keybinds toggle hyprland";
-        close.action = "hyprctl dispatch killactive";
-        fullscreen.action = "hyprctl dispatch fullscreen 0";
-        maximise.action = "hyprctl dispatch fullscreen 1";
-        float.action = "hyprctl dispatch togglefloating";
-        pin.action = "hyprctl dispatch pin";
-        split.action = "hyprctl dispatch togglesplit";
-        pseudo.action = "hyprctl dispatch pseudo";
-        groupToggle.action = "hyprctl dispatch togglegroup";
-        groupLock.action = "hyprctl dispatch lockactivegroup toggle";
-        workspacePrev.action = "hyprctl dispatch workspace previous";
-        windowCycle.action = "hyprctl dispatch focuscurrentorlast";
-        logout.action = "hyprctl dispatch exit";
-        screenshot.action = "dms screenshot full";
-        screenshotRegion.action = "dms screenshot";
-        screenshotWindow.action = "dms screenshot window";
-      };
+      keyboard.bindings =
+        {
+          overview.action = "dms ipc call hypr toggleOverview";
+          workspaceRename.action = "dms ipc call workspace-rename open";
+          keybinds.action = "dms ipc call keybinds toggle hyprland";
+          screenshot.action = "dms screenshot full";
+          screenshotRegion.action = "dms screenshot";
+          screenshotWindow.action = "dms screenshot window";
+        }
+        // (import ./hyprland-keyboard.nix {inherit _;}).legacy;
     };
     niri = recursiveUpdate (mkWayland "niri") {
       keyboard.bindings = {
@@ -800,6 +791,14 @@
         keyboardDefaults
         (configs.de.keyboard or {})
         (configs.wm.keyboard or {})
+        {
+          bindings =
+            if windowManager.name == "hyprland"
+            then
+              filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
+              (import ./hyprland-keyboard.nix {inherit _;}).ordered
+            else {};
+        }
       ]
       ++ keyboardScopes);
   in

@@ -6,6 +6,7 @@
   inherit (_.lists.access) elemAt head length tail;
   inherit (_.lists.aggregation) concatMap foldl';
   inherit (_.lists.selection) filter;
+  inherit (_.lists.predicates) any;
   inherit (_.lists.transformation) imap0;
   inherit (_.strings.construction) concatStringsSep fromJSON splitString;
   inherit (_.strings.transformation) toUpper;
@@ -30,6 +31,8 @@
     explorer = ["fileManager" "fileManagerSec"];
     launcher = ["launcherSec"];
     close = ["logout" "shutdown"];
+    window = ["fullscreen" "float"];
+    lock = ["logout"];
   };
   ranks = ["primary" "secondary" "tertiary"];
 
@@ -70,6 +73,11 @@
     // (
       if (normalized.modifier or null) != null && (normalized.mod or null) == null
       then {mod = normalized.modifier;}
+      else {}
+    )
+    // (
+      if (normalized.action or null) != null && (normalized.kind or null) == null
+      then {kind = "exec";}
       else {}
     );
 
@@ -135,7 +143,9 @@
     ) (scope.bindings or {});
     replacedAliases = concatMap (
       group:
-        if isList declarations.${group}
+        if
+          isList declarations.${group}
+          && (categories ? ${group} || any (binding: (binding.key or null) != null) declarations.${group})
         then legacyAliases.${group} or []
         else []
     ) (attrNames declarations);

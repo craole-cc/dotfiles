@@ -18,21 +18,22 @@
   render = group: binding: let
     kind = binding.kind or "exec";
     action = binding.action or null;
-    # Keep the existing DMS dispatch scope. Application lists are rendered as
-    # scratchpads; the MRU/last-window handlers consume their own records.
-    supported = elem group ["terminal" "close" "ghosttyQuickTerminal"];
-    flags = ''{ description = ${toJSON (binding.description or group)}, release = ${toJSON (binding.release or false)}, non_consuming = ${toJSON (binding.nonConsuming or false)} }'';
+    # Scratchpads and the MRU handlers render their own canonical records.
+    managedElsewhere = elem group ["windowCycle" "windowCycleReverse" "windowCycleRelease" "windowLast"];
+    flags = ''{ description = ${toJSON (binding.description or group)}, release = ${toJSON (binding.release or false)}, non_consuming = ${toJSON (binding.nonConsuming or false)}, repeating = ${toJSON (binding.repeating or false)}, locked = ${toJSON (binding.locked or false)} }'';
     dispatch =
-      if kind == "global"
-      then "hl.dsp.global"
-      else "hl.dsp.exec_cmd";
+      if kind == "hyprland"
+      then "hl.dsp.${action}"
+      else if kind == "global"
+      then "hl.dsp.global(${toJSON action})"
+      else "hl.dsp.exec_cmd(${toJSON action})";
   in
-    if !supported || !valid binding || kind == "scratchpad" || action == null || action == "" || (group == "ghosttyQuickTerminal" && !ghosttyEnabled)
+    if !(binding.enable or true) || managedElsewhere || !valid binding || kind == "scratchpad" || action == null || action == "" || (group == "ghosttyQuickTerminal" && !ghosttyEnabled)
     then ""
     else
       unbind binding
       + ''
-        hl.bind(${toJSON (chord binding)}, ${dispatch}(${toJSON action}), ${flags})
+        hl.bind(${toJSON (chord binding)}, ${dispatch}, ${flags})
       '';
 in
   concatStringsSep "" (map unbind (keyboard.unbind or []))

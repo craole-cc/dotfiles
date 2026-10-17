@@ -48,8 +48,13 @@
             type = str;
             default = "";
           };
+          enable = mkOption {
+            description = "Whether this keyboard binding is active";
+            type = bool;
+            default = true;
+          };
           kind = mkOption {
-            description = "Binding dispatch kind";
+            description = "Binding dispatch kind: exec, global, hyprland (native Lua expression), or scratchpad";
             type = str;
             default = "exec";
           };
@@ -63,6 +68,16 @@
             type = nullOr str;
             default = null;
           };
+          repeating = mkOption {
+            description = "Repeat the action while its key is held";
+            type = bool;
+            default = false;
+          };
+          locked = mkOption {
+            description = "Allow the binding while the session is locked";
+            type = bool;
+            default = false;
+          };
           release = mkOption {
             description = "Run the binding on key release";
             type = bool;
@@ -74,6 +89,7 @@
             default = false;
           };
           action = mkOption {
+            description = "Shell command, global shortcut identifier, or native dispatcher expression selected by kind";
             type = nullOr str;
             default = null;
           };
@@ -375,16 +391,19 @@
           action = "loginctl terminate-session self";
         };
         sleep = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "S";
           action = "systemctl suspend";
         };
         reboot = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "R";
           action = "systemctl reboot";
         };
         reboot_soft = {
+          enable = false;
           mod =
             mod
             ++ [
@@ -395,6 +414,7 @@
           action = "systemctl soft-reboot";
         };
         shutdown = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "Q";
           action = "systemctl poweroff";
@@ -485,11 +505,16 @@
 
   mkKeybindings = {
     hyprland = kb:
-      map (b: "${b.mod}, ${b.key}, exec, ${b.action}") (
+      map (binding: let
+        action =
+          if (binding.kind or "exec") == "hyprland"
+          then "hyprctl dispatch 'hl.dsp.${binding.action}'"
+          else binding.action;
+      in "${binding.mod}, ${binding.key}, exec, ${action}") (
         filter (
           b:
-            (b.mod or null)
-            != null
+            (b.enable or true)
+            && (b.mod or null) != null
             && (b.key or null) != null
             && (b.action or null) != null
             && (b.action or "") != ""
