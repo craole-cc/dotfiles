@@ -35,7 +35,7 @@
     extraPackages = [session];
     extraProgramConfig = mkMerge [
       (import ./editor.nix)
-      (import ./keybindings.nix)
+      (import ./keybindings.nix {inherit pkgs lix;})
       (import ./languages.nix)
       # (import ./themes.nix)
     ];
