@@ -15,16 +15,7 @@
       mkIcons = mkPair;
     };
     exports = {
-      local =
-        {
-          inherit
-            data
-            mkOne
-            mkPair
-            types
-            ;
-        }
-        // alias;
+      local = {inherit data mkOne mkPair types;} // alias;
       inherit alias;
     };
   in {
@@ -46,9 +37,7 @@
 
   data = mkData {
     domain = "icons";
-    seed = {
-      icon = "candy-icons";
-    };
+    seed = {icon = "candy-icons";};
     groupBy = ["byFamily"];
   };
   inherit (data) seed normalize groups;
@@ -155,10 +144,7 @@
 
   mkPair = mkPolarity.pair {
     fn = mkOne;
-    args = [
-      "pkgs"
-      "icon"
-    ];
+    args = ["pkgs" "icon"];
   };
 in
   meta.exports.local

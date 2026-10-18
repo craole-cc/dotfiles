@@ -1,0 +1,10 @@
+#~/bin/sh
+
+# Usage: taildrop-folder path/to/folder my-phone-name
+folder="$1"
+target="${2:-"bv4800-pro"}"
+archive="${folder%/}.zip"
+
+ouch compress "$folder" "$archive" &&
+  tailscale file cp "$archive" "$target": &&
+  rm "$archive"

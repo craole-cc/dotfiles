@@ -2,8 +2,8 @@
   config,
   lix,
   pkgs,
-}:
-let
+  ...
+}: let
   inherit (lix.filesystem.primitives) concat;
   inherit (pkgs) writeText;
 
@@ -22,8 +22,7 @@ let
     input_path = '${template}'
     output_path = '${outputPath}'
   '';
-in
-{
+in {
   skinPath = outputPath;
   configFile."matugen/dms/configs/${tag}.toml".source = source;
 }

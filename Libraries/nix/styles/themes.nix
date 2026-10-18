@@ -17,21 +17,10 @@
       resolveTheme = mkOne;
     };
     exports = {
-      local =
-        {
-          inherit
-            data
-            mkOne
-            mkPair
-            types
-            ;
-        }
-        // alias;
+      local = {inherit data mkOne mkPair types;} // alias;
       inherit alias;
     };
-  in {
-    inherit doc exports;
-  };
+  in {inherit doc exports;};
 
   inherit (_.attrsets.access) attrNames;
   inherit (_.attrsets.predicates) hasAttr;

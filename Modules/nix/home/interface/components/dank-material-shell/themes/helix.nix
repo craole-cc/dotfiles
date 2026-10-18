@@ -3,31 +3,41 @@
   inputs,
   lix,
   pkgs,
+  ...
 }: let
   inherit (inputs.home-manager.lib.hm.dag) entryAfter;
   inherit (lix.filesystem.primitives) concat;
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (pkgs) writeText;
 
-  configHome = config.xdg.configHome;
-  themeDirectory = concat {
-    root = configHome;
-    stem = ["helix" "themes"];
+  theme = rec {
+    directory = concat {
+      root = config.xdg.configHome;
+      stem = ["helix" "themes"];
+    };
+    path = concat {
+      root = directory;
+      stem = ["base16_transparent.toml"];
+    };
+    activation = entryAfter ["writeBoundary"] ''
+      mkdir -p ${escapeShellArg directory}
+    '';
   };
-  themePath = concat {
-    root = themeDirectory;
-    stem = ["base16_transparent.toml"];
+
+  template = rec {
+    name = "helix-matugen-template.toml";
+    path = ./helix.toml;
+    source = writeText name ''
+      [templates.dms_helix]
+      input_path = '${path}'
+      output_path = '${theme.path}'
+    '';
+    target = concat {
+      root = "matugen";
+      stem = ["dms" "configs" name];
+    };
   };
-  themeTemplate = ./helix.toml;
-  templateConfig = writeText "helix-matugen-template.toml" ''
-    [templates.dms_helix]
-    input_path = '${themeTemplate}'
-    output_path = '${themePath}'
-  '';
-  activation = entryAfter ["writeBoundary"] ''
-    mkdir -p ${escapeShellArg themeDirectory}
-  '';
 in {
-  configFile."matugen/dms/configs/helix-matugen-theme.toml".source = templateConfig;
-  inherit activation;
+  configFile."${template.target}" = {inherit (template) source;};
+  inherit (theme) activation;
 }

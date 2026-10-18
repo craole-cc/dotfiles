@@ -2,12 +2,13 @@
   config,
   pkgs,
   style,
-}:
-let
+  lix,
+  ...
+}: let
   inherit (config.xdg) configHome;
   inherit (pkgs) writeText;
-in
-{
+  inherit (lix.styles.palettes) mkKittyPalette;
+in {
   # Kitty loads DMS-generated dank-tabs.conf and dank-theme.conf when enabled.
   opacity = {
     path = "${configHome}/kitty/dotdots-opacity.conf";

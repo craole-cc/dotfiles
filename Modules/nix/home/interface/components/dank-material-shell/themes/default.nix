@@ -31,18 +31,14 @@
     };
     resolved = themes.dark;
   };
-  cursors = mapAttrs (_mode: resolved: rec {
-    theme = resolved.name;
-    name = escapeShellArg theme;
-    source = "${resolved.package}/share/icons/${theme}";
-    inherit (resolved) size;
-  }) config.themes.cursors;
-  catppuccin = import ./catppuccin.nix {inherit config lix pkgs user;};
-  foot = import ./foot.nix {inherit config lix pkgs user;};
-  ghostty = import ./ghostty.nix {inherit config pkgs style;};
-  helix = import ./helix.nix {inherit config inputs lix pkgs;};
-  hermes = import ./hermes.nix {inherit config lix pkgs;};
-  kitty = import ./kitty.nix {inherit config pkgs style;};
+  cursors =
+    mapAttrs (_mode: resolved: rec {
+      theme = resolved.name;
+      name = escapeShellArg theme;
+      source = "${resolved.package}/share/icons/${theme}";
+      inherit (resolved) size;
+    })
+    config.themes.cursors;
 
   mkThemeModals = {
     modes ? ["dark" "light"],
@@ -57,4 +53,12 @@
   dataFile = mergeSafe (mkThemeModals {});
 
   resolved = {inherit (config.themes) cursors icons;};
-in {inherit catppuccin cursors dataFile foot ghostty helix hermes icons kitty resolved;}
+  args = {inherit config lix pkgs user style;};
+in
+  {inherit cursors dataFile icons resolved;}
+  // (import ./catppuccin.nix args)
+  // (import ./foot.nix args)
+  // (import ./ghostty.nix args)
+  // (import ./helix.nix args)
+  // (import ./hermes.nix args)
+  // (import ./kitty.nix args)

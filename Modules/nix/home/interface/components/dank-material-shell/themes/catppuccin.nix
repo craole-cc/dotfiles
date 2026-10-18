@@ -3,8 +3,8 @@
   lix,
   pkgs,
   user,
-}:
-let
+  ...
+}: let
   inherit (lix.strings.construction) toJSON;
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (pkgs) writeText;
@@ -16,7 +16,7 @@ let
   path = "${configHome}/${relativePath}";
 
   mkMode = palette: {
-    inherit (palette) name;
+    inherit (palette) name background;
     primary = palette.accent;
     primaryText = palette.foreground;
     primaryContainer = palette.surface;
@@ -31,12 +31,20 @@ let
     surfaceVariant = palette.surface;
     surfaceVariantText = palette.muted;
     surfaceTint = palette.accent;
-    background = palette.background;
     backgroundText = palette.foreground;
     outline = palette.muted;
-    surfaceContainer = if palette.variant == "dark" then palette.colors.surface0 else palette.colors.crust;
-    surfaceContainerHigh = if palette.variant == "dark" then palette.colors.surface1 else palette.colors.mantle;
-    surfaceContainerHighest = if palette.variant == "dark" then palette.colors.surface2 else palette.colors.surface0;
+    surfaceContainer =
+      if palette.variant == "dark"
+      then palette.colors.surface0
+      else palette.colors.crust;
+    surfaceContainerHigh =
+      if palette.variant == "dark"
+      then palette.colors.surface1
+      else palette.colors.mantle;
+    surfaceContainerHighest =
+      if palette.variant == "dark"
+      then palette.colors.surface2
+      else palette.colors.surface0;
     error = palette.colors.red;
     warning = palette.colors.yellow;
     info = palette.colors.blue;
@@ -51,9 +59,8 @@ let
     matugen_dynamic_accent = true;
   };
   source = writeText "dotdots-dms-catppuccin.json" (toJSON theme);
-in
-{
+in {
   inherit name path;
   pathStr = escapeShellArg path;
-  configFile.${relativePath} = { inherit source; };
+  configFile.${relativePath} = {inherit source;};
 }

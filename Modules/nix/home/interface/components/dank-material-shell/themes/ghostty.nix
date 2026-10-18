@@ -2,12 +2,13 @@
   config,
   pkgs,
   style,
-}:
-let
+  lix,
+  ...
+}: let
   inherit (config.xdg) configHome;
+  inherit (lix.styles.palettes) mkGhosttyPalette;
   inherit (pkgs) writeText;
-in
-{
+in {
   # DMS provides the `dankcolors` theme and generates its palette.
   matugenTemplateEnabled = true;
   opacity = {
