@@ -1,4 +1,4 @@
-{
+_: {
   plugins = {
     calculator.enable = true;
     developerUtilities.enable = true;

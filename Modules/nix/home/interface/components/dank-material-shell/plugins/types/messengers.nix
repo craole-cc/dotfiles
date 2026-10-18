@@ -2,6 +2,7 @@
   inputs,
   lix,
   pkgs,
+  ...
 }: let
   inherit (lix.modules.construction) mkForce;
 

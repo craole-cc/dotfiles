@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  ...
 }: let
   hyprland = config._.resolved.interface.managers.hyprland.explicit.enable or false;
 in {

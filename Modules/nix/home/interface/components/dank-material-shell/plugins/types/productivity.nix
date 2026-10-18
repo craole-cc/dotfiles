@@ -1,4 +1,4 @@
-{
+_: {
   plugins = {
     dankNotepadModule.enable = true;
     dankPomodoroTimer.enable = true;

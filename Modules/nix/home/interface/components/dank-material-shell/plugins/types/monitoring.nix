@@ -1,4 +1,4 @@
-pkgs: {
+{pkgs, ...}: {
   plugins = {
     nixMonitor.enable = true;
     systemMonitor.enable = true;

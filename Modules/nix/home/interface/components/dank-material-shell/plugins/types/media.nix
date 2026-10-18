@@ -1,4 +1,4 @@
-pkgs: {
+{pkgs, ...}: {
   plugins = {
     audioSwitcher.enable = true;
     volumeMixer.enable = true;

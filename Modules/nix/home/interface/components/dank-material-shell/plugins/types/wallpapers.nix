@@ -1,4 +1,4 @@
-pkgs: {
+{pkgs, ...}: {
   plugins = {
     wallpaperDiscovery.enable = true;
     wallpaperCarousel.enable = true;
