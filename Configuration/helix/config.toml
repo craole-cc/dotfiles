@@ -29,6 +29,8 @@ ret = ["open_below", "normal_mode"]
 u = ":lsp-restart"
 
 [keys.normal.space]
+A-d = [":cd %sh{printenv DOTS}", "file_picker_in_current_directory"]
+o = [':sh mkdir -p "$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")" && rm -f "$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-choice" "$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-cwd"', ':insert-output yazi --chooser-file="$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-choice" --cwd-file="$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-cwd"', ''':sh printf '\033[?1049h\033[?2004h' > /dev/tty''', ':cd %sh{cat "$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-cwd"}', ':open %sh{cat "$(printenv XDG_RUNTIME_DIR || printenv TMPDIR || echo "$HOME/.cache")/helix-yazi-choice"}', ":set mouse false", ":set mouse true", ":redraw"]
 space = "file_picker_in_current_directory"
 
 [keys.select]
