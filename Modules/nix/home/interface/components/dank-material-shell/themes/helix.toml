@@ -1,5 +1,4 @@
-# DMS Matugen theme for Helix. Keep the editor background transparent so
-# Ghostty continues to supply the active dankcolors background.
+# DMS Matugen theme for Helix
 "ui.background" = { fg = "{{colors.on_surface.default.hex}}" }
 "ui.text" = { fg = "{{colors.on_surface.default.hex}}" }
 "ui.text.focus" = { fg = "{{colors.primary.default.hex}}" }

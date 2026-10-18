@@ -11,6 +11,7 @@
   icons = import ./icons.nix {inherit config lix;};
   cursors = import ./cursors.nix {inherit config lix;};
   helix = import ./helix.nix {inherit config inputs lix pkgs;};
+
   mkThemeModals = {
     modes ? ["dark" "light"],
     types ? ["icons" "cursors"],
@@ -22,9 +23,6 @@
     concatMap (type: map (mode: mk mode type) modes) types;
 
   dataFile = mergeSafe (mkThemeModals {});
-  resolved = {
-    inherit (config.themes) cursors icons;
-  };
-in {
-  inherit cursors dataFile helix icons resolved;
-}
+
+  resolved = {inherit (config.themes) cursors icons;};
+in {inherit cursors dataFile helix icons resolved;}
