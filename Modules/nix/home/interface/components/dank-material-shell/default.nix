@@ -21,10 +21,9 @@
   inherit (context) cfg ctx;
 
   inherit (import ./packages.nix {inherit inputs lix pkgs;}) tools bins package;
-  themes = import ./themes {inherit config inputs lix pkgs;};
-  templates = import ./templates.nix {inherit config lix pkgs style user;};
+  themes = import ./themes {inherit config inputs lix pkgs style user;};
   sync = import ./sync.nix {inherit bins config lix pkgs style themes;};
-  activation = import ./activation.nix {inherit bins config inputs lix style templates themes user;};
+  activation = import ./activation.nix {inherit bins config inputs lix style themes user;};
   pluginSetup = import ./plugins {inherit bins config inputs lix pkgs;};
 in
   mkConfig {
@@ -54,7 +53,8 @@ in
       xdg = {
         configFile = mergeSafe [
           pluginSetup.files
-          (with templates.foot.theme.mutagen; {"${target}" = {inherit source;};})
+          themes.foot.configFile
+          themes.hermes.configFile
           themes.helix.configFile
         ];
         inherit (themes) dataFile;

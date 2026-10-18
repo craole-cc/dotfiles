@@ -105,8 +105,8 @@ in
       ${bins.mv} -f "$tmp" "$target"
     }
 
-    ghostty_opacity=${escapeShellArg "${config.xdg.configHome}/ghostty/dotdots-opacity"}
-    kitty_opacity=${escapeShellArg "${config.xdg.configHome}/kitty/dotdots-opacity.conf"}
+    ghostty_opacity=${escapeShellArg themes.ghostty.opacity.path}
+    kitty_opacity=${escapeShellArg themes.kitty.opacity.path}
     if write_opacity_file "$ghostty_opacity" "background-opacity = $terminal_opacity"; then
       ${bins.gCall} \
         --session \

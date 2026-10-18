@@ -4,7 +4,6 @@
   inputs,
   lix,
   style,
-  templates,
   themes,
   user,
 }: let
@@ -13,23 +12,23 @@
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (themes) icons;
   inherit (bins) dirname install jaq mkdir mktemp rm;
-  inherit (templates) foot ghostty kitty;
+  inherit (themes) catppuccin foot ghostty hermes kitty;
 in
   entryAfter ["writeBoundary"] ''
     settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
     session=${escapeShellArg "${config.xdg.stateHome}/DankMaterialShell/session.json"}
-    foot_theme=${escapeShellArg "${config.xdg.configHome}/foot/dank-colors.ini"}
-    ghostty_opacity=${escapeShellArg "${config.xdg.configHome}/ghostty/dotdots-opacity"}
-    kitty_opacity=${escapeShellArg "${config.xdg.configHome}/kitty/dotdots-opacity.conf"}
+    foot_theme=${escapeShellArg foot.path}
+    ghostty_opacity=${escapeShellArg ghostty.opacity.path}
+    kitty_opacity=${escapeShellArg kitty.opacity.path}
 
     if [ -n "$DRY_RUN_CMD" ]; then
       echo "Would seed missing DMS settings and terminal appearance files"
     else
       ${mkdir} -p "$(${dirname} "$settings")" "$(${dirname} "$session")" \
         "$(${dirname} "$foot_theme")" "$(${dirname} "$ghostty_opacity")" \
-        "$(${dirname} "$kitty_opacity")" "$HOME/.hermes/skins"
+        "$(${dirname} "$kitty_opacity")" "$(${dirname} ${escapeShellArg hermes.skinPath})"
       if [ ! -e "$foot_theme" ] && [ ! -L "$foot_theme" ]; then
-        ${install} -m 0644 ${foot.theme.fallback.source} "$foot_theme"
+        ${install} -m 0644 ${foot.fallback} "$foot_theme"
       fi
       if [ ! -e "$ghostty_opacity" ] && [ ! -L "$ghostty_opacity" ]; then
         ${install} -m 0644 ${ghostty.opacity.fallback} "$ghostty_opacity"
@@ -44,7 +43,7 @@ in
       trap '${rm} -f "$tmp"' EXIT
       if [ ! -e "$settings" ] && [ ! -L "$settings" ]; then
         ${jaq} -n \
-          --arg theme ${escapeShellArg templates.catppuccin.pathStr} \
+          --arg theme ${escapeShellArg catppuccin.pathStr} \
           --arg darkIcons ${escapeShellArg icons.dark.name} \
           --arg lightIcons ${escapeShellArg icons.light.name} '{
             currentThemeName: "dynamic",
@@ -55,8 +54,8 @@ in
             screenPreferences: {wallpaper: ["all"]},
             runDmsMatugenTemplates: true,
             matugenTemplateGtk: true,
-            matugenTemplateGhostty: true,
-            matugenTemplateFoot: false,
+            matugenTemplateGhostty: ${toJSON ghostty.matugenTemplateEnabled},
+            matugenTemplateFoot: ${toJSON foot.matugenTemplateEnabled},
             matugenTemplateVscode: true,
             matugenTemplateZed: true,
             matugenTemplateZenBrowser: true,
