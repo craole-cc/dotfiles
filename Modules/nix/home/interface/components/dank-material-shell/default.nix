@@ -68,13 +68,15 @@ in
 
       xdg = {
         configFile =
-          mergeSafe [addons.files]
-          ++ (with themes; [
-            catppuccin.configFile
-            foot.configFile
-            hermes.configFile
-            helix.configFile
-          ]);
+          mergeSafe (
+            [addons.files]
+            ++ (with themes; [
+              catppuccin.configFile
+              foot.configFile
+              hermes.configFile
+              helix.configFile
+            ])
+          );
         inherit (themes) dataFile;
       };
 
