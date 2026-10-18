@@ -7,7 +7,7 @@
           ":cd %sh{printenv DOTS}"
           "file_picker_in_current_directory"
         ];
-        A-y = [
+        o = [
           ":sh rm -f \"$XDG_RUNTIME_DIR/helix-yazi-choice\" \"$XDG_RUNTIME_DIR/helix-yazi-cwd\""
           ":insert-output yazi --chooser-file=\"$XDG_RUNTIME_DIR/helix-yazi-choice\" --cwd-file=\"$XDG_RUNTIME_DIR/helix-yazi-cwd\""
           ":sh printf '\\033[?1049h\\033[?2004h' > /dev/tty"
