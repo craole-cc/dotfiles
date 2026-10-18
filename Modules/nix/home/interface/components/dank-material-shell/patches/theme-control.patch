@@ -42,10 +42,10 @@
 +            root.manualOverrideActive = false;
 +            root.scheduledIsLight = null;
 @@ -156,3 +176 @@
--            if (Theme.isLightMode !== NightModeService.gammaIsDay) {
--                Theme.setLightMode(NightModeService.gammaIsDay, true, true);
+-            if (Theme.isLightMode !== DisplayService.gammaIsDay) {
+-                Theme.setLightMode(DisplayService.gammaIsDay, true, true);
 -            }
-+            root.applyScheduledMode(NightModeService.gammaIsDay);
++            root.applyScheduledMode(DisplayService.gammaIsDay);
 @@ -259,2 +277,2 @@
 -        if (state.isLight !== undefined && Theme.isLightMode !== state.isLight) {
 -            Theme.setLightMode(state.isLight, true, true);
