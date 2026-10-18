@@ -115,6 +115,7 @@
       "warp-terminal"
       "kitty"
     ];
+    wallpaper = ["variety"];
   };
 
   paths = rec {
@@ -450,6 +451,26 @@
             description = overrides.description or (common.description or "");
             key = overrides.key or (common.key or "");
           };
+
+        # Plain, Shift (incremental) and Super+Alt (exponential) variants of one key
+        mkScale = common: key: verb: let
+          desc = common.description;
+        in [
+          (mkBinding common {
+            inherit key;
+            description = "${desc}: ${verb}";
+          })
+          (mkBinding common {
+            inherit key;
+            description = "${desc}: ${verb} incrementally";
+            modifier = ["Shift"];
+          })
+          (mkBinding common {
+            inherit key;
+            description = "${desc}: ${verb} exponentially";
+            modifier = modifier ++ ["Alt"];
+          })
+        ];
       in {
         #~@ Applications
         launcher = let
@@ -591,15 +612,15 @@
           common = {inherit category description modifier key;};
         in [
           (mkBinding common {
-            description = description + ": Application";
+            description = "${description}: Application";
             modifier = modifier ++ ["Ctrl"];
           })
           (mkBinding common {
-            description = description + ": Session";
+            description = "${description}: Session";
             modifier = modifier ++ ["Ctrl" "Shift"];
           })
           (mkBinding common {
-            description = description + ": System";
+            description = "${description}: System";
             modifier = modifier ++ ["Ctrl" "Alt"];
           })
         ];
@@ -610,13 +631,13 @@
           key = "L";
           common = {inherit category description modifier key;};
         in [
-          (mkBinding common {description = description + ": Screen";})
+          (mkBinding common {description = "${description}: Screen";})
           (mkBinding common {
-            description = description + "Session";
+            description = "${description}: Session";
             modifier = modifier ++ ["Ctrl"];
           })
           (mkBinding common {
-            description = description + ": Application";
+            description = "${description}: Application";
             modifier = modifier ++ ["Alt"];
           })
         ];
@@ -627,139 +648,93 @@
           key = "F";
           common = {inherit category description modifier key;};
         in [
-          (mkBinding common {description = description + ": Fullscreen";})
-          (
-            mkBinding common {
-              description = description + ": Floating";
+          (mkBinding common {description = "${description}: Fullscreen";})
+          (mkBinding common {
+            description = "${description}: Floating";
+            modifier = modifier ++ ["Shift"];
+          })
+        ];
+
+        workspace = let
+          description = "Workspace";
+          category = "controller";
+          common = {inherit category description modifier;};
+          mk = {
+            key,
+            dir,
+            target,
+          }: [
+            (mkBinding common {
+              inherit key;
+              description = "${description}: Move focus ${dir}";
+            })
+            (mkBinding common {
+              inherit key;
+              description = "${description}: Move window ${dir}";
               modifier = modifier ++ ["Shift"];
-            }
-          )
-        ];
-
-        workspaceNext = let
-          description = "Workspace";
-          category = "controller";
-          key = "Right";
-          common = {inherit category description modifier key;};
-        in [
-          (mkBinding common {
-            description = description + ": Move focus right";
-          })
-          (mkBinding common {
-            description = description + ": Move window right";
-            modifier = modifier ++ ["Shift"];
-          })
-          (mkBinding common {
-            description = description + ": Move to next workspace";
-            modifier = modifier ++ ["Alt"];
-          })
-        ];
-
-        workspacePrev = let
-          description = "Workspace";
-          category = "controller";
-          key = "Left";
-          common = {inherit category description modifier key;};
-        in [
-          (mkBinding common {
-            description = description + ": Move focus left";
-          })
-          (mkBinding common {
-            description = description + ": Move window left";
-            modifier = modifier ++ ["Shift"];
-          })
-          (mkBinding common {
-            description = description + ": Move to previous workspace";
-            modifier = modifier ++ ["Alt"];
-          })
-        ];
+            })
+            (mkBinding common {
+              inherit key;
+              description = "${description}: Move to ${target} workspace";
+              modifier = modifier ++ ["Alt"];
+            })
+          ];
+        in
+          mk {
+            key = "Right";
+            dir = "right";
+            target = "next";
+          }
+          ++ mk {
+            key = "Left";
+            dir = "left";
+            target = "previous";
+          };
 
         #~@ Audio
-        volumeUp = let
+        volume = let
           description = "Volume";
           category = "audio";
-          key = "XF86AudioRaiseVolume";
-          common = {inherit category description key;};
-        in [
-          (mkBinding common {
-            description = description + ": Increase";
-          })
-          (mkBinding common {
-            description = description + ": Increase incrementally";
-            modifier = ["Shift"];
-          })
-          (mkBinding common {
-            description = description + ": Increase exponentially";
-            modifier = modifier ++ ["Alt"];
-          })
-        ];
-
-        volumeDown = let
-          description = "Volume";
-          category = "audio";
-          key = "XF86AudioLowerVolume";
-          common = {inherit category description key;};
-        in [
-          (mkBinding common {
-            description = description + ": Decrease";
-          })
-          (mkBinding common {
-            description = description + ": Decrease incrementally";
-            modifier = ["Shift"];
-          })
-          (mkBinding common {
-            description = description + ": Decrease exponentially";
-            modifier = modifier ++ ["Alt"];
-          })
-        ];
-
-        volumeMute = let
-          description = "Volume";
-          category = "audio";
-          key = "XF86AudioMute";
-          common = {inherit category description key;};
-        in [
-          (mkBinding common {
-            description = description + ": Mute or unmute";
-          })
-        ];
+          common = {inherit category description;};
+        in
+          mkScale common "XF86AudioRaiseVolume" "Increase"
+          ++ mkScale common "XF86AudioLowerVolume" "Decrease"
+          ++ [
+            (mkBinding common {
+              description = "${description}: Mute or unmute";
+              key = "XF86AudioMute";
+            })
+          ];
 
         #~@ Brightness
-        brightnessUp = let
+        brightness = let
           description = "Brightness";
           category = "display";
-          key = "XF86MonBrightnessUp";
-          common = {inherit category description key;};
-        in [
-          (mkBinding common {
-            description = description + ": Increase";
-          })
-          (mkBinding common {
-            description = description + ": Increase incrementally";
-            modifier = ["Shift"];
-          })
-          (mkBinding common {
-            description = description + ": Increase exponentially";
-            modifier = modifier ++ ["Alt"];
-          })
-        ];
+          common = {inherit category description;};
+        in
+          mkScale common "XF86MonBrightnessUp" "Increase"
+          ++ mkScale common "XF86MonBrightnessDown" "Decrease";
 
-        brightnessDown = let
-          description = "Brightness";
-          category = "display";
-          key = "XF86MonBrightnessDown";
-          common = {inherit category description key;};
+        wallpaper = let
+          description = "Wallpaper";
+          category = "controller";
+          common = {inherit category description;};
+          cycle = modifier ++ ["Alt" "Shift"];
         in [
           (mkBinding common {
-            description = description + ": Decrease";
+            description = "${description}: Next";
+            modifier = cycle;
+            key = "Period";
           })
           (mkBinding common {
-            description = description + ": Decrease incrementally";
-            modifier = ["Shift"];
+            description = "${description}: Previous";
+            modifier = cycle;
+            key = "Comma";
           })
           (mkBinding common {
-            description = description + ": Decrease exponentially";
+            description = "${description}: Open";
             modifier = modifier ++ ["Alt"];
+            key = "W";
           })
         ];
       };
