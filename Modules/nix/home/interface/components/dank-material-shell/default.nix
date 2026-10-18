@@ -53,6 +53,7 @@ in
       xdg = {
         configFile = mergeSafe [
           pluginSetup.files
+          themes.catppuccin.configFile
           themes.foot.configFile
           themes.hermes.configFile
           themes.helix.configFile

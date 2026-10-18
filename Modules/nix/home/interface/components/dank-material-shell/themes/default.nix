@@ -37,7 +37,7 @@
     source = "${resolved.package}/share/icons/${theme}";
     inherit (resolved) size;
   }) config.themes.cursors;
-  catppuccin = import ./catppuccin.nix {inherit config lix user;};
+  catppuccin = import ./catppuccin.nix {inherit config lix pkgs user;};
   foot = import ./foot.nix {inherit config lix pkgs user;};
   ghostty = import ./ghostty.nix {inherit config pkgs style;};
   helix = import ./helix.nix {inherit config inputs lix pkgs;};

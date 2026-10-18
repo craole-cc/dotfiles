@@ -7,5 +7,6 @@ package.overrideAttrs (previous: {
     + ''
         chmod -R u+w ../quickshell
       patch -d .. -p1 < ${./patches/theme-control.patch}
+      patch -d .. -p1 < ${./patches/catppuccin-matugen.patch}
     '';
 })
