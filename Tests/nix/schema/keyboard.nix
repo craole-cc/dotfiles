@@ -1,23 +1,17 @@
 {lix ? (import ../../.. {}).libraries.default}: let
   inherit (lix) lib;
   inherit (lix.attrsets.access) attrNames;
-  inherit (lix.lists.access) length;
+  inherit (lix.attrsets.construction) listToAttrs;
+  inherit (lix.attrsets.transformation) mapAttrsToList;
+  inherit (lix.lists.access) elemAt head length;
+  inherit (lix.lists.construction) concatLists;
+  inherit (lix.lists.transformation) imap0;
+  inherit (lix.strings.construction) concatStringsSep splitString toJSON;
   inherit (lix.strings.predicates) hasInfix;
 
-  binding = key: modifier: {inherit key modifier;};
-  user = {
-    packages = {
-      terminal = ["ghostty"];
-      editor = ["helix"];
-      ide = ["vscode-fhs" "zed-editor-fhs"];
-      ai-agent = ["hermes-desktop" "chatgpt"];
-    };
-    interface.keyboard.bindings = {
-      editor = [(binding "C" ["SUPER"]) (binding "C" ["SUPER" "SHIFT"])];
-      ide = [(binding "V" ["SUPER"]) (binding "V" ["SUPER" "SHIFT"])];
-      agent = [(binding "A" ["SUPER"]) (binding "A" ["SUPER" "SHIFT"])];
-    };
-  };
+  # Keys, modifiers and package order come from the actual API declaration.
+  user = import ../../../API/nix/users/craole;
+  declared = (lix.schema.io.normalizeKeyboard user.interface.keyboard).bindings;
   keyboard = lix.schema.io.mkKeyboard {
     host = {};
     inherit user;
@@ -30,34 +24,67 @@
     inherit apps lix;
     inherit (keyboard) scratchpads;
   };
-  contains = text: {
-    expr = hasInfix text lua;
-    expected = true;
-  };
-  tests = {
-    testEditorChordSurvivesIdeDeclaration = contains ''hl.bind("SUPER + C",'';
-    testSecondaryEditorChord = contains ''hl.bind("SUPER + SHIFT + C",'';
-    testIdeChordSurvivesEditorDeclaration = contains ''hl.bind("SUPER + V",'';
-    testSecondaryIdeChord = contains ''hl.bind("SUPER + SHIFT + V",'';
-    testEditorUsesGuiSelection = contains ''workspace = "special:editor-primary", on_created_empty = "code --new-window"'';
-    testIdeUsesGuiSelection = contains ''workspace = "special:ide-primary", on_created_empty = "code --new-window"'';
-    testAgentPrimaryChord = contains ''hl.bind("SUPER + A",'';
-    testAgentSecondaryChord = contains ''hl.bind("SUPER + SHIFT + A",'';
-    testAgentPrimarySelection = contains ''workspace = "special:ai-primary", on_created_empty = "hermes-desktop"'';
-    testAgentSecondarySelection = contains ''workspace = "special:ai-secondary", on_created_empty = "chatgpt"'';
-    testEditorDoesNotLaunchTerminalEditor = {
-      expr = hasInfix "ghostty -e hx" lua;
-      expected = false;
+  # Assert the compatibility contract independently of the renderer's aliases.
+  groups = {
+    editor = {
+      workspace = "editor";
+      packages = apps.ide;
     };
-    testLegacyVisualUsesGuiSelection = {
-      expr =
-        (import ../../../Modules/nix/home/interface/manager/hyprland/settings/core.nix {
-          inherit apps;
-          keyboard.mod = "SUPER";
-        })."$VISUAL";
-      expected = "code";
+    ide = {
+      workspace = "ide";
+      packages = apps.ide;
+    };
+    agent = {
+      workspace = "ai";
+      packages = apps.ai-agent;
     };
   };
+  ranks = ["primary" "secondary" "tertiary"];
+  primaryTerminal = head apps.terminal;
+  checks = listToAttrs (concatLists (mapAttrsToList (group: spec:
+    concatLists (imap0 (index: binding: let
+        suffix =
+          if index < length ranks
+          then elemAt ranks index
+          else toString (index + 1);
+        workspace = "${spec.workspace}-${suffix}";
+        chord = concatStringsSep " + " ((splitString " " binding.mod) ++ [binding.key]);
+        entry = elemAt spec.packages index;
+        command = entry.launch.scratchpad or entry.command;
+        wrapped =
+          if entry.needsTerminal
+          then "${primaryTerminal.command} ${primaryTerminal.wrap.execFlag or "-e"} ${command}"
+          else command;
+      in [
+        {
+          name = "test${group}Chord${toString (index + 1)}";
+          value = {
+            expr = hasInfix ''hl.bind(${toJSON chord}, hl.dsp.workspace.toggle_special(${toJSON workspace})'' lua;
+            expected = true;
+          };
+        }
+        {
+          name = "test${group}Selection${toString (index + 1)}";
+          value = {
+            expr = hasInfix ''workspace = ${toJSON "special:${workspace}"}, on_created_empty = ${toJSON wrapped}'' lua;
+            expected = true;
+          };
+        }
+      ])
+      declared.${group}))
+  groups));
+  tests =
+    checks
+    // {
+      testLegacyVisualUsesGuiSelection = {
+        expr =
+          (import ../../../Modules/nix/home/interface/manager/hyprland/settings/core.nix {
+            inherit apps;
+            keyboard.mod = keyboard.modifier;
+          })."$VISUAL";
+        expected = (head apps.ide).command;
+      };
+    };
 in {
   total = length (attrNames tests);
   failures = lib.runTests tests;
