@@ -14,8 +14,10 @@
   roles = ["primary" "secondary" "tertiary"];
   protocols = ["wayland" "x11" "xorg"];
 
-  # These existing host fields configure nixpkgs rather than selecting a group.
+  # These existing host fields configure inputs or nixpkgs rather than selecting a group.
   policyFields = [
+    "core"
+    "home"
     "kernel"
     "allowUnfree"
     "allowBroken"

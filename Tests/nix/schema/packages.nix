@@ -595,6 +595,8 @@
             editor = ["nano"];
             coding = ["nix"];
             kernel = "cachyos";
+            core = ["nixpkgs"];
+            home = ["home-manager"];
           };
           user.packages.terminal = ["foot"];
         }).requiredPackages;
