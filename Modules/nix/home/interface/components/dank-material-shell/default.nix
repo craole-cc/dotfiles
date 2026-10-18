@@ -21,7 +21,7 @@
   inherit (context) cfg ctx;
 
   inherit (import ./packages.nix {inherit inputs lix pkgs;}) tools bins package;
-  themes = import ./themes.nix {inherit config lix;};
+  themes = import ./themes {inherit config inputs lix pkgs;};
   templates = import ./templates.nix {inherit config lix pkgs style user;};
   sync = import ./sync.nix {inherit bins config lix pkgs style themes;};
   activation = import ./activation.nix {inherit bins config inputs lix style templates themes user;};
@@ -55,6 +55,7 @@ in
         configFile = mergeSafe [
           pluginSetup.files
           (with templates.foot.theme.mutagen; {"${target}" = {inherit source;};})
+          themes.helix.configFile
         ];
         inherit (themes) dataFile;
       };
@@ -69,6 +70,7 @@ in
         sessionVariables.QS_ICON_THEME = themes.icons.dark.theme;
         activation = {
           configureDmsTheme = activation;
+          configureDmsHelixTheme = themes.helix.activation;
           configureDmsPlugins = pluginSetup.activation;
           migrateDmsPlugins = pluginSetup.migration;
         };
