@@ -24,11 +24,11 @@
     inherit apps lix;
     inherit (keyboard) scratchpads;
   };
-  # Assert the compatibility contract independently of the renderer's aliases.
+  # Check each keyboard category against its own declared package group.
   groups = {
     editor = {
       workspace = "editor";
-      packages = apps.ide;
+      packages = apps.editor;
     };
     ide = {
       workspace = "ide";
@@ -49,10 +49,18 @@
           else toString (index + 1);
         workspace = "${spec.workspace}-${suffix}";
         chord = concatStringsSep " + " ((splitString " " binding.mod) ++ [binding.key]);
-        entry = elemAt spec.packages index;
-        command = entry.launch.scratchpad or entry.command;
+        entry =
+          if index < length spec.packages
+          then elemAt spec.packages index
+          else null;
+        command =
+          if entry == null
+          then null
+          else entry.launch.scratchpad or entry.command;
         wrapped =
-          if entry.needsTerminal
+          if entry == null
+          then null
+          else if entry.needsTerminal
           then "${primaryTerminal.command} ${primaryTerminal.wrap.execFlag or "-e"} ${command}"
           else command;
       in [
@@ -60,14 +68,14 @@
           name = "test${group}Chord${toString (index + 1)}";
           value = {
             expr = hasInfix ''hl.bind(${toJSON chord}, hl.dsp.workspace.toggle_special(${toJSON workspace})'' lua;
-            expected = true;
+            expected = entry != null;
           };
         }
         {
           name = "test${group}Selection${toString (index + 1)}";
           value = {
             expr = hasInfix ''workspace = ${toJSON "special:${workspace}"}, on_created_empty = ${toJSON wrapped}'' lua;
-            expected = true;
+            expected = entry != null;
           };
         }
       ])

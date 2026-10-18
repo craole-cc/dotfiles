@@ -9,11 +9,10 @@
   inherit (lix.strings.construction) concatStringsSep splitString toJSON;
   inherit (lix.types.predicates) isAttrs;
 
-  # Keyboard group names predate the package split: Editor shortcuts select
-  # GUI editors, and AI shortcuts select the canonical ai-agent package group.
+  # The keyboard AI alias selects the canonical ai-agent package group.
+  # Editor and IDE shortcuts use their own declared package groups.
   packageGroup = category:
     {
-      editor = "ide";
       ai = "ai-agent";
     }.${
       category
