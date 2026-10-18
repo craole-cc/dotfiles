@@ -16,31 +16,50 @@
 +        watchChanges: currentTheme === "custom" || (typeof SettingsData !== "undefined" && !!SettingsData.customThemeFile)
 --- a/core/internal/matugen/matugen.go
 +++ b/core/internal/matugen/matugen.go
-@@ -430,0 +431,17 @@
-+		hybridImage := opts.Kind == "image"
-+		if hybridImage {
-+			dynamicColors, err := runMatugenDryRun(opts)
-+			if err != nil {
-+				return false, fmt.Errorf("matugen accent generation failed: %w", err)
-+			}
-+			seed := extractMatugenColor(dynamicColors, "source_color", "dark")
-+			if seed == "" {
-+				return false, fmt.Errorf("matugen accent palette has no source_color")
-+			}
-+			opts.StockColors, err = mergeDynamicAccentColors(opts.StockColors, dynamicColors, opts.Mode)
-+			if err != nil {
-+				return false, fmt.Errorf("failed to combine Catppuccin and Matugen colors: %w", err)
-+			}
-+			opts.Value = seed
-+			opts.Kind = "hex"
+@@ -369,6 +369,25 @@
+ 		}
+ 	}
+ 
++	hybridImage := opts.Kind == "image" && opts.StockColors != ""
++	if hybridImage {
++		sourceImage = opts.Value
++		if abs, err := filepath.Abs(sourceImage); err == nil {
++			sourceImage = abs
 +		}
-@@ -448,0 +466,5 @@
-+		if hybridImage {
-+			dank16Term := paletteInjection{Namespace: "dank16term", JSON: dank16TermJSON}
-+			injections := append([]paletteInjection{dank16Term}, InjectedPalettes(opts.ConfigDir, sourceImage, opts.Mode)...)
-+			importData = buildImportData(dank16JSON, sourceImage, opts.StockColors, injections)
++		dynamicColors, err := runMatugenDryRun(opts)
++		if err != nil {
++			return false, fmt.Errorf("matugen accent generation failed: %w", err)
 +		}
-@@ -1344,0 +1367,52 @@
++		if extractMatugenColor(dynamicColors, "source_color", "dark") == "" {
++			return false, fmt.Errorf("matugen accent palette has no source_color")
++		}
++		opts.StockColors, err = mergeDynamicAccentColors(opts.StockColors, dynamicColors, opts.Mode)
++		if err != nil {
++			return false, fmt.Errorf("failed to combine Catppuccin and Matugen colors: %w", err)
++		}
++	}
++
+ 	if opts.StockColors != "" {
+ 		log.Info("Using stock/custom theme colors with matugen base")
+ 		primaryDark = extractNestedColor(opts.StockColors, "primary", "dark")
+@@ -386,7 +405,12 @@
+ 		}
+ 
+ 		dank16JSON = generateDank16Variants(primaryDark, primaryLight, surfaceDark, surfaceLight, containerDark, containerLight, opts.Mode)
+-		importData := fmt.Sprintf(`{"colors": %s, "dank16": %s}`, opts.StockColors, dank16JSON)
++		importData := fmt.Sprintf(`{"colors": %s, "dank16": %s`, opts.StockColors, dank16JSON)
++		if hybridImage && sourceImage != "" {
++			image, _ := json.Marshal(sourceImage)
++			importData += fmt.Sprintf(`, "image": %s`, image)
++		}
++		importData += "}"
+ 		importArgs = []string{"--import-json-string", importData}
+ 
+ 		log.Info("Running matugen color hex with stock color overrides")
+@@ -1384,6 +1408,58 @@
+ 	}
+ }
+ 
 +func mergeDynamicAccentColors(stockJSON, dynamicJSON string, mode ColorMode) (string, error) {
 +	var stock map[string]map[string]any
 +	if err := json.Unmarshal([]byte(stockJSON), &stock); err != nil {
@@ -93,3 +112,6 @@
 +	return string(merged), nil
 +}
 +
+ type TemplateCheck struct {
+ 	ID       string `json:"id"`
+ 	Detected bool   `json:"detected"`
