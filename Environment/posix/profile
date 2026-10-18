@@ -2194,9 +2194,9 @@ setup_treefmt() {
 
 # Lightweight – safe & fast for every direnv load / shell entry
 load_flake() {
-  # direnv path (DIRENV_IN_ENVRC is set by direnv itself)
+  # Lorri 1.7+ exposes its environment through direnv.
   case "${DIRENV_IN_ENVRC:-}" in
-  "") ;;
+  "") return 0 ;;
   *)
     if command -v lorri >/dev/null 2>&1; then
       # shellcheck disable=SC2312
@@ -2205,21 +2205,6 @@ load_flake() {
       use flake
     fi
     return 0
-    ;;
-  esac
-
-  # Normal shell: try to load a completed evaluation
-  command -v lorri >/dev/null 2>&1 || return 0
-
-  _lorri_env="$(lorri hook bash 2>/dev/null)" || _lorri_env=""
-  case "${_lorri_env}" in
-  "")
-    print --info "lorri: no completed evaluation yet; daemon is building in the background"
-    ;;
-  *)
-    # shellcheck disable=SC2312
-    eval "${_lorri_env}"
-    print --debug "lorri: loaded cached evaluation into this shell"
     ;;
   esac
 }

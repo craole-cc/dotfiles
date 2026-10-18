@@ -267,9 +267,16 @@
     hostShells = system: let
       matching = systemHosts system;
       pkgs = pkgsFor system;
+      defaultShell = (fn {inherit pkgs system;}).devShells.default;
     in
       builtins.listToAttrs (
-        builtins.concatLists (
+        [
+          {
+            name = "default";
+            value = defaultShell;
+          }
+        ]
+        ++ builtins.concatLists (
           map (
             hostName: let
               host = matching.${hostName};
