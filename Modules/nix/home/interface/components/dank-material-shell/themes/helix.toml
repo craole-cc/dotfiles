@@ -39,7 +39,7 @@
 "function" = "{{dank16.color4.default.hex}}"
 "constructor" = "{{dank16.color4.default.hex}}"
 "special" = "{{dank16.color6.default.hex}}"
-"keyword" = "{{dank16.color5.default.hex}}"
+"keyword" = "{{colors.on_surface_variant.default.hex}}"
 "label" = "{{dank16.color5.default.hex}}"
 "namespace" = "{{dank16.color5.default.hex}}"
 
