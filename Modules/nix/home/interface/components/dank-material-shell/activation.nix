@@ -7,6 +7,7 @@
   style,
   themes,
   user,
+  ...
 }: let
   inherit (lix.strings.construction) toJSON;
   inherit (lix.strings.transformation) escapeShellArg;
