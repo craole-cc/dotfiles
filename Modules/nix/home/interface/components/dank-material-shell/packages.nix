@@ -17,6 +17,7 @@
       quickshell = null;
       ripgrep = null;
       sd = null;
+      systemd = null;
     };
     required = true;
   };
@@ -29,6 +30,7 @@
     glib = "${tools.glib.paths.binary}";
   in rec {
     inherit (binaries) gum jaq sd;
+    systemctl = "${tools.systemd.paths.binary}/systemctl";
     cmp = binaries.diffutils;
     cat = "${coreutils}/cat";
     chmod = "${coreutils}/chmod";

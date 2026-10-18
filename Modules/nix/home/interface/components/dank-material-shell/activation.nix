@@ -11,7 +11,7 @@
   inherit (lix.strings.construction) toJSON;
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (themes) icons;
-  inherit (bins) dirname install jaq mkdir mktemp rm;
+  inherit (bins) chmod cmp dirname install jaq mkdir mktemp mv rm;
   inherit (themes) catppuccin foot ghostty hermes kitty;
 in
   entryAfter ["writeBoundary"] ''
@@ -64,6 +64,29 @@ in
             iconThemePerMode: true
           }' > "$tmp"
         ${install} -m 0600 "$tmp" "$settings"
+      fi
+      if [ -f "$settings" ] && [ ! -L "$settings" ]; then
+        settings_tmp="$(${mktemp} "$settings.tmp.XXXXXX")"
+        if ${jaq} \
+          --arg theme ${escapeShellArg catppuccin.path} \
+          --argjson ghosttyTemplate ${toJSON ghostty.matugenTemplateEnabled} \
+          --argjson footTemplate ${toJSON foot.matugenTemplateEnabled} \
+          ' .customThemeFile = (if .currentThemeName == "dynamic" then $theme else .customThemeFile end) |
+            .runDmsMatugenTemplates = (.runDmsMatugenTemplates // true) |
+            .matugenTemplateGtk = (.matugenTemplateGtk // true) |
+            .matugenTemplateGhostty = (.matugenTemplateGhostty // $ghosttyTemplate) |
+            .matugenTemplateFoot = (.matugenTemplateFoot // $footTemplate) ' \
+          "$settings" > "$settings_tmp"; then
+          if ! ${cmp} -s "$settings_tmp" "$settings"; then
+            ${chmod} 0600 "$settings_tmp"
+            ${mv} -f "$settings_tmp" "$settings"
+          else
+            ${rm} -f "$settings_tmp"
+          fi
+        else
+          ${rm} -f "$settings_tmp"
+          echo "Could not reconcile DMS settings defaults" >&2
+        fi
       fi
       if [ ! -e "$session" ] && [ ! -L "$session" ]; then
         printf '%s\n' ${escapeShellArg (toJSON {

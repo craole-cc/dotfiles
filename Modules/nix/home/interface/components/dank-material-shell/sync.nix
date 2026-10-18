@@ -108,11 +108,7 @@ in
     ghostty_opacity=${escapeShellArg themes.ghostty.opacity.path}
     kitty_opacity=${escapeShellArg themes.kitty.opacity.path}
     if write_opacity_file "$ghostty_opacity" "background-opacity = $terminal_opacity"; then
-      ${bins.gCall} \
-        --session \
-        --dest com.mitchellh.ghostty \
-        --object-path /com/mitchellh/ghostty \
-        --method org.gtk.Actions.Activate reload-config '[]' '{}' >/dev/null 2>&1 || true
+      ${bins.systemctl} --user reload app-com.mitchellh.ghostty.service >/dev/null 2>&1 || true
     fi
     if write_opacity_file "$kitty_opacity" "background_opacity $terminal_opacity"; then
       ${bins.pkill} -USR1 -x kitty || true
