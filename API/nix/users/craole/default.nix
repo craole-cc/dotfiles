@@ -527,7 +527,7 @@
         ];
 
         editor = let
-          description = "Editor";
+          description = "Code Editor";
           key = "C";
           category = "application";
           common = {inherit category description modifier key;};
@@ -546,7 +546,7 @@
         ];
 
         ide = let
-          description = "IDE";
+          description = "Integrated Development Environment";
           key = "V";
           category = "application";
           common = {inherit category description modifier key;};
