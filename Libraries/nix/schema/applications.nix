@@ -219,7 +219,7 @@
     class = getClass category name;
     needsTerminal = meta.needsTerminal or false;
     wrap = meta.wrap or {};
-    launch.scratchpad = scratchpadCommand category meta command;
+    launch.scratchpad = meta.launch.scratchpad or (scratchpadCommand category meta command);
   };
 
   # ── Resolution ───────────────────────────────────────────────────────────────

@@ -18,6 +18,11 @@
     kind = "editor";
   };
 
+  session = import ./session {
+    inherit config lix pkgs;
+    name = (lix.applications.registry.resolve {value = "helix";}).launch.scratchpad;
+  };
+
   resolved = userApplicationConfig {
     inherit context user pkgs;
     category = "tty";
@@ -27,6 +32,7 @@
       "helix-editor"
     ];
     requiresWayland = true;
+    extraPackages = [session];
     extraProgramConfig = mkMerge [
       (import ./editor.nix)
       (import ./keybindings.nix)

@@ -130,6 +130,7 @@ _: {
       title = "helix";
     };
     exec = "hx";
+    launch.scratchpad = "helix-session";
     needsTerminal = true;
     categories = ["editor"];
     channel = "stable";
