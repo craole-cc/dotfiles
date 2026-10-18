@@ -9,6 +9,15 @@
   inherit (lix.strings.construction) concatStringsSep splitString toJSON;
   inherit (lix.types.predicates) isAttrs;
 
+  # Keyboard group names predate the package split: Editor shortcuts select
+  # GUI editors, and AI shortcuts select the canonical ai-agent package group.
+  packageGroup = category:
+    {
+      editor = "ide";
+      ai = "ai-agent";
+    }.${
+      category
+    } or category;
   primaryTerminal = apps.legacy.terminal.primary or null;
   wrapCommand = entry: command:
     if (entry.needsTerminal or false) && isAttrs primaryTerminal
@@ -23,7 +32,7 @@
   in "${category}-${suffix}";
 
   scratchpadBind = category: scratchpad: binding: let
-    entries = apps.${category} or [];
+    entries = apps.${packageGroup category} or [];
     inherit (binding) application;
     entry =
       if application > 0 && application <= length entries

@@ -545,6 +545,25 @@
           })
         ];
 
+        ide = let
+          description = "IDE";
+          key = "V";
+          category = "application";
+          common = {inherit category description modifier key;};
+        in [
+          (mkBinding common {
+            description = description + ": Primary";
+          })
+          (mkBinding common {
+            description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Tertiary";
+            modifier = modifier ++ ["Alt"];
+          })
+        ];
+
         agent = let
           description = "Agent";
           category = "application";

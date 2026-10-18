@@ -240,11 +240,11 @@
           host
           lib
           lix
+          apps
           user
           keyboard
           mkMerge
           ;
-        apps = legacyApps;
         inherit (cfg) withRules;
         keys = user.interface.keyboard;
       })

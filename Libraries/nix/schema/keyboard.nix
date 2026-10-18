@@ -18,7 +18,7 @@
     terminal = "terminal";
     browser = "browser";
     editor = "editor";
-    ide = "editor";
+    ide = "ide";
     explorer = "explorer";
     agent = "ai";
     ai = "ai";
