@@ -8,7 +8,7 @@
 "ui.menu.scroll" = { fg = "{{colors.on_surface_variant.default.hex}}" }
 "ui.popup" = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface_variant.default.hex}}" }
 "ui.window" = { fg = "{{colors.outline.default.hex}}" }
-"ui.selection" = { fg = "{{colors.on_secondary_container.default.hex}}", bg = "{{colors.secondary_container.default.hex}}" }
+"ui.selection" = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.primary.default.hex}}" }
 "ui.linenr" = { fg = "{{colors.outline.default.hex}}" }
 "ui.linenr.selected" = { fg = "{{colors.primary.default.hex}}", modifiers = ["bold"] }
 "ui.statusline" = { fg = "{{colors.on_surface.default.hex}}", bg = "{{colors.surface_variant.default.hex}}" }
