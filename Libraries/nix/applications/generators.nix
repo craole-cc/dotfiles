@@ -16,6 +16,7 @@
   };
 
   inherit (_.attrsets.construction) optionalAttrs;
+  inherit (_.lists.access) elemAt length;
   inherit (_.lists.construction) optionals;
   inherit (_.lists.predicates) isIn;
   inherit (_.lists.selection) filter;
@@ -24,9 +25,10 @@
   inherit (_.strings.construction) concatStringsSep fromBool optionalString;
   inherit (_.strings.transformation) toUpper;
   inherit (_.types.predicates) isDerivation;
+  inherit (_.schema.packages) selectedPackages;
 
   /**
-      Create an application configuration object with role-based classification,
+      Create an application configuration object with ordered selection,
       environment variable generation, and platform compatibility checks.
 
       This function analyses user configuration to determine if an application
@@ -43,17 +45,11 @@
         Expected structure:
   ```nix
         {
-          applications = {
-            <kind> = {
-              primary = "<name>";
-              secondary = "<name>";
-              # OR for categorized types like editors:
-              <category> = {
-                primary = "<name>";
-                secondary = "<name>";
-              };
-            };
-            allowed = [ "<name>" ... ];
+          packages = {
+            <kind> = [ "<name>" ... ];
+            editor = [ "helix" "neovim" ... ];
+            ide = [ "vscode" "zed" ... ];
+            extra = [ "<name>" ... ];
           };
         }
   ```
@@ -80,8 +76,8 @@
       `category` (optional, default: `null`)
 
       : Subcategory within `kind` (e.g., "tty" or "gui" for editors).
-        When provided, looks up role in `user.applications.<kind>.<category>`.
-        When `null`, looks up directly in `user.applications.<kind>`.
+        GUI editors use `packages.ide`; TTY editors use `packages.editor`.
+        Other kinds read the complete ordered `packages.<kind>` group.
 
       `resolutionHints` (optional, default: `[name]`)
 
@@ -319,15 +315,29 @@
     );
 
     #~@ Role Classification — inert when kind is null
-    default =
-      if kind == null
-      then null
-      else if category != null
-      then user.applications.${kind}.${category} or null
-      else user.applications.${kind} or null;
-    isPrimary = kind != null && isIn (default.primary or null) identifiers;
-    isSecondary = kind != null && isIn (default.secondary or null) identifiers;
-    isRequested = isIn identifiers (user.applications.allowed or []);
+    groups = user.packages or (_.schema.packages.resolve {record = user;});
+    group =
+      if kind == "editor" && category == "gui"
+      then "ide"
+      else if kind == "ai"
+      then "ai-agent"
+      else kind;
+    selected =
+      if group == null
+      then []
+      else groups.${group} or [];
+    first =
+      if length selected > 0
+      then elemAt selected 0
+      else null;
+    second =
+      if length selected > 1
+      then elemAt selected 1
+      else null;
+    isPrimary = kind != null && isIn first identifiers;
+    isSecondary = kind != null && isIn second identifiers;
+    requested = selectedPackages user;
+    isRequested = isIn identifiers requested;
 
     #~@ Platform Compatibility — unchanged, doesn't touch kind
     checkPlatform = requiresWayland || requiresX11;

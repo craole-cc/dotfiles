@@ -9,6 +9,8 @@
   inherit (lib.modules) mkIf;
   inherit (lix.hardware.display) mkHyprlandMonitors;
   inherit (lix.schema.io) mkHyprKeybindings;
+  inherit (lix.lists.access) head;
+  inherit (lix.lists.construction) optionals;
 
   mod = keyboard.modifier;
 in {
@@ -27,7 +29,7 @@ in {
 
   bind = mkHyprKeybindings keyboard;
 
-  bindr = ["${mod}, SUPER_L, exec, ${apps.launcher.primary.command}"];
+  bindr = optionals (apps.launcher != []) ["${mod}, SUPER_L, exec, ${(head apps.launcher).command}"];
 
   #~@ Locked binds - active even when screen is locked
   bindl = [

@@ -8,13 +8,20 @@
   inherit (_.lists.transformation) sort;
   inherit (_.strings.construction) hashToInt;
   inherit (_.filesystem.construction) mkTree;
+  inherit (_.schema.packages) merge normalize policyFields;
+  inherit (_.schema.ui) mkUI;
 
   mkUser = {
     name,
     user,
+    host ? {},
     stems ? {},
     roots ? {},
   }: let
+    normalized = normalize {
+      record = user;
+      protocol = (mkUI {inherit host user;}).displayProtocol;
+    };
     uid =
       if (user.uid or null) != null
       then user.uid
@@ -25,7 +32,7 @@
           max = 60000;
         };
   in
-    user
+    normalized
     // {
       inherit uid;
       paths = mkTree {
@@ -105,7 +112,12 @@
           "role"
         ];
       in
-        recursiveUpdate userDataFiltered hostUser
+        merge (merge {
+            packages = removeAttrs (host.packages or {}) policyFields;
+            applications = host.applications or {};
+          }
+          userDataFiltered)
+        hostUser
     ) (getPrincipals host);
 
   /**
@@ -243,7 +255,7 @@
     stems ? {},
     roots ? {},
   }: let
-    enrich = mapAttrs (name: user: mkUser {inherit name user stems roots;});
+    enrich = mapAttrs (name: user: mkUser {inherit name user host stems roots;});
 
     all = enrich (getAll {inherit host users;});
     enabled = getEnabled (enrich (getAllWithDefault {

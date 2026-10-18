@@ -6,6 +6,7 @@
   inherit (_.sources.modules) mkModule;
   inherit (_.applications.registry) resolve;
   inherit (_.lists.predicates) isIn;
+  inherit (_.schema.packages) selectedPackages;
   inherit (lib.attrsets) attrByPath isAttrs mapAttrs;
   inherit
     (lib.strings)
@@ -191,9 +192,9 @@
     modules,
     ...
   }: let
-    apps = user.applications or {};
-    appsAllowed = normalizeNames (attrByPath ["applications" "allowed"] [] user);
-    ai = attrByPath ["ai"] {} apps;
+    groups = user.packages or (_.schema.packages.resolve {record = user;});
+    appsAllowed = normalizeNames (selectedPackages user);
+    ai = groups.ai-agent or [];
     ui = user.interface or {};
     de = normalizeName (attrByPath ["desktopEnvironment"] "" ui);
 
@@ -204,28 +205,21 @@
       dark = normalizeName (t.dark or "");
     };
 
-    barInput = attrByPath ["bar"] null apps;
-    bar = normalizeName barInput;
-    selectedPanel =
-      if bar == null
+    panels = groups.bar or [];
+    bar =
+      if panels == []
       then null
-      else
-        resolve {
-          value = bar;
-          category = "panel";
-        };
-
-    browserInput = attrByPath ["browser" "primary"] null apps;
-    legacyBrowser = attrByPath ["browser" "firefox"] "twilight" apps;
-    browser = normalizeName (
-      if browserInput == null
-      then legacyBrowser
-      else browserInput
-    );
-    selectedBrowser = resolve {
-      value = browser;
-      category = "browser";
-    };
+      else normalizeName (builtins.head panels);
+    selectedPanels = builtins.filter (panel: panel != null) (map (value: let
+      result = builtins.tryEval (resolve {
+        inherit value;
+        category = "panel";
+      });
+    in
+      if result.success
+      then result.value
+      else null)
+    panels);
 
     resolveBrowser = value:
       if value == null || value == ""
@@ -244,11 +238,7 @@
       builtins.filter
       (app: app != null)
       (map resolveBrowser (
-        [
-          (attrByPath ["browser" "primary"] null apps)
-          (attrByPath ["browser" "secondary"] null apps)
-          (attrByPath ["browser" "tertiary"] null apps)
-        ]
+        (groups.browser or [])
         ++ appsAllowed
       ));
     zenBrowsers =
@@ -260,31 +250,24 @@
       then null
       else builtins.head zenBrowsers;
 
-    tty = let
-      t = attrByPath ["editor" "tty"] {} apps;
-    in {
-      primary = normalizeName (t.primary or "");
-      secondary = normalizeName (t.secondary or "");
-    };
+    tty = groups.editor or [];
     hasAnyApp = names: extras: isIn names (appsAllowed ++ normalizeNames extras);
     context = {
       inherit
         appsAllowed
         ai
         bar
-        selectedPanel
+        selectedPanels
         theme
         de
-        browser
-        selectedBrowser
         selectedZenBrowser
         hasAnyApp
         tty
         ;
     };
 
-    isDmsShellAllowed = {selectedPanel, ...}:
-      selectedPanel != null && selectedPanel.name == "dms-shell";
+    isDmsShellAllowed = {selectedPanels, ...}:
+      builtins.any (panel: panel.name == "dms-shell") selectedPanels;
 
     appSpecs = {
       plasma.condition = {
@@ -327,11 +310,7 @@
         hasAnyApp,
         ...
       }:
-        hasAnyApp names [
-          ai.primary
-          ai.secondary
-          ai.tertiary
-        ];
+        hasAnyApp names ai;
 
       "noctalia-shell".condition = {
         names,
@@ -347,10 +326,7 @@
         tty,
         ...
       }:
-        hasAnyApp names [
-          tty.primary
-          tty.secondary
-        ];
+        hasAnyApp names tty;
 
       "zen-browser" = {
         variant =

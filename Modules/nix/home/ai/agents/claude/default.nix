@@ -13,7 +13,7 @@
   mod = "claude";
 
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.modules.construction) mkConfig mkContext mkIf mkMerge;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.types.combinators) attrsOf listOf nullOr;
@@ -40,14 +40,7 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn ["claude-code" "claude"] (let
-          domain = user.applications.${dom} or {};
-        in
-          (user.applications.allowed or [])
-          ++ map (module: domain.${module}) (
-            filter (module: domain ? ${module})
-            ["primary" "secondary" "tertiary"]
-          ));
+        condition = isIn ["claude-code" "claude"] (selectedPackages user);
       };
 
       package = mkOption {

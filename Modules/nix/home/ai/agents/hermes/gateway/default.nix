@@ -1,0 +1,99 @@
+{
+  cfg,
+  config,
+  lix,
+  pkgs,
+  ...
+}: let
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.attrsets.transformation) filterAttrs;
+  inherit (lix.lists.predicates) all;
+  inherit (lix.modules.construction) mkIf;
+  inherit (lix.options.construction) mkOption;
+  inherit (lix.strings.construction) toJSON;
+  inherit (lix.strings.transformation) trim;
+  inherit (lix.types.combinators) listOf nullOr submodule;
+  inherit (lix.types.primitives) bool str;
+
+  active = filterAttrs (_name: profile: profile.enable) cfg.profiles;
+  known = name: name == "default" || active ? ${name};
+  optionalId = description:
+    mkOption {
+      type = nullOr str;
+      default = null;
+      inherit description;
+    };
+in {
+  options.gateway = {
+    multiplex = mkOption {
+      type = bool;
+      default = active != {};
+      description = "Serve named profiles in the existing gateway. Defaults on when profiles are declared.";
+    };
+    routes = mkOption {
+      type = listOf (submodule {
+        options = {
+          name = mkOption {
+            type = str;
+            default = "";
+            description = "Optional route label.";
+          };
+          platform = mkOption {
+            type = str;
+            default = "telegram";
+            description = "Hermes platform receiving the message, such as telegram or discord.";
+          };
+          profile = mkOption {
+            type = str;
+            default = "default";
+            description = "Declared profile that handles matching messages, or default.";
+          };
+          bot_profile = optionalId "Profile owning the receiving bot credential. Null uses the default bot.";
+          user_id = optionalId "Exact sender identifier. Null leaves the sender unconstrained.";
+          guild_id = optionalId "Server or workspace identifier.";
+          chat_id = optionalId "Conversation or channel identifier.";
+          thread_id = optionalId "Thread identifier.";
+        };
+      });
+      default = [];
+      description = "Shared-bot routes, using Hermes's native route keys. Matching follows Hermes specificity rules.";
+    };
+  };
+
+  settings = optionalAttrs cfg.gateway.multiplex {
+    # Hermes gives these canonical keys precedence over older nested settings.
+    multiplex_profiles = true;
+    profile_routes = map (filterAttrs (_key: value: value != null && value != "")) cfg.gateway.routes;
+  };
+
+  outputs = {
+    systemd.user.services.hermes-agent.Unit.X-Restart-Triggers =
+      mkIf
+      (pkgs.stdenv.hostPlatform.isLinux && cfg.gateway.multiplex && config.services.hermes-agent.gateway.enable)
+      [
+        (pkgs.writeText "hermes-team.json" (toJSON {
+          profiles = cfg.profiles;
+          inherit (config.services.hermes-agent) settings;
+        }))
+      ];
+
+    assertions = [
+      {
+        assertion = cfg.gateway.routes == [] || cfg.gateway.multiplex;
+        message = "Hermes gateway.routes requires gateway.multiplex.";
+      }
+      {
+        assertion = all (route: known route.profile && (route.bot_profile == null || known route.bot_profile)) cfg.gateway.routes;
+        message = "Hermes gateway routes must reference default or enabled declared profiles.";
+      }
+      {
+        assertion = all (route:
+          trim route.platform
+          != ""
+          && all (value: value == null || trim value != "") [route.bot_profile route.user_id route.guild_id route.chat_id route.thread_id])
+        cfg.gateway.routes;
+        message = "Hermes gateway route platforms and supplied identifiers must not be empty.";
+      }
+    ];
+  };
+}

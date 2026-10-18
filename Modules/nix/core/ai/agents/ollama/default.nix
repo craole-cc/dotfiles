@@ -10,7 +10,7 @@
   mod = "ollama";
 
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.types.primitives) anything package;
@@ -27,13 +27,7 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn ["ollama"] (let
-          domain = (host.users.data.primary or {}).applications.${dom} or {};
-        in
-          map (module: domain.${module}) (
-            filter (module: domain ? ${module})
-            ["primary" "secondary" "tertiary"]
-          ));
+        condition = isIn ["ollama"] (selectedPackages (host.users.data.primary or {}));
       };
 
       package = mkOption {

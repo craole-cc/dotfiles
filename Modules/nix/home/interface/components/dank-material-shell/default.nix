@@ -34,8 +34,8 @@
   configHome = config.xdg.configHome or "${user.home}/.config";
   themes = {
     icons = {
-      dark = config.themes.modes.dark.icon;
-      light = config.themes.modes.light.icon;
+      dark = config.themes.icons.dark;
+      light = config.themes.icons.light;
     };
     cursors = {
       dark = config.themes.modes.dark.cursor;

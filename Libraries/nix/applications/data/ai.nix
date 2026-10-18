@@ -57,4 +57,47 @@ _: {
     categories = ["ai"];
     family = "anthropic";
   };
+
+  claude-code = {
+    package = {
+      source = "llm-agents";
+      attribute = "claude-code";
+    };
+    names = {
+      package = "claude-code";
+      command = "claude";
+      title = "Claude Code";
+    };
+    exec = "claude";
+    needsTerminal = true;
+    categories = ["ai"];
+    family = "anthropic";
+  };
+
+  codex = {
+    package = {
+      source = "llm-agents";
+      attribute = "codex";
+    };
+    names = {
+      package = "codex";
+      command = "codex";
+      title = "Codex";
+    };
+    exec = "codex";
+    needsTerminal = true;
+    categories = ["ai"];
+    family = "openai";
+  };
+
+  ollama = {
+    names = {
+      package = "ollama";
+      command = "ollama";
+      title = "Ollama";
+    };
+    exec = "ollama";
+    needsTerminal = true;
+    categories = ["ai"];
+  };
 }

@@ -11,6 +11,8 @@
   inherit (lix.options.construction) mkEnable;
   inherit (lix.applications.registry) resolve;
   inherit (lix.strings.transformation) normalize;
+  inherit (lix.lists.access) elemAt length;
+  inherit (lix.schema.packages) selectedPackages;
 
   context = mkContext {
     inherit config;
@@ -18,11 +20,8 @@
     mod = "zen";
   };
 
-  apps = user.applications or {};
-  allowed = normalize (apps.allowed or []);
-  primary = normalize (apps.browser.primary or "");
-  secondary = normalize (apps.browser.secondary or "");
-  tertiary = normalize (apps.browser.tertiary or "");
+  allowed = map normalize (selectedPackages user);
+  selections = user.packages.browser or ((lix.schema.packages.resolve {record = user;}).browser or []);
 
   browser = value:
     resolve {
@@ -42,9 +41,14 @@
 
   isZen = app: app != null && (app.family or "") == "zen";
 
-  primaryBrowser = maybeBrowser primary;
-  secondaryBrowser = maybeBrowser secondary;
-  tertiaryBrowser = maybeBrowser tertiary;
+  browsers = map maybeBrowser selections;
+  browserAt = index:
+    if index < length browsers
+    then elemAt browsers index
+    else null;
+  primaryBrowser = browserAt 0;
+  secondaryBrowser = browserAt 1;
+  tertiaryBrowser = browserAt 2;
   allowedZen = builtins.filter isZen (
     builtins.filter
     (app: app != null)
@@ -54,15 +58,10 @@
   isPrimary = isZen primaryBrowser;
   isSecondary = isZen secondaryBrowser;
   isTertiary = isZen tertiaryBrowser;
+  requestedZen = builtins.filter isZen browsers ++ allowedZen;
   selectedZen =
-    if isPrimary
-    then primaryBrowser
-    else if isSecondary
-    then secondaryBrowser
-    else if isTertiary
-    then tertiaryBrowser
-    else if allowedZen != []
-    then builtins.head allowedZen
+    if requestedZen != []
+    then builtins.head requestedZen
     else null;
 
   enable = selectedZen != null;

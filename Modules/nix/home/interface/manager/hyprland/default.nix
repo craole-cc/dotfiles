@@ -36,16 +36,14 @@
   ];
 
   scratchpadApps = {
-    inherit (apps) ai terminal browser;
-    inherit (apps) editor;
-    inherit (apps) explorer;
+    inherit (apps.legacy) ai terminal browser editor explorer;
   };
 
   terminalLaunch = keyboard.bindings.terminal or {};
   windowClose = keyboard.bindings.close or {};
   windowCycle = keyboard.bindings.windowCycle or {};
   windowLast = keyboard.bindings.windowLast or {};
-  primaryTerminal = apps.terminal.primary or null;
+  primaryTerminal = apps.legacy.terminal.primary or null;
 
   wrapTerminalCommand = entry: command:
     if command == null
@@ -113,7 +111,7 @@
   mkDmsTerminalBind = role: extraMods: let
     key = terminalLaunch.key or null;
     mod = terminalLaunch.mod or null;
-    terminal = apps.terminal.${role} or null;
+    terminal = apps.legacy.terminal.${role} or null;
     command =
       if builtins.isAttrs terminal
       then terminal.command or null
@@ -306,7 +304,7 @@
       "$out" \
       --replace-fail \
         '{{TERMINAL_COMMAND}}' \
-        ${lib.escapeShellArg apps.terminal.primary.command}
+        ${lib.escapeShellArg primaryTerminal.command}
   '';
 
   mkAddons = target:
@@ -358,10 +356,9 @@
     # The portal identifies native apps by their app-named systemd unit. Start
     # Ghostty through its packaged service so global keybind registration has
     # the required application ID, even before any terminal window opens.
-    xdg.configFile."systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service" =
-      mkIf (dmsEnabled && (config.programs.ghostty.enable or false)) {
-        source = "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
-      };
+    xdg.configFile."systemd/user/graphical-session.target.wants/app-com.mitchellh.ghostty.service" = mkIf (dmsEnabled && (config.programs.ghostty.enable or false)) {
+      source = "${config.programs.ghostty.package}/share/systemd/user/app-com.mitchellh.ghostty.service";
+    };
 
     programs = mkAddons "programs";
     services = mkAddons "services";

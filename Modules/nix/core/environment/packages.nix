@@ -26,33 +26,36 @@
   inherit (context) cfg ice;
 
   user = host.users.data.primary or {};
-  apps = user.applications or {};
+  groups = user.packages or (lix.schema.packages.resolve {record = user;});
   displayProtocol = ice.displayProtocol or null;
 
   registry = let
     editor = editors.packages {
       inherit pkgs system inputs;
-      config = apps.editor or {};
+      config = {
+        tty = groups.editor or {};
+        gui = groups.ide or {};
+      };
     };
 
     browser = browsers.packages {
       inherit pkgs system inputs;
-      config = apps.browser or {};
+      config = groups.browser or {};
     };
 
     terminal = terminals.packages {
       inherit pkgs system inputs;
-      config = apps.terminal or {};
+      config = groups.terminal or {};
     };
 
     launcher = launchers.packages {
       inherit pkgs system inputs;
-      config = apps.launcher or {};
+      config = groups.launcher or {};
     };
 
     bar = bars.packages {
       inherit pkgs system inputs;
-      config = apps.bar or {};
+      config = groups.bar or {};
     };
 
     explorer = unique (filter (pkg: pkg != null) (
@@ -67,15 +70,11 @@
             inherit app inputs pkgs system;
           }
       )
-      (filter (name: name != null) [
-        (apps.explorer.primary or null)
-        (apps.explorer.secondary or null)
-        (apps.explorer.tertiary or null)
-      ])
+      (groups.explorer or [])
     ));
 
     ai = let
-      tools = ["chatgpt" "hermes-desktop" "claude-desktop"];
+      tools = groups.ai-agent or [];
     in
       optionals isLinux (unique (filter (pkg: pkg != null) (
         map (

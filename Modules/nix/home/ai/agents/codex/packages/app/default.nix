@@ -1,7 +1,6 @@
 {
   lix,
   cfg,
-  dom,
   tools,
   host,
   user,
@@ -10,16 +9,10 @@
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.modules.construction) mkIf;
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.types.primitives) package;
 
-  domain = user.applications.${dom} or {};
-  selectedApplications =
-    (user.applications.allowed or [])
-    ++ map (module: domain.${module}) (
-      filter (module: domain ? ${module})
-      ["primary" "secondary" "tertiary"]
-    );
+  selectedApplications = selectedPackages user;
 
   isGraphical =
     isIn

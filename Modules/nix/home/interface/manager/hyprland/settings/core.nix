@@ -4,7 +4,7 @@
   ...
 }: let
   inherit
-    (apps)
+    (apps.legacy)
     browser
     editor
     explorer

@@ -7,12 +7,14 @@
   };
 
   inherit (_.attrsets.access) attrNames attrValues;
+  inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.lists.access) head;
   inherit (_.lists.predicates) any elem;
   inherit (_.schema.hardware) mkHardware;
   inherit (_.schema.home) mkHome;
   inherit (_.schema.locale) mkLocale;
+  inherit (_.schema.packages) normalize;
   inherit (_.schema.ui) mkUI;
   inherit (_.strings.construction) generateHexId;
   inherit (_.filesystem.construction) mkTree;
@@ -142,6 +144,11 @@
     ...
   }: let
     userProfiles = users;
+    normalized = normalize {
+      record = host;
+      protocol = defined.interface.displayProtocol;
+    };
+    resolvedPackages = recursiveUpdate (settings.pkg or settings.packages or {}) normalized.packages;
 
     derived = {
       inherit host name;
@@ -180,8 +187,11 @@
       # normalized aliases back onto the host so existing consumers of
       # host.packages / host.libraries see the merged schema values rather
       # than only the sparse per-host declarations.
-      inherit settings;
-      packages = settings.pkg or settings.packages or (host.packages or {});
+      settings =
+        settings
+        // {pkg = resolvedPackages;}
+        // optionalAttrs (settings ? packages) {packages = resolvedPackages;};
+      packages = resolvedPackages;
       libraries = settings.lib or settings.libraries or (host.libraries or {});
 
       id =
@@ -224,6 +234,6 @@
       storage = mkStorage host;
     };
   in
-    recursiveUpdate host defined;
+    recursiveUpdate normalized defined;
 in
   __exports.internal // {__rootAliases = __exports.external;}

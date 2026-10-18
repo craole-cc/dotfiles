@@ -47,33 +47,26 @@
 #       clock = null; #? Clock widget font
 #     };
 #   };
-#   applications = {
-#     browser = {
-#       primary = null; #? Primary browser identifier
-#       secondary = null; #? Secondary browser identifier
-#     };
-#     editor = {
-#       tty = {
-#         primary = null; #? Primary TTY editor
-#         secondary = null; #? Secondary TTY editor
-#       };
-#       gui = {
-#         primary = null; #? Primary GUI editor
-#         secondary = null; #? Secondary GUI editor
-#       };
-#     };
-#     terminal = {
-#       primary = null; #? Primary terminal emulator
-#       secondary = null; #? Secondary terminal emulator
-#     };
-#     launcher = {
-#       primary = null; #? Primary application launcher
-#       secondary = null; #? Secondary application launcher
-#     };
-#     bar = null; #? Status bar identifier
-#     allowed = []; #? Extra ad-hoc packages allowed for this user
-#     utilities = {}; #? Per-utility enable flags (freeform attrset)
+#   packages = {
+#     #? Lists may contain any number of applications; every entry is retained.
+#     browser = ["chromium" "zen-twilight" "brave"]; #? Ordered preferences
+#     terminal = "ghostty"; #? A string normalises to a one-item list
+#     editor = ["helix" "neovim"]; #? TTY editors
+#     ide = ["vscode" "zed"]; #? GUI editors
+#     ai-agent = ["codex" "claude-code"];
+#     launcher = "vicinae";
+#     bar = "dms";
+#     prompt = "starship";
+#     extra = ["fastfetch"];
+#     utilities = ["git" "btop"];
+#     #? Any group also accepts { primary = "..."; secondary = "...";
+#     #? tertiary = "..."; }. Defined roles lead the final list in that order,
+#     #? followed by remaining list entries, with duplicates removed.
+#     #? Roles survive a string/list from another declaration layer; a later
+#     #? declaration of the same role wins. Lists replace earlier plain lists.
 #   };
+#   #? Legacy `applications` remains accepted. The schema combines it with
+#   #? `packages` before enrichment and projects roles for existing consumers.
 #   paths = {}; #? Freeform per-user path overrides (shape varies by user)
 # }
 

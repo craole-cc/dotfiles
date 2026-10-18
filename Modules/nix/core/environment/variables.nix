@@ -25,50 +25,56 @@
     ;
 
   inherit (lix.modules.construction) mkConfig mkContext mkDefault;
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.attrsets.transformation) filterAttrs;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.strings.transformation) toUpper;
   inherit (lix.types.combinators) attrsOf;
   inherit (lix.types.primitives) str;
 
   user = host.users.data.primary or {};
-  apps = user.applications or {};
+  groups = user.packages or (lix.schema.packages.resolve {record = user;});
   wallpapers = host.paths.wallpapers or "$HOME/Pictures/Wallpapers";
 
   registry = let
     editor = editors.commands {
       inherit pkgs system inputs;
-      config = apps.editor or {};
+      config = {
+        tty = groups.editor or {};
+        gui = groups.ide or {};
+      };
     };
     browser = browsers.commands {
       inherit pkgs system inputs;
-      config = apps.browser or {};
+      config = groups.browser or {};
     };
     terminal = terminals.commands {
       inherit pkgs system inputs;
-      config = apps.terminal or {};
+      config = groups.terminal or {};
     };
     launcher = launchers.commands {
       inherit pkgs system inputs;
-      config = apps.launcher or {};
+      config = groups.launcher or {};
     };
     bar = bars.commands {
       inherit pkgs system inputs;
-      config = apps.bar or {};
+      config = groups.bar or {};
     };
 
-    default = {
-      # The active interface panel is authoritative. The application registry
-      # remains only as a fallback for hosts without an interface panel value.
-      # TODO: move to interface/panels
-      # BAR = ice.panel or bar.primary;
-      BROWSER = mkDefault browser.primary;
-      "${toUpper names.src}" = paths.roots.repo;
-      EDITOR = editor.editor;
-      LAUNCHER = launcher.primary;
-      TERMINAL = terminal.primary;
-      VISUAL = editor.visual;
-      WALLPAPERS = wallpapers;
-    };
+    default =
+      filterAttrs (_name: value: value != null) {
+        # The active interface panel is authoritative. The application registry
+        # remains only as a fallback for hosts without an interface panel value.
+        # TODO: move to interface/panels
+        # BAR = ice.panel or bar.primary;
+        "${toUpper names.src}" = paths.roots.repo;
+        EDITOR = editor.editor;
+        LAUNCHER = launcher.primary;
+        TERMINAL = terminal.primary;
+        VISUAL = editor.visual;
+        WALLPAPERS = wallpapers;
+      }
+      // optionalAttrs (browser.primary != null) {BROWSER = mkDefault browser.primary;};
     # TODO: Move to interface/session/protocol
     # // optionalAttrs isWayland {
     #   NIXOS_OZONE_WL = "1";

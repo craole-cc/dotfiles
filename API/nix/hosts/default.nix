@@ -14,6 +14,9 @@
 #     allowUnfree = true;
 #     allowBroken = false;
 #     kernel = null;
+#     #? Other groups accept strings, lists or primary/secondary/tertiary
+#     #? attrsets, as documented in API/nix/users/default.nix. Explicit roles
+#     #? lead the final list; nixpkgs policy fields above retain their types.
 #   };
 #   caches = {
 #     nyx = {

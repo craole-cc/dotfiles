@@ -71,16 +71,22 @@
         inherit (pkgs.stdenv.hostPlatform) system;
 
         # Resolve interface first, then use that normalized protocol to resolve
-        # protocol-specific application preferences. Leaf modules receive the
-        # normalized application contract through `user.applications`, so they
-        # never need to reinterpret API conditionals themselves.
+        # protocol-specific application preferences. Leaf modules receive full
+        # package and application lists; `user.applications` is the temporary
+        # compatibility view for consumers still using named positions.
         enrichedInterface = mkUI {inherit host user;};
         interfaceUser = user // {interface = enrichedInterface;};
         enrichedApplications = mkApplications {
           inherit host;
           user = interfaceUser;
+          selections = user.packages;
         };
-        moduleUser = interfaceUser // {applications = enrichedApplications.raw;};
+        moduleUser =
+          interfaceUser
+          // {
+            inherit (enrichedApplications) packages;
+            applications = enrichedApplications.legacy.raw;
+          };
 
         inputs' = mkApps {
           inherit inputs modules;

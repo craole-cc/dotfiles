@@ -6,49 +6,40 @@
 }: let
   inherit (lix.attrsets.access) foldlAttrs;
   inherit (lix.lists.construction) concatLists;
-  inherit (lix.lists.access) last;
+  inherit (lix.lists.access) elemAt last;
   inherit (lix.lists.aggregation) foldl';
   inherit (lix.lists.predicates) all;
+  inherit (lix.lists.transformation) imap0;
   inherit (lix.options.construction) mkOption mkOptionType;
   inherit (lix.types.primitives) anything;
   inherit (lix.types.predicates) isAttrs isList;
   inherit (lix.attrsets.construction) optionalAttrs;
   inherit (lix.modules.construction) mkDefault;
 
-  mkRoleVariables = prefix: set:
-    foldlAttrs (
-      acc: role: suffix: let
-        entry = set.${role} or null;
-      in
-        acc
-        // optionalAttrs
-        (isAttrs entry && (entry.command or null) != null)
+  mkSelectionVariables = prefix: entries:
+    foldl' (variables: entry: variables // entry) {} (imap0 (index: entry:
+      optionalAttrs ((entry.command or null) != null) (
         {
+          "${prefix}_${toString (index + 1)}" = mkDefault entry.command;
+          "${prefix}_${toString (index + 1)}_NAME" = mkDefault entry.name;
+        }
+        // optionalAttrs (index < 3) (let
+          suffix = elemAt ["PRI" "SEC" "TER"] index;
+        in {
           "${prefix}_${suffix}" = mkDefault entry.command;
           "${prefix}_${suffix}_NAME" = mkDefault entry.name;
-        }
-    ) {} {
-      primary = "PRI";
-      secondary = "SEC";
-      tertiary = "TER";
-    };
+        })
+      ))
+    entries);
 
+  mkDefaultVariable = name: entries:
+    optionalAttrs (entries != []) {${name} = mkDefault (elemAt entries 0).command;};
   primaryVariables =
-    optionalAttrs
-    (isAttrs (apps.terminal.primary or null))
-    {TERMINAL = mkDefault apps.terminal.primary.command;}
-    // optionalAttrs
-    (isAttrs (apps.browser.primary or null))
-    {BROWSER = mkDefault apps.browser.primary.command;}
-    // optionalAttrs
-    (isAttrs (apps.editor.tty.primary or null))
-    {EDITOR = mkDefault apps.editor.tty.primary.command;}
-    // optionalAttrs
-    (isAttrs (apps.editor.gui.primary or null))
-    {VISUAL = mkDefault apps.editor.gui.primary.command;}
-    // optionalAttrs
-    (isAttrs (apps.explorer.primary or null))
-    {FILE_MANAGER = mkDefault apps.explorer.primary.command;};
+    mkDefaultVariable "TERMINAL" apps.terminal
+    // mkDefaultVariable "BROWSER" apps.browser
+    // mkDefaultVariable "EDITOR" apps.editor
+    // mkDefaultVariable "VISUAL" apps.ide
+    // mkDefaultVariable "FILE_MANAGER" apps.explorer;
 
   mergeOutput = values:
     if all isAttrs values
@@ -102,16 +93,15 @@ in {
     };
   };
 
-  # One normalized application-role contract for the session. Leaf modules may
-  # provide stronger package-specific values; these defaults fill every role
-  # name consistently, including tertiary and file-manager roles.
+  # Every selection receives an indexed variable. Named role suffixes remain
+  # aliases for the first three entries during migration.
   config.home.sessionVariables =
     primaryVariables
-    // (mkRoleVariables "TERMINAL" apps.terminal)
-    // (mkRoleVariables "BROWSER" apps.browser)
-    // (mkRoleVariables "EDITOR" apps.editor.tty)
-    // (mkRoleVariables "VISUAL" apps.editor.gui)
-    // (mkRoleVariables "FILE_MANAGER" apps.explorer);
+    // (mkSelectionVariables "TERMINAL" apps.terminal)
+    // (mkSelectionVariables "BROWSER" apps.browser)
+    // (mkSelectionVariables "EDITOR" apps.editor)
+    // (mkSelectionVariables "VISUAL" apps.ide)
+    // (mkSelectionVariables "FILE_MANAGER" apps.explorer);
 
   imports = (lix.filesystem.traversal.importAllPaths ./.).value;
 

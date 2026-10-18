@@ -5,9 +5,27 @@
   inherit (_.lists.selection) filter;
   inherit (_.lists.transformation) unique;
   inherit (_.lists.aggregation) concatMap;
+  inherit (_.lists.access) elemAt length;
+  inherit (_.schema.packages) resolveGroup;
   inherit (_.applications.registry) resolve;
   inherit (_.applications.runtime) resolvePackage;
-  inherit (_.types.predicates) isFunction isList;
+  inherit (_.types.predicates) isAttrs isFunction isList;
+
+  selectionNames = default: config:
+    if config == {}
+    then filter (name: name != null) [default]
+    else if isAttrs config
+    then (_.schema.packages.resolve {record.applications.selection = config;}).selection or (filter (name: name != null) [default])
+    else
+      resolveGroup {
+        name = "selection";
+        value = config;
+      };
+
+  entryAt = entries: index:
+    if index < length entries
+    then elemAt entries index
+    else null;
 
   /**
   mkapp - create a generic application handler with flake support
@@ -38,7 +56,7 @@
         else app
       else {
         cmd = name;
-        pkg = null;
+        pkg = pkgs.${name} or null;
         inputPath = null;
       };
 
@@ -48,13 +66,6 @@
       system ? "x86_64-linux",
       config ? {},
     }: let
-      primary = attrByPath ["primary"] defaultApp config;
-      secondary = attrByPath ["secondary"] null config;
-
-      # Normalize user input first
-      normalizedPrimary = primary;
-      normalizedSecondary = secondary;
-
       getInfo = name:
         if name != null
         then
@@ -68,10 +79,7 @@
           }
         else null;
 
-      allInfos = filter (i: i != null) [
-        (getInfo normalizedPrimary)
-        (getInfo normalizedSecondary)
-      ];
+      allInfos = map getInfo (selectionNames defaultApp config);
 
       # Try input path first (from specialArgs), then pkg
       getPkg = i: let
@@ -94,12 +102,9 @@
       system ? "x86_64-linux",
       config ? {},
     }: let
-      primary = attrByPath ["primary"] defaultApp config;
-      secondary = attrByPath ["secondary"] null config;
-
-      # Normalize user input first
-      normalizedPrimary = primary;
-      normalizedSecondary = secondary;
+      names = selectionNames defaultApp config;
+      normalizedPrimary = entryAt names 0;
+      normalizedSecondary = entryAt names 1;
 
       primaryInfo =
         if normalizedPrimary != null
@@ -119,6 +124,7 @@
           }
         else null;
     in {
+      all = map (name: (info {inherit pkgs inputs system name;}).cmd) names;
       primary =
         if primaryInfo != null
         then primaryInfo.cmd
@@ -487,7 +493,7 @@
         else app
       else {
         cmd = name;
-        pkg = null;
+        pkg = pkgs.${name} or null;
         inputPath = null;
       };
 
@@ -497,10 +503,15 @@
       system ? "x86_64-linux",
       config ? {},
     }: let
-      ttyPrimary = attrByPath ["tty" "primary"] "helix" config;
-      ttySecondary = attrByPath ["tty" "secondary"] null config;
-      guiPrimary = attrByPath ["gui" "primary"] null config;
-      guiSecondary = attrByPath ["gui" "secondary"] null config;
+      tty =
+        if isAttrs config
+        then config.tty or {}
+        else config;
+      gui =
+        if isAttrs config
+        then config.gui or {}
+        else {};
+      names = (selectionNames "helix" tty) ++ (selectionNames null gui);
 
       getInfo = name:
         if name != null
@@ -515,12 +526,7 @@
           }
         else null;
 
-      allInfos = filter (i: i != null) [
-        (getInfo ttyPrimary)
-        (getInfo ttySecondary)
-        (getInfo guiPrimary)
-        (getInfo guiSecondary)
-      ];
+      allInfos = map getInfo names;
 
       getPkg = i: let
         inputPath = normalizeInputPath i.inputPath;
@@ -542,13 +548,27 @@
       system ? "x86_64-linux",
       config ? {},
     }: let
-      ttyPrimary = attrByPath ["tty" "primary"] "helix" config;
-      guiPrimary = attrByPath ["gui" "primary"] null config;
+      tty =
+        if isAttrs config
+        then config.tty or {}
+        else config;
+      gui =
+        if isAttrs config
+        then config.gui or {}
+        else {};
+      ttyNames = selectionNames "helix" tty;
+      guiNames = selectionNames null gui;
+      ttyPrimary = entryAt ttyNames 0;
+      guiPrimary = entryAt guiNames 0;
 
-      ttyInfo = info {
-        inherit pkgs inputs system;
-        name = ttyPrimary;
-      };
+      ttyInfo =
+        if ttyPrimary == null
+        then null
+        else
+          info {
+            inherit pkgs inputs system;
+            name = ttyPrimary;
+          };
       guiInfo =
         if guiPrimary != null
         then
@@ -558,8 +578,14 @@
           }
         else ttyInfo;
     in {
-      editor = ttyInfo.cmd;
-      visual = guiInfo.cmd;
+      editor =
+        if ttyInfo == null
+        then null
+        else ttyInfo.cmd;
+      visual =
+        if guiInfo == null
+        then null
+        else guiInfo.cmd;
     };
   in {
     inherit info packages commands;

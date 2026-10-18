@@ -15,7 +15,7 @@
   inherit (lib.hm.dag) entryAfter;
   inherit (lix.attrsets.aggregation) recursiveUpdate;
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.modules.construction) mkConfig mkContext mkIf mkMerge;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.strings.construction) toJSON;
@@ -40,14 +40,7 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = isIn [mod] (let
-          domain = user.applications.${dom} or {};
-        in
-          (user.applications.allowed or [])
-          ++ map (module: domain.${module}) (
-            filter (module: domain ? ${module})
-            ["primary" "secondary" "tertiary"]
-          ));
+        condition = isIn [mod] (selectedPackages user);
       };
 
       package = mkOption {

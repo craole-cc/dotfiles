@@ -16,7 +16,7 @@
   inherit (lix.filesystem.access) readFile;
   inherit (lix.lists.aggregation) foldl';
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.modules.construction) mkConfig mkContext mkIf mkMerge mkLayer;
   inherit (lix.options.construction) mkEnable mkOption mkTrue;
   inherit (lix.types.combinators) attrsOf either nullOr;
@@ -52,14 +52,7 @@
   options = mergeSafe (collect "options") {
     enable = mkEnable {
       inherit context;
-      condition = isIn [mod] (let
-        domain = user.applications.${dom} or {};
-      in
-        (user.applications.allowed or [])
-        ++ map (module: domain.${module}) (
-          filter (module: domain ? ${module})
-          ["primary" "secondary" "tertiary"]
-        ));
+      condition = isIn [mod] (selectedPackages user);
     };
 
     context = mkOption {

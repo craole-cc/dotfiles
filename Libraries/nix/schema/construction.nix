@@ -18,7 +18,6 @@
   };
 
   inherit (_.attrsets.access) attrNames;
-  inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.construction) listToAttrs;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.filesystem.predicates) isPathLike pathExists;
@@ -26,6 +25,7 @@
   inherit (_.filesystem.traversal) foldersToExclude readDir;
   inherit (_.schema.core) mkCore;
   inherit (_.schema.home) mkUsers;
+  inherit (_.schema.packages) merge;
   inherit (_.schema.settings) mkSettings;
   inherit (_.types.predicates) isAttrs;
 
@@ -76,7 +76,7 @@
           inherit name;
           value =
             if isIdentity name
-            then recursiveUpdate domainDefault (import (dir + "/${name}"))
+            then merge domainDefault (import (dir + "/${name}"))
             else domainDefault;
         }
       )
@@ -97,7 +97,7 @@
     identities = name: fallback:
       if isPathLike api
       then importIdentities (api + "/${name}")
-      else fallback;
+      else mapAttrs (_name: record: merge {} record) fallback;
 
     raw =
       api'
@@ -120,8 +120,8 @@
                 inherit (raw) global;
                 inherit host;
               };
-              inherit users host name;
-              inherit (raw) shells;
+              inherit host name;
+              inherit (raw) shells users;
             }
             // paths
           )

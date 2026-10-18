@@ -9,7 +9,7 @@
   mod = "hermes-agent";
 
   inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.transformation) filter;
+  inherit (lix.schema.packages) selectedPackages;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable;
 
@@ -29,13 +29,7 @@ in
           "hermes-agent"
           "hermes-desktop"
         ]
-        (let
-          domain = (host.users.data.primary or {}).applications.${dom} or {};
-        in
-          map (module: domain.${module}) (
-            filter (module: domain ? ${module})
-            ["primary" "secondary" "tertiary"]
-          ));
+        (selectedPackages (host.users.data.primary or {}));
     };
 
     outputs = {};

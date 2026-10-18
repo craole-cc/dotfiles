@@ -6,6 +6,9 @@
   inherit (_.applications.registry) resolve;
   inherit (lib.attrsets) attrByPath recursiveUpdate;
   inherit (lib.strings) hasInfix toLower;
+  inherit (_.attrsets.transformation) mapAttrs;
+  inherit (_.lists.access) head;
+  inherit (_.schema.packages) merge policyFields roleView toApplications;
 
   __exports = {
     internal = {inherit defaults uiDefaults mkApplications;};
@@ -17,47 +20,15 @@
   # ── Defaults ────────────────────────────────────────────────────────────────
 
   defaults = {
-    browser = {
-      primary = "zen-twilight";
-      secondary = "chromium";
-      tertiary = null;
-    };
-    terminal = {
-      # Kitty is the protocol-neutral schema default. Users/hosts may provide
-      # protocol-specific overrides such as `terminal.wayland.primary = "foot"`.
-      primary = "kitty";
-      secondary = "ghostty";
-      tertiary = null;
-    };
-    editor = {
-      tty = {
-        primary = "helix";
-        secondary = "neovim";
-        tertiary = null;
-      };
-      gui = {
-        primary = "vscode";
-        secondary = "zed";
-        tertiary = null;
-      };
-    };
-    launcher = {
-      primary = "vicinae";
-      secondary = "fuzzel";
-      tertiary = null;
-    };
-    explorer = {
-      primary = "yazi";
-      secondary = "nautilus";
-      tertiary = null;
-    };
-    ai = {
-      primary = null;
-      secondary = null;
-      tertiary = null;
-    };
-    bar = null;
-    prompt = "starship";
+    browser = ["zen-twilight" "chromium"];
+    terminal = ["kitty" "ghostty"];
+    editor = ["helix" "neovim"];
+    ide = ["vscode" "zed"];
+    launcher = ["vicinae" "fuzzel"];
+    explorer = ["yazi" "nautilus"];
+    ai-agent = [];
+    bar = [];
+    prompt = ["starship"];
     allowed = [];
   };
 
@@ -209,23 +180,13 @@
     else classMap.${n} or n;
 
   getCommand = category: name:
-    if category == "browser" || category == "ai"
-    then
-      (resolve {
-        value = name;
-        inherit category;
-      }).exec
-    else legacyCommand category name;
+    (getMeta category name).exec or (legacyCommand category name);
 
-  registryCategory = category:
-    if category == "explorer"
-    then "explorer"
-    else category;
-
-  getMeta = category: name: let
+  # A package group is an ordering chosen by the caller, rather than a
+  # registry category. Unknown names still retain executable metadata.
+  getMeta = _category: name: let
     result = builtins.tryEval (resolve {
       value = name;
-      category = registryCategory category;
     });
   in
     if result.success
@@ -259,21 +220,13 @@
     launch.scratchpad = scratchpadCommand category meta command;
   };
 
-  mkMaybeEntry = category: name:
-    if name == null
-    then null
-    else mkEntry category name;
-
   # ── Resolution ───────────────────────────────────────────────────────────────
 
   mkApplications = {
     host,
     user ? {},
+    selections ? null,
   }: let
-    merged = recursiveUpdate (recursiveUpdate defaults (host.applications or {})) (
-      user.applications or {}
-    );
-
     userProtocol = (user.interface or {}).displayProtocol or null;
     hostProtocol = (host.interface or {}).displayProtocol or null;
     protocol =
@@ -281,76 +234,57 @@
       then userProtocol
       else hostProtocol;
 
-    # App contracts may refine a category by display protocol. The selected
-    # protocol override is folded into the normalized category and the
-    # conditional branches are then removed from the consumer-facing contract.
-    resolveProtocol = value: let
-      override =
-        if protocol != null
-        then value.${protocol} or {}
-        else {};
+    # Defaults are ordinary selections, so explicit API lists can replace them.
+    # Schema users already contain the merged host/profile/principal selection;
+    # using their canonical lists avoids reinterpreting the compatibility roles
+    # as fresh declarations and promoting defaults back into an explicit list.
+    selection =
+      if selections != null
+      then {packages = selections;}
+      else merge host user;
+    packages = _.schema.packages.resolve {
+      record = merge {packages = defaults;} selection;
+      inherit protocol;
+    };
+    raw = toApplications {
+      inherit packages;
+      legacy = recursiveUpdate (host.applications or {}) (user.applications or {});
+    };
+    entries = mapAttrs (group: names: let
+      category =
+        if group == "ai-agent"
+        then "ai"
+        else if group == "ide"
+        then "editor"
+        else group;
     in
-      removeAttrs (recursiveUpdate value override) ["wayland" "x11" "xorg"];
-
-    raw =
-      merged
-      // {
-        browser = resolveProtocol merged.browser;
-        terminal = resolveProtocol merged.terminal;
-        editor = resolveProtocol merged.editor;
-        launcher = resolveProtocol merged.launcher;
-        explorer = resolveProtocol merged.explorer;
+      map (mkEntry category) names) (removeAttrs packages policyFields);
+    legacyGroup = name: roleView (entries.${name} or []);
+  in
+    entries
+    // {
+      inherit packages;
+      # Named positions are a compatibility view for existing shortcuts. The
+      # application contract above retains every entry of every group.
+      legacy = {
+        inherit raw;
+        ai = legacyGroup "ai-agent";
+        browser = legacyGroup "browser";
+        terminal = legacyGroup "terminal";
+        launcher = legacyGroup "launcher";
+        explorer = legacyGroup "explorer";
+        editor =
+          legacyGroup "ide"
+          // {
+            tty = legacyGroup "editor";
+            gui = legacyGroup "ide";
+          };
+        bar.primary =
+          if entries.bar == []
+          then mkEntry "bar" "waybar"
+          else head entries.bar;
+        inherit (raw) prompt allowed;
       };
-  in {
-    ai = {
-      primary = mkMaybeEntry "ai" raw.ai.primary;
-      secondary = mkMaybeEntry "ai" raw.ai.secondary;
-      tertiary = mkMaybeEntry "ai" raw.ai.tertiary;
     };
-    browser = {
-      primary = mkEntry "browser" raw.browser.primary;
-      secondary = mkMaybeEntry "browser" raw.browser.secondary;
-      tertiary = mkMaybeEntry "browser" raw.browser.tertiary;
-    };
-    terminal = {
-      primary = mkEntry "terminal" raw.terminal.primary;
-      secondary = mkMaybeEntry "terminal" raw.terminal.secondary;
-      tertiary = mkMaybeEntry "terminal" raw.terminal.tertiary;
-    };
-    editor = {
-      tty = {
-        primary = mkEntry "editor" raw.editor.tty.primary;
-        secondary = mkMaybeEntry "editor" raw.editor.tty.secondary;
-        tertiary = mkMaybeEntry "editor" raw.editor.tty.tertiary;
-      };
-      gui = {
-        primary = mkEntry "editor" raw.editor.gui.primary;
-        secondary = mkMaybeEntry "editor" raw.editor.gui.secondary;
-        tertiary = mkMaybeEntry "editor" raw.editor.gui.tertiary;
-      };
-      primary = mkEntry "editor" raw.editor.gui.primary;
-      secondary = mkMaybeEntry "editor" raw.editor.gui.secondary;
-      tertiary = mkMaybeEntry "editor" raw.editor.gui.tertiary;
-    };
-    launcher = {
-      primary = mkEntry "launcher" raw.launcher.primary;
-      secondary = mkMaybeEntry "launcher" raw.launcher.secondary;
-      tertiary = mkMaybeEntry "launcher" raw.launcher.tertiary;
-    };
-    explorer = {
-      primary = mkEntry "explorer" raw.explorer.primary;
-      secondary = mkMaybeEntry "explorer" raw.explorer.secondary;
-      tertiary = mkMaybeEntry "explorer" raw.explorer.tertiary;
-    };
-    bar = {
-      primary = mkEntry "bar" (
-        if raw.bar == null
-        then "waybar"
-        else raw.bar
-      );
-    };
-    inherit raw;
-    inherit (raw) prompt allowed;
-  };
 in
   __exports.internal // {__rootAliases = __exports.external;}
