@@ -1,14 +1,12 @@
 {
   inputs,
-  lib,
-  lix,
+  mkMerge,
+  flatten,
+  mkVSCodeFeature,
+  mkVSCodeSubFeature,
   pkgs,
   ...
 }: let
-  inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
-  inherit (lib.modules) mkMerge;
-  inherit (lib.lists) flatten;
-
   nixLsp = mkVSCodeSubFeature {
     enabled = true;
     extensions = [

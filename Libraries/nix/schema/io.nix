@@ -1,14 +1,11 @@
 {_, ...}: let
   inherit (_.attrsets.access) attrValues;
-  inherit (_.attrsets.transformation) mapAttrs;
-  inherit (_.attrsets.aggregation) recursiveUpdate;
-  inherit (_.attrsets.predicates) isAttrs;
   inherit (_.lists.selection) filter;
-  inherit (_.lists.predicates) isList;
+  inherit (_.lists.construction) toList;
   inherit (_.strings.construction) concatStringsSep;
   inherit (_.options.construction) mkOption mkEnableOption;
-  inherit (_.types.primitives) str;
-  inherit (_.types.combinators) attrsOf nullOr submodule;
+  inherit (_.types.primitives) bool int str;
+  inherit (_.types.combinators) attrsOf either listOf nullOr submodule;
 
   __exports = {
     internal =
@@ -17,6 +14,7 @@
         inherit
           defaults
           normalizeKeyboard
+          mergeKeyboards
           mkKeyboard
           mkKeybindings
           ;
@@ -28,17 +26,75 @@
     };
   };
 
+  inherit (import ./keyboard.nix {inherit _;}) mergeKeyboards normalizeKeyboard;
+
   composites = {
     #~@ Types
     types = rec {
       keybinding = submodule {
         options = {
+          modifier = mkOption {
+            description = "Modifier alias, normalised to mod at the schema boundary";
+            type = nullOr (either str (listOf str));
+            default = null;
+          };
+          description = mkOption {
+            description = "Description shown in keyboard help";
+            type = str;
+            default = "";
+          };
+          category = mkOption {
+            description = "Keyboard binding category";
+            type = str;
+            default = "";
+          };
+          enable = mkOption {
+            description = "Whether this keyboard binding is active";
+            type = bool;
+            default = true;
+          };
+          kind = mkOption {
+            description = "Binding dispatch kind: exec, global, hyprland (native Lua expression), or scratchpad";
+            type = str;
+            default = "exec";
+          };
+          application = mkOption {
+            description = "One-based application position; omitted positions follow the binding order";
+            type = nullOr int;
+            default = null;
+          };
+          command = mkOption {
+            description = "Optional scratchpad command override";
+            type = nullOr str;
+            default = null;
+          };
+          repeating = mkOption {
+            description = "Repeat the action while its key is held";
+            type = bool;
+            default = false;
+          };
+          locked = mkOption {
+            description = "Allow the binding while the session is locked";
+            type = bool;
+            default = false;
+          };
+          release = mkOption {
+            description = "Run the binding on key release";
+            type = bool;
+            default = false;
+          };
+          nonConsuming = mkOption {
+            description = "Allow the application to receive the key";
+            type = bool;
+            default = false;
+          };
           action = mkOption {
+            description = "Shell command, global shortcut identifier, or native dispatcher expression selected by kind";
             type = nullOr str;
             default = null;
           };
           mod = mkOption {
-            type = nullOr str;
+            type = nullOr (either str (listOf str));
             default = null;
           };
           key = mkOption {
@@ -50,8 +106,23 @@
 
       scratchpadRole = submodule {
         options = {
-          mod = mkOption {
+          description = mkOption {
+            description = "Scratchpad binding description";
+            type = str;
+            default = "";
+          };
+          application = mkOption {
+            description = "One-based application position; omitted positions follow the binding order";
+            type = nullOr int;
+            default = null;
+          };
+          key = mkOption {
+            description = "Optional key override for an indexed scratchpad";
             type = nullOr str;
+            default = null;
+          };
+          mod = mkOption {
+            type = nullOr (either str (listOf str));
             default = null;
           };
           command = mkOption {
@@ -64,6 +135,11 @@
 
       scratchpad = submodule {
         options = {
+          entries = mkOption {
+            description = "Scratchpad overrides keyed by one-based application position";
+            type = attrsOf scratchpadRole;
+            default = {};
+          };
           key = mkOption {
             type = nullOr str;
             default = null;
@@ -85,15 +161,31 @@
 
       keyboard = submodule {
         options = {
-          modifier = mkOption {
+          layout = mkOption {
+            description = "Keyboard layout";
             type = str;
+            default = "us";
+          };
+          variant = mkOption {
+            description = "Keyboard layout variant";
+            type = str;
+            default = "";
+          };
+          modifier = mkOption {
+            type = either str (listOf str);
             default = "";
           };
           swapCapsEscape = mkEnableOption "Swap CapsLock with Escape";
           vimKeybinds = mkEnableOption "Vim-style hjkl navigation bindings";
           bindings = mkOption {
-            type = attrsOf keybinding;
+            type = attrsOf (either keybinding (listOf keybinding));
+            description = "Named bindings; ordered records address the matching application positions";
             default = {};
+          };
+          unbind = mkOption {
+            description = "Inherited compositor bindings to remove";
+            type = listOf keybinding;
+            default = [];
           };
           scratchpads = mkOption {
             type = attrsOf scratchpad;
@@ -120,6 +212,12 @@
     keyboard = {
       modifier = concatStringsSep " " mod;
       swapCapsEscape = true;
+      unbind = [
+        {
+          inherit mod;
+          key = "Q";
+        }
+      ];
 
       scratchpads = {
         terminal = mkScratchpad "grave";
@@ -247,6 +345,31 @@
           key = "TAB";
           action = "";
         };
+        windowCycleReverse = {
+          mod = ["ALT" "SHIFT"];
+          key = "TAB";
+        };
+        windowCycleRelease = [
+          {
+            mod = ["ALT"];
+            key = "ALT_L";
+            release = true;
+            nonConsuming = true;
+          }
+          {
+            mod = ["ALT"];
+            key = "ALT_R";
+            release = true;
+            nonConsuming = true;
+          }
+        ];
+        ghosttyQuickTerminal = {
+          mod = ["ALT"];
+          key = "grave";
+          kind = "global";
+          action = "com.mitchellh.ghostty:ALT+grave";
+          description = "Toggle Ghostty quick terminal";
+        };
         windowLast = {
           mod = [
             "ALT"
@@ -268,16 +391,19 @@
           action = "loginctl terminate-session self";
         };
         sleep = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "S";
           action = "systemctl suspend";
         };
         reboot = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "R";
           action = "systemctl reboot";
         };
         reboot_soft = {
+          enable = false;
           mod =
             mod
             ++ [
@@ -288,6 +414,7 @@
           action = "systemctl soft-reboot";
         };
         shutdown = {
+          enable = false;
           mod = mod ++ ["CTRL"];
           key = "Q";
           action = "systemctl poweroff";
@@ -364,40 +491,34 @@
     };
   };
 
-  /**
-  Recursively converts all `mod` list fields to space-separated strings.
-  Applied at the output boundary so consumers always receive strings.
-  */
-  normalizeKeyboard = kb:
-    mapAttrs (
-      k: v:
-        if k == "mod" && isList v
-        then concatStringsSep " " v
-        else if isAttrs v
-        then normalizeKeyboard v
-        else v
-    )
-    kb;
-
   mkKeyboard = {
     host,
     user ? {},
   }:
-    normalizeKeyboard (
-      recursiveUpdate (recursiveUpdate defaults.keyboard (host.keyboard or {})) (user.keyboard or {})
-    );
+    mergeKeyboards [
+      defaults.keyboard
+      (host.keyboard or {})
+      ((host.defaults.interface or (host.interface or {})).keyboard or {})
+      (user.keyboard or {})
+      (user.interface.keyboard or {})
+    ];
 
   mkKeybindings = {
     hyprland = kb:
-      map (b: "${b.mod}, ${b.key}, exec, ${b.action}") (
+      map (binding: let
+        action =
+          if (binding.kind or "exec") == "hyprland"
+          then "hyprctl dispatch 'hl.dsp.${binding.action}'"
+          else binding.action;
+      in "${binding.mod}, ${binding.key}, exec, ${action}") (
         filter (
           b:
-            (b.mod or null)
-            != null
+            (b.enable or true)
+            && (b.mod or null) != null
             && (b.key or null) != null
             && (b.action or null) != null
             && (b.action or "") != ""
-        ) (attrValues kb.bindings)
+        ) (_.lists.aggregation.concatMap toList (attrValues kb.bindings))
       );
   };
 in

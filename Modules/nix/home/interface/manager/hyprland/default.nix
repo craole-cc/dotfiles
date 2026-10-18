@@ -9,6 +9,7 @@
   keyboard,
   ...
 }: let
+  legacyApps = apps.legacy;
   context = mkContext {
     inherit config;
     dom = "interface";
@@ -21,137 +22,33 @@
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable mkOption;
   inherit (lix.types.primitives) bool;
+  inherit (lix.lists.access) head;
+  inherit (lix.lists.construction) toList;
+  inherit (lix.lists.selection) filter;
+  inherit (lix.strings.construction) concatStringsSep splitString toJSON;
 
   dmsEnabled = config.programs.dank-material-shell.enable or false;
   dmsEmbedded = "${pkgs.dms-shell.src}/core/internal/config/embedded";
 
-  # Scratchpad keys/modifiers are normalized by the schema. Application roles
-  # come from the same resolved contract used by the session variables, while
-  # launch metadata handles app-specific new-window and terminal wrapping.
-  scratchpads = user.interface.keyboard.scratchpads or {};
-  scratchpadRoles = [
-    "primary"
-    "secondary"
-    "tertiary"
-  ];
+  firstBinding = name: let
+    bindings = toList (keyboard.bindings.${name} or []);
+  in
+    if bindings == []
+    then {}
+    else head bindings;
+  windowCycle = firstBinding "windowCycle";
+  windowCycleReverse = firstBinding "windowCycleReverse";
+  windowLast = firstBinding "windowLast";
+  mkDmsChord = binding: concatStringsSep " + " ((filter (part: part != "") (splitString " " binding.mod)) ++ [binding.key]);
 
-  scratchpadApps = {
-    inherit (apps.legacy) ai terminal browser editor explorer;
+  applicationBinds = import ./applications.nix {
+    inherit apps lix;
+    inherit (keyboard) scratchpads;
   };
-
-  terminalLaunch = keyboard.bindings.terminal or {};
-  windowClose = keyboard.bindings.close or {};
-  windowCycle = keyboard.bindings.windowCycle or {};
-  windowLast = keyboard.bindings.windowLast or {};
-  primaryTerminal = apps.legacy.terminal.primary or null;
-
-  wrapTerminalCommand = entry: command:
-    if command == null
-    then null
-    else if (entry.needsTerminal or false) && builtins.isAttrs primaryTerminal
-    then let
-      terminalCommand = primaryTerminal.command or null;
-      execFlag = primaryTerminal.wrap.execFlag or "-e";
-    in
-      if terminalCommand == null
-      then command
-      else "${terminalCommand} ${execFlag} ${command}"
-    else command;
-
-  defaultScratchpadCommand = category: role: let
-    categoryApps = scratchpadApps.${category} or {};
-    entry = categoryApps.${role} or null;
-    command =
-      if builtins.isAttrs entry
-      then entry.launch.scratchpad or entry.command or null
-      else null;
-  in
-    if builtins.isAttrs entry
-    then wrapTerminalCommand entry command
-    else null;
-
-  scratchpadCommand = category: role: roleConfig: let
-    configured = roleConfig.command or null;
-  in
-    if configured != null
-    then configured
-    else defaultScratchpadCommand category role;
-
-  mkDmsChordWith = key: binding: extraMods:
-    lib.concatStringsSep " + " (
-      builtins.filter (part: part != "") (lib.splitString " " (binding.mod or ""))
-      ++ extraMods
-      ++ [key]
-    );
-
-  mkDmsChord = key: binding: mkDmsChordWith key binding [];
-
-  mkDmsScratchpadRoleBind = category: scratchpad: role: let
-    key = scratchpad.key or null;
-    roleConfig = scratchpad.${role} or {};
-    mod = roleConfig.mod or null;
-    command = scratchpadCommand category role roleConfig;
-  in
-    if key == null || mod == null || command == null || command == ""
-    then ""
-    else let
-      chord = mkDmsChord key roleConfig;
-      workspace = "${category}-${role}";
-    in ''
-      hl.workspace_rule({ workspace = ${builtins.toJSON "special:${workspace}"}, on_created_empty = ${builtins.toJSON command} })
-      hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.workspace.toggle_special(${builtins.toJSON workspace}), { description = ${builtins.toJSON "Toggle ${category} ${role} scratchpad"} })
-    '';
-
-  mkDmsScratchpadBinds = category: scratchpad:
-    lib.concatStringsSep "" (
-      map (role: mkDmsScratchpadRoleBind category scratchpad role) scratchpadRoles
-    );
-
-  mkDmsTerminalBind = role: extraMods: let
-    key = terminalLaunch.key or null;
-    mod = terminalLaunch.mod or null;
-    terminal = apps.legacy.terminal.${role} or null;
-    command =
-      if builtins.isAttrs terminal
-      then terminal.command or null
-      else null;
-  in
-    if key == null || mod == null || command == null || command == ""
-    then ""
-    else let
-      chord = mkDmsChordWith key terminalLaunch extraMods;
-    in ''
-      hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.exec_cmd(${builtins.toJSON command}), { description = ${builtins.toJSON "Open ${role} terminal"} })
-    '';
-
-  dmsTerminalBinds =
-    mkDmsTerminalBind "primary" []
-    + mkDmsTerminalBind "secondary" ["SHIFT"]
-    + mkDmsTerminalBind "tertiary" ["ALT"];
-
-  dmsWindowCloseBind = let
-    key = windowClose.key or null;
-    mod = windowClose.mod or null;
-  in
-    if key == null || mod == null
-    then ""
-    else let
-      chord = mkDmsChord key windowClose;
-    in ''
-      hl.unbind("SUPER + Q")
-      hl.unbind(${builtins.toJSON chord})
-      hl.bind(${builtins.toJSON chord}, hl.dsp.window.close(), { description = "Close window" })
-    '';
-
-  dmsGhosttyQuickTerminalBind =
-    if config.programs.ghostty.enable or false
-    then ''
-      hl.unbind("ALT + grave")
-      hl.bind("ALT + grave", hl.dsp.global("com.mitchellh.ghostty:ALT+grave"), { description = "Toggle Ghostty quick terminal" })
-    ''
-    else "";
+  keyboardBinds = import ./bindings.nix {
+    inherit keyboard lix;
+    ghosttyEnabled = config.programs.ghostty.enable or false;
+  };
 
   dmsKittyWindowRule = ''
     -- Kitty sometimes requests maximisation when opened inside a special
@@ -166,7 +63,7 @@
     if key == null || mod == null
     then ""
     else let
-      chord = mkDmsChord key windowLast;
+      chord = mkDmsChord windowLast;
     in ''
       hl.unbind(${builtins.toJSON chord})
       hl.bind(${builtins.toJSON chord}, hl.dsp.focus({ last = true }), { description = "Focus previous window" })
@@ -179,8 +76,24 @@
     if key == null || mod == null
     then ""
     else let
-      chord = mkDmsChord key windowCycle;
-      reverseChord = mkDmsChordWith key windowCycle ["SHIFT"];
+      chord = mkDmsChord windowCycle;
+      reverseBind =
+        if (windowCycleReverse.key or null) == null || (windowCycleReverse.mod or null) == null
+        then ""
+        else ''
+          hl.unbind(${toJSON (mkDmsChord windowCycleReverse)})
+          hl.bind(${toJSON (mkDmsChord windowCycleReverse)}, function()
+            dotdots_mru_cycle(-1)
+          end, { description = "Cycle recent windows backwards" })
+        '';
+      releaseBinds = concatStringsSep "" (map (
+        binding:
+          if (binding.key or null) == null || (binding.mod or null) == null
+          then ""
+          else ''
+            hl.bind(${toJSON (mkDmsChord binding)}, dotdots_mru_reset, { release = ${toJSON (binding.release or false)}, non_consuming = ${toJSON (binding.nonConsuming or false)} })
+          ''
+      ) (toList (keyboard.bindings.windowCycleRelease or [])));
     in ''
       -- Global MRU window switching. Hyprland exposes its compositor-wide focus
       -- history directly to Lua, so keep the cycle in-process rather than
@@ -259,15 +172,8 @@
         dotdots_mru_cycle(1)
       end, { description = "Cycle recent windows" })
 
-      hl.unbind(${builtins.toJSON reverseChord})
-      hl.bind(${builtins.toJSON reverseChord}, function()
-        dotdots_mru_cycle(-1)
-      end, { description = "Cycle recent windows backwards" })
-
-      -- Modifier-only release binds close the current MRU transaction. Keep
-      -- them non-consuming so applications still receive the Alt release.
-      hl.bind("ALT + ALT_L", dotdots_mru_reset, { release = true, non_consuming = true })
-      hl.bind("ALT + ALT_R", dotdots_mru_reset, { release = true, non_consuming = true })
+      ${reverseBind}
+      ${releaseBinds}
     '';
 
   dmsDotBinds = pkgs.writeText "dms-hypr-binds-dots.lua" (
@@ -278,12 +184,10 @@
       -- remain authoritative even if DMS has persisted older bindings.
     ''
     + dmsKittyWindowRule
-    + dmsTerminalBinds
-    + dmsWindowCloseBind
-    + dmsGhosttyQuickTerminalBind
+    + keyboardBinds
     + dmsWindowLastBind
     + dmsWindowCycleBinds
-    + lib.concatStringsSep "" (lib.mapAttrsToList mkDmsScratchpadBinds scratchpads)
+    + applicationBinds
   );
 
   dmsRoot = pkgs.runCommand "dms-hyprland.lua" {} ''
@@ -304,7 +208,7 @@
       "$out" \
       --replace-fail \
         '{{TERMINAL_COMMAND}}' \
-        ${lib.escapeShellArg primaryTerminal.command}
+        ${lib.escapeShellArg legacyApps.terminal.primary.command}
   '';
 
   mkAddons = target:
@@ -336,11 +240,11 @@
           host
           lib
           lix
-          apps
           user
           keyboard
           mkMerge
           ;
+        apps = legacyApps;
         inherit (cfg) withRules;
         keys = user.interface.keyboard;
       })

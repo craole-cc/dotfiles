@@ -1,0 +1,7 @@
+{
+  services = {
+    lorri = {
+      enable = true;
+    };
+  };
+}

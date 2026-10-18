@@ -95,7 +95,7 @@
     inputs,
     kernel ? (host.packages.kernel or null),
     caches ? (host.caches or {}),
-    max-jobs ? (host.specs.cpu.cores or "auto"),
+    max-jobs ? (host.hardware.cpu.cores or "auto"),
     stateVersion ? host.stateVersion,
     system ? host.system,
     ...

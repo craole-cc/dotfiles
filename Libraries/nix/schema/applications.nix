@@ -1,11 +1,11 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.applications.registry) resolve;
-  inherit (lib.attrsets) attrByPath recursiveUpdate;
-  inherit (lib.strings) hasInfix toLower;
+  inherit (_.attrsets.access) attrByPath attrValues;
+  inherit (_.lists.construction) concatLists;
+  inherit (_.lists.transformation) unique;
+  inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.strings.predicates) hasInfix;
+  inherit (_.strings.transformation) toLower;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.lists.access) head;
   inherit (_.schema.packages) merge policyFields roleView toApplications;
@@ -85,10 +85,12 @@
       "neovim" = "nvim";
       "nvim" = "nvim";
       "vscode" = "code";
+      "vscode-fhs" = "code";
       "vscode-insiders" = "code-insiders";
       "code-insiders" = "code-insiders";
       "vscodium" = "codium";
       "zed" = "zeditor";
+      "zed-editor-fhs" = "zeditor";
       "zeditor" = "zeditor";
       "vim" = "vim";
       "nano" = "nano";
@@ -260,10 +262,18 @@
     in
       map (mkEntry category) names) (removeAttrs packages policyFields);
     legacyGroup = name: roleView (entries.${name} or []);
+    # Host requirements remain installed even when a user's ordered preference
+    # replaces the host group. Coding selects toolchains in its own module.
+    requiredPackages = unique (concatLists (attrValues (removeAttrs
+      (_.schema.packages.resolve {
+        record = host;
+        inherit protocol;
+      })
+      (policyFields ++ ["coding"]))));
   in
     entries
     // {
-      inherit packages;
+      inherit packages requiredPackages;
       # Named positions are a compatibility view for existing shortcuts. The
       # application contract above retains every entry of every group.
       legacy = {

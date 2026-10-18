@@ -33,7 +33,9 @@
   inherit (_.attrsets.transformation) filterAttrs;
   inherit (_.lists.access) head;
   inherit (_.lists.construction) optional toList;
-  inherit (_.lists.predicates) elem;
+  inherit (_.lists.predicates) any elem;
+  inherit (_.types.predicates) isList;
+  inherit (_.lists.selection) filter;
   inherit (_.lists.aggregation) concatMap;
   inherit (_.lists.transformation) unique;
   inherit
@@ -45,7 +47,8 @@
     ;
   inherit (_.schema) io;
   appSchema = _.schema.applications;
-  inherit (_.schema.io) keyboardDefaults normalizeKeyboard;
+  inherit (_.schema.io) keyboardDefaults mergeKeyboards normalizeKeyboard;
+  inherit (_.schema.fonts) getFonts mkFonts;
   inherit (_.strings.construction) optionalString;
   inherit (_.types.combinators) submodule attrsOf;
   inherit (_.types.primitives) str anything;
@@ -236,6 +239,7 @@
       description = "Keyboard config and bindings";
       default = defaults.keyboard;
       type = io.types.keyboard;
+      apply = normalizeKeyboard;
     };
     apps = let
       app = submodule {
@@ -499,26 +503,16 @@
       };
   in {
     hyprland = recursiveUpdate (mkWayland "hyprland") {
-      keyboard.bindings = {
-        overview.action = "dms ipc call hypr toggleOverview";
-        workspaceRename.action = "dms ipc call workspace-rename open";
-        keybinds.action = "dms ipc call keybinds toggle hyprland";
-        close.action = "hyprctl dispatch killactive";
-        fullscreen.action = "hyprctl dispatch fullscreen 0";
-        maximise.action = "hyprctl dispatch fullscreen 1";
-        float.action = "hyprctl dispatch togglefloating";
-        pin.action = "hyprctl dispatch pin";
-        split.action = "hyprctl dispatch togglesplit";
-        pseudo.action = "hyprctl dispatch pseudo";
-        groupToggle.action = "hyprctl dispatch togglegroup";
-        groupLock.action = "hyprctl dispatch lockactivegroup toggle";
-        workspacePrev.action = "hyprctl dispatch workspace previous";
-        windowCycle.action = "hyprctl dispatch focuscurrentorlast";
-        logout.action = "hyprctl dispatch exit";
-        screenshot.action = "dms screenshot full";
-        screenshotRegion.action = "dms screenshot";
-        screenshotWindow.action = "dms screenshot window";
-      };
+      keyboard.bindings =
+        {
+          overview.action = "dms ipc call hypr toggleOverview";
+          workspaceRename.action = "dms ipc call workspace-rename open";
+          keybinds.action = "dms ipc call keybinds toggle hyprland";
+          screenshot.action = "dms screenshot full";
+          screenshotRegion.action = "dms screenshot";
+          screenshotWindow.action = "dms screenshot window";
+        }
+        // (import ./hyprland-keyboard.nix {inherit _;}).legacy;
     };
     niri = recursiveUpdate (mkWayland "niri") {
       keyboard.bindings = {
@@ -670,7 +664,14 @@
     set,
     interface,
   }: let
-    rawVal = interface.${key} or interface.session.${key} or null;
+    candidates = filter (name: hasAttr name set) (toList (interface.desktops or []));
+    rawVal =
+      if interface ? desktops
+      then
+        if candidates == []
+        then null
+        else head candidates
+      else interface.${key} or interface.session.${key} or null;
     name =
       if isAttrs rawVal
       then rawVal.name or null
@@ -699,7 +700,12 @@
     configs,
   }:
     interface.${key} or configs.wm.${key} or configs.de.${key} or defaults.${key};
-  normalize = interface: let
+  normalize = interface: normalizeWith {inherit interface;};
+
+  normalizeWith = {
+    interface,
+    keyboardScopes ? [interface.keyboard or {}],
+  }: let
     inherit
       (genAttrs (attrNames keys.selection) (
         n:
@@ -781,13 +787,20 @@
       enhancements = interface.shell.enhancements or defaults.shell.enhancements;
     };
 
-    #? Merge order: io defaults → DE overrides → WM overrides → user overrides
-    #? normalizeKeyboard converts all mod lists to strings at the boundary
-    keyboard = normalizeKeyboard (
-      recursiveUpdate (recursiveUpdate (recursiveUpdate keyboardDefaults (configs.de.keyboard or {})) (
-        configs.wm.keyboard or {}
-      )) (interface.keyboard or {})
-    );
+    keyboard = mergeKeyboards ([
+        keyboardDefaults
+        (configs.de.keyboard or {})
+        (configs.wm.keyboard or {})
+        {
+          bindings =
+            if windowManager.name == "hyprland"
+            then
+              filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
+              (import ./hyprland-keyboard.nix {inherit _;}).ordered
+            else {};
+        }
+      ]
+      ++ keyboardScopes);
   in
     composites
     // {
@@ -797,6 +810,8 @@
         shell
         session
         ;
+      fonts = getFonts {inherit interface;};
+      desktops = interface.desktops or enabled;
       defaultSession = session;
       desktopEnvironment = desktopEnvironment.name;
       windowManager = windowManager.name;
@@ -819,8 +834,24 @@
   mkUI = {
     user ? {},
     host,
-  }:
-    normalize (recursiveUpdate (host.interface or {}) (user.interface or {}));
+  }: let
+    hostInterface = host.defaults.interface or (host.interface or {});
+    interface = recursiveUpdate hostInterface (user.interface or {});
+  in
+    (normalizeWith {
+      inherit interface;
+      keyboardScopes = [
+        (host.keyboard or {})
+        (hostInterface.keyboard or {})
+        (user.keyboard or {})
+        (user.interface.keyboard or {})
+      ];
+    })
+    // {
+      fonts = mkFonts {inherit host user;};
+      theme = _.schema.theme.mkTheme {inherit host user;};
+      boot = interface.boot or {};
+    };
 
   requireUI = {
     host ? null,

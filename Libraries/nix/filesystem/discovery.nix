@@ -1,12 +1,9 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.content.emptiness) isNotEmpty;
-  inherit (lib.filesystem) listFilesRecursive packagesFromDirectoryRecursive;
-  inherit (lib.strings) hasSuffix;
-  inherit (lib.lists) filter map elem;
+  inherit (_.filesystem.traversal) listFilesRecursive packagesFromDirectoryRecursive;
+  inherit (_.strings.transformation) hasSuffix;
+  inherit (_.lists.transformation) filter;
+  inherit (_.lists.predicates) elem;
 
   exports = {
     internal = {

@@ -3,11 +3,7 @@
 # Per-module debug helper factory.
 # Binds a namespace path to a set of error-formatting functions so every
 # throw/trace in a module automatically includes its fully-qualified location.
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   exports = {
     inherit mkModule mkFn;
     mkModuleDebug = mkModule;
@@ -15,10 +11,9 @@
 
   inherit (_.debug.format) mkRef mkThrownUsage mkExample;
   inherit (_.debug.tracing) traceFn;
-  inherit (_.types.predicates) isList;
-  inherit (lib.attrsets) isAttrs;
-  inherit (lib.debug) addErrorContext;
-  inherit (lib.strings) isString splitString toJSON;
+  inherit (_.types.predicates) isAttrs isList isString;
+  inherit (_.debug.tracing) addErrorContext;
+  inherit (_.strings.construction) splitString toJSON;
 
   /**
   Tag a function value with its name so `withDoc` / `withLoc` can both

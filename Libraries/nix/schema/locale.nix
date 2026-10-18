@@ -1,6 +1,6 @@
-{lib, ...}: let
-  inherit (lib.lists) elem;
-  inherit (lib.attrsets) recursiveUpdate;
+{_, ...}: let
+  inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.lists.predicates) elem;
 
   __exports = {
     internal = {inherit defaults mkLocale;};

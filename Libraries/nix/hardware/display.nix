@@ -1,14 +1,12 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.content.emptiness) isNotEmpty;
   inherit (_.content.fallback) orDefault;
   inherit (_.debug.assertions) mkTest mkTest';
   inherit (_.debug.runners) runTests;
-  inherit (lib.attrsets) mapAttrsToList catAttrs;
-  inherit (lib.lists) sort head;
+  inherit (_.attrsets.access) catAttrs;
+  inherit (_.attrsets.transformation) mapAttrsToList;
+  inherit (_.lists.access) head;
+  inherit (_.lists.transformation) sort;
 
   getAll = {
     host ? {},

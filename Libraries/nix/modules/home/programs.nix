@@ -1,29 +1,18 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.sources.modules) mkModule;
   inherit (_.applications.registry) resolve;
   inherit (_.lists.predicates) isIn;
   inherit (_.schema.packages) selectedPackages;
-  inherit (lib.attrsets) attrByPath isAttrs mapAttrs;
-  inherit
-    (lib.strings)
-    hasInfix
-    replaceStrings
-    splitString
-    toLower
-    ;
+  inherit (_.attrsets.access) attrByPath;
+  inherit (_.attrsets.transformation) mapAttrs;
+  inherit (_.attrsets.predicates) isAttrs;
+  inherit (_.strings.construction) splitString;
+  inherit (_.strings.transformation) replaceStrings toLower;
+  inherit (_.strings.predicates) hasInfix;
 
   __exports = rec {
     internal = {
-      inherit
-        defaults
-        mkApp
-        mkApps
-        mkPrograms
-        ;
+      inherit defaults mkApp mkApps mkPrograms;
       mkHomeApp = mkApp;
       mkHomeApps = mkApps;
       mkHomePrograms = mkPrograms;

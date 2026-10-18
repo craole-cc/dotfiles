@@ -11,20 +11,18 @@
     mod = "boot";
   };
   inherit (context) cfg mod;
-  inherit (lix.attrsets.access) getAttr;
-  inherit (lix.attrsets.predicates) hasAttr;
-  inherit (lix.debug.tracing) traceIf;
   inherit (lix.lists.access) length;
   inherit (lix.lists.enums.gui) bootLoaders;
-  inherit (lix.lists.predicates) any;
+  inherit (lix.attrsets.predicates) hasAttr;
+  inherit (lix.lists.predicates) any elem;
   inherit (lix.lists.transformation) filter;
   inherit (lix.modules.construction) mkConfig mkContext mkIf;
   inherit (lix.options.construction) mkTrue mkOption;
   inherit (lix.strings.construction) concatStringsSep optionalString;
   inherit (lix.strings.predicates) hasInfix hasPrefix isString;
+  inherit (lix.strings.transformation) toLowerCase;
   inherit (lix.types.combinators) enum;
   inherit (lix.types.primitives) int str;
-  inherit (pkgs) linuxPackages;
 
   hw = host.hardware;
   isX86 = pkgs.stdenv.hostPlatform.isx86;
@@ -36,25 +34,29 @@
     "limine"
   ];
 
-  kernel = let
-    selection = host.packages.kernel or null;
-    exists = selection != null && hasAttr selection pkgs;
-    pkgs' =
-      if exists
-      then getAttr selection pkgs
-      else linuxPackages;
-
-    msg =
-      if selection == null
-      then "ℹ Using default kernel"
-      else if exists
-      then "✓ Using kernel: ${selection}"
-      else "⚠️ Kernel '${selection}' not found in pkgs, falling back to default";
-
-    packages = traceIf true msg pkgs';
-  in {
-    inherit packages;
+  kernel = lix.schema.kernel.resolve {
+    inherit host pkgs;
+    user = host.users.data.primary or {};
   };
+  bareCachyOS =
+    kernel.requested != null
+    && elem (toLowerCase kernel.requested) ["cachy" "cachyos" "linux-cachyos"];
+  useGenericV3 =
+    bareCachyOS
+    && kernel.cpu.arch == "x86_64"
+    && elem (toLowerCase (kernel.cpu.microarch or "")) ["znver1" "znver2" "znver3"]
+    && kernel.level == "v1"
+    && hasAttr "cachyOverride" kernel.packages;
+  kernelPackages =
+    if useGenericV3
+    then
+      kernel.packages.cachyOverride {
+        cachyVars = kernel.packages.kernel.cachyConfig.cachyVars // {
+          "_processor_opt" = "GENERIC_V3";
+        };
+      }
+    else kernel.packages;
+  kernelWarnings = if useGenericV3 then [] else kernel.warnings;
 
   isSystemd = hasInfix "system" cfg.loader;
   isRefind = hasInfix "refind" cfg.loader;
@@ -89,6 +91,7 @@ in
       };
     };
     outputs = {
+      warnings = kernelWarnings;
       assertions = [
         {
           assertion = any (pattern: hasInfix pattern cfg.loader) validPatterns;
@@ -119,7 +122,7 @@ in
       ];
 
       boot = {
-        kernelPackages = kernel.packages;
+        kernelPackages = kernelPackages;
 
         loader = {
           systemd-boot = mkIf isSystemd {

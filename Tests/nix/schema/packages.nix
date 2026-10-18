@@ -587,6 +587,19 @@
       expr = hostGroups.settings.packages == hostGroups.packages;
       expected = true;
     };
+    testHostRequirementsSurviveUserPreferences = {
+      expr =
+        (lix.schema.applications.mkApplications {
+          host.packages = {
+            terminal = ["ghostty"];
+            editor = ["nano"];
+            coding = ["nix"];
+            kernel = "cachyos";
+          };
+          user.packages.terminal = ["foot"];
+        }).requiredPackages;
+      expected = ["nano" "ghostty"];
+    };
     testInvalidElement = {
       expr = rejects {packages.browser = ["brave" 1];};
       expected = true;

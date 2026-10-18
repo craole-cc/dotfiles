@@ -1,19 +1,9 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.debug.assertions) mkTest;
   inherit (_.debug.runners) runTests;
   inherit (_.debug.stubs) mkDefaultStub mkEnableOptionStub mkForceStub;
-  inherit (_.attrsets.predicates) isTyped;
-  inherit
-    (lib.attrsets)
-    filterAttrs
-    isAttrs
-    isDerivation
-    mapAttrs
-    ;
+  inherit (_.attrsets.predicates) isTyped isAttrs isDerivation;
+  inherit (_.attrsets.transformation) filterAttrs mapAttrs;
 
   /**
   Recursively applies `mkDefault` to all leaf values in an attribute set.

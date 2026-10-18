@@ -1,13 +1,8 @@
 # Test case constructors.
 # Use mkTest for documented tests, mkTest' for terse one-liners.
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.debug.assertions) assertMsg;
-  inherit (_.debug.tracing) addErrorContext tryEval;
-  inherit (lib.trivial) deepSeq;
+  inherit (_.debug.tracing) addErrorContext deepSeq tryEval;
 
   assertMsgFunc = {
     name,

@@ -1,12 +1,9 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.attrsets.resolution) package;
   inherit (_.lists.predicates) isIn;
-  inherit (lib.attrsets) mapAttrs;
-  inherit (lib.lists) head optionals;
+  inherit (_.attrsets.construction) mapAttrs;
+  inherit (_.lists.access) head;
+  inherit (_.lists.construction) optionals;
 
   exports = {
     internal = {

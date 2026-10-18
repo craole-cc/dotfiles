@@ -9,7 +9,7 @@
   inherit (_.schema.packages) resolveGroup;
   inherit (_.applications.registry) resolve;
   inherit (_.applications.runtime) resolvePackage;
-  inherit (_.types.predicates) isAttrs isFunction isList;
+  inherit (_.types.predicates) isAttrs isFunction isList isString;
 
   selectionNames = default: config:
     if config == {}
@@ -144,7 +144,7 @@
   normalizeInputPath = path:
     if path == null
     then null
-    else if builtins.isString path
+    else if isString path
     then [path]
     else if isList path
     then let
@@ -154,7 +154,7 @@
         else [segment])
       path;
     in
-      if all builtins.isString flattened
+      if all isString flattened
       then flattened
       else null
     else null;
@@ -354,7 +354,9 @@
 
       "warp-terminal" = {pkgs, ...}: {
         cmd = "warp-terminal";
-        pkg = pkgs.warp-terminal;
+        # Warp Preview is installed by the Home Manager terminal module.
+        # Do not add Nixpkgs' stable Warp package to the system profile.
+        pkg = null;
         inputPath = null;
       };
 

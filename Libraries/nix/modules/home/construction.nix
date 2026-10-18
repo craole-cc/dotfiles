@@ -1,8 +1,4 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   __doc = ''
     Produce the complete Home Manager option block for the current host.
 
@@ -37,7 +33,7 @@
   };
 
   inherit (_.modules.home.users) mkUsers;
-  inherit (lib) extend;
+  inherit (_.modules.evaluation) extend;
 
   /**
   Produce the complete Home Manager option block for the current host.

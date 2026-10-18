@@ -1,12 +1,11 @@
-{
-  _,
-  lib,
-  ...
-}: let
-  inherit (lib.attrsets) mapAttrs isAttrs optionalAttrs;
-  inherit (lib.lists) elem;
-  inherit (lib.strings) hasInfix substring stringLength;
-  inherit (_.trivial.emptiness) isEmpty isNotEmpty;
+{_, ...}: let
+  inherit (_.attrsets.predicates) isAttrs;
+  inherit (_.attrsets.construction) optionalAttrs;
+  inherit (_.attrsets.transformation) mapAttrs;
+  inherit (_.lists.predicates) elem;
+  inherit (_.strings.access) substring stringLength;
+  inherit (_.strings.predicates) hasInfix;
+  inherit (_.content.emptiness) isEmpty isNotEmpty;
   inherit (_.attrsets.resolution) getNestedAttrByPaths getPackage getAttr;
 
   /**

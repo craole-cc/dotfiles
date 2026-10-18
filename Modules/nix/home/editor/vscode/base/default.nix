@@ -1,5 +1,5 @@
-{lib, ...}: let
-  inherit (lib.modules) mkForce;
+{lix, ...}: let
+  inherit (lix.modules.construction) mkForce;
 
   bindings = import ./bindings.nix {};
   learnedSettings = builtins.fromJSON (builtins.readFile ./settings.json);

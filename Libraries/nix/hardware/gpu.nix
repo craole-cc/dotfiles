@@ -1,19 +1,10 @@
-{
-  _,
-  lib,
-  ...
-}: let
+{_, ...}: let
   inherit (_.debug.assertions) mkTest mkTest';
   inherit (_.debug.runners) runTests;
-  inherit (lib.attrsets) removeAttrs;
-  inherit
-    (lib.lists)
-    elemAt
-    filter
-    imap0
-    length
-    ;
-  inherit (lib.strings) replaceStrings splitString;
+  inherit (_.lists.access) elemAt length;
+  inherit (_.lists.transformation) filter imap0;
+  inherit (_.strings.transformation) replaceStrings;
+  inherit (_.strings.construction) splitString;
 
   vendorMap = {
     "10de" = "nvidia";

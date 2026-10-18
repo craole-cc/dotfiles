@@ -389,6 +389,7 @@
 
       dms-plugin-registry = {
         names = [
+          "dms-plugin-registry"
           "shellDankMaterialPlugins"
           "dankMaterialShellPlugins"
           "shellDankPlugins"
@@ -544,6 +545,19 @@
           "vscodeExtensions"
           "vscode-extensions"
           "nix-vscode-extensions"
+        ];
+      };
+
+      warp-terminal = {
+        names = [
+          "warp"
+          "warp-preview"
+          "warpPreview"
+          "terminalWarp"
+          "warp-terminal-experimental"
+          "warpTerm"
+          "warpTerminal"
+          "warp-terminal"
         ];
       };
 

@@ -5,16 +5,17 @@
   ...
 }: let
   inherit (lix.attrsets.access) foldlAttrs;
-  inherit (lix.lists.construction) concatLists;
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.filesystem.traversal) importAllPaths;
   inherit (lix.lists.access) elemAt last;
   inherit (lix.lists.aggregation) foldl';
+  inherit (lix.lists.construction) concatLists;
   inherit (lix.lists.predicates) all;
   inherit (lix.lists.transformation) imap0;
-  inherit (lix.options.construction) mkOption mkOptionType;
-  inherit (lix.types.primitives) anything;
-  inherit (lix.types.predicates) isAttrs isList;
-  inherit (lix.attrsets.construction) optionalAttrs;
   inherit (lix.modules.construction) mkDefault;
+  inherit (lix.options.construction) mkOption mkOptionType;
+  inherit (lix.types.predicates) isAttrs isList;
+  inherit (lix.types.primitives) anything;
 
   mkSelectionVariables = prefix: entries:
     foldl' (variables: entry: variables // entry) {} (imap0 (index: entry:
@@ -52,11 +53,7 @@
               // {
                 ${name} =
                   if result ? ${name}
-                  then
-                    mergeOutput [
-                      result.${name}
-                      item
-                    ]
+                  then mergeOutput [result.${name} item]
                   else item;
               }
           )
@@ -103,7 +100,7 @@ in {
     // (mkSelectionVariables "VISUAL" apps.ide)
     // (mkSelectionVariables "FILE_MANAGER" apps.explorer);
 
-  imports = (lix.filesystem.traversal.importAllPaths ./.).value;
+  imports = (importAllPaths ./.).value;
 
   # # Home is being migrated incrementally to the same mkContext/mkConfig
   # # contract as Core. Only migrated modules are wired here; the legacy tree

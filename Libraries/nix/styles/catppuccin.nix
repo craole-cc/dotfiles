@@ -34,6 +34,7 @@
   inherit (_.attrsets.access) attrNames getAttr;
   inherit (_.attrsets.construction) listToAttrs optionalAttrs;
   inherit (_.attrsets.predicates) hasAttr;
+  inherit (_.attrsets.transformation) filterAttrs mapAttrs;
   inherit (_.attrsets.resolution) getPackage;
   inherit (_.content.emptiness) isEmpty isNotEmpty;
   inherit (_.debug.assertions) withContext;
@@ -51,7 +52,9 @@
     isList
     isString
     ;
-  inherit (_.styles.registry.groups.byFamily) catppuccin;
+  catppuccin =
+    mapAttrs (_: filterAttrs (_: entry: (entry.family or null) == "catppuccin"))
+    _.styles.registry.data.source.value;
 
   mkRegistry = {
     group,

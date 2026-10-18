@@ -1,6 +1,6 @@
-{lib, ...}: let
-  inherit (lib.lists) elem;
-  inherit (lib.strings) hasPrefix;
+{_, ...}: let
+  inherit (_.lists.predicates) elem;
+  inherit (_.strings.predicates) hasPrefix;
 
   isSystemDefaultUser = name:
     (hasPrefix "nixbld" name)

@@ -78,7 +78,7 @@ blood_type() {
 }
 
 range() {
-  number || return 1
+  case ${OPTARG} in *[!0-9]*) return 1 ;; esac
   [[ $1 -le ${OPTARG} ]] && [[ ${OPTARG} -le $2 ]] && return 0
   return 2
 }

@@ -85,6 +85,7 @@
           interfaceUser
           // {
             inherit (enrichedApplications) packages;
+            inherit (enrichedInterface) theme;
             applications = enrichedApplications.legacy.raw;
           };
 

@@ -29,13 +29,11 @@
     };
   };
 
-  inherit (_.attrsets.access) getAttr;
   inherit (_.attrsets.construction) genAttrs optionalAttrs;
   inherit (_.attrsets.predicates) hasAttr;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.lists.construction) optionals;
   inherit (_.lists.predicates) any isIn elem;
-  inherit (_.debug.tracing) traceIf;
   inherit (_.modules) mkIf;
   inherit (_.strings.construction) concatStringsSep optionalString;
   inherit (_.strings.transformation) toLowerCase;
@@ -129,9 +127,9 @@
     pkgs,
     ...
   }: let
-    bootLoader = toLowerCase (host.interface.bootLoader or "systemd-boot");
-    bootLoaderTimeout = host.interface.bootLoaderTimeout or 5;
-    efiSysMountPoint = host.devices.boot.efiSysMountPoint or "/boot";
+    bootLoader = toLowerCase (host.interface.boot.loader or host.interface.bootLoader or "systemd-boot");
+    bootLoaderTimeout = host.interface.boot.timeout or host.interface.bootLoaderTimeout or 5;
+    efiSysMountPoint = host.interface.boot.efiMount or host.devices.boot.efiSysMountPoint or "/boot";
 
     isSystemdBoot = hasInfix "system" bootLoader;
     isRefind = hasInfix "refind" bootLoader;
@@ -152,30 +150,31 @@
       functionalities;
     hasEfi = elem "efi" functionalities;
 
-    kernel = rec {
-      default = pkgs.linuxPackages;
-      requested = host.packages.kernel or null;
-
-      #> Check if the requested kernel package exists in pkgs
-      exists = requested != null && hasAttr requested pkgs;
-
-      #> Get the actual kernel packages set
-      packages =
-        if exists
-        then getAttr requested pkgs
-        else default;
-
-      #> Determine which kernel to use with proper tracing
-      selected =
-        traceIf (requested != null && exists)
-        "✓ Using kernel: ${requested} (${packages.kernel.version or "unknown"})"
-        (
-          traceIf (requested != null && !exists)
-          "⚠️  Kernel '${requested}' not found in pkgs, using default (${default.kernel.version})"
-          (traceIf (requested == null) "ℹ Using default kernel (${default.kernel.version})" packages)
-        );
+    kernel = _.schema.kernel.resolve {
+      inherit host pkgs;
+      user = host.users.data.primary or {};
     };
+    bareCachyOS =
+      kernel.requested != null
+      && elem (toLowerCase kernel.requested) ["cachy" "cachyos" "linux-cachyos"];
+    useGenericV3 =
+      bareCachyOS
+      && kernel.cpu.arch == "x86_64"
+      && elem (toLowerCase (kernel.cpu.microarch or "")) ["znver1" "znver2" "znver3"]
+      && kernel.level == "v1"
+      && hasAttr "cachyOverride" kernel.packages;
+    kernelPackages =
+      if useGenericV3
+      then
+        kernel.packages.cachyOverride {
+          cachyVars = kernel.packages.kernel.cachyConfig.cachyVars // {
+            "_processor_opt" = "GENERIC_V3";
+          };
+        }
+      else kernel.packages;
+    kernelWarnings = if useGenericV3 then [] else kernel.warnings;
   in {
+    warnings = kernelWarnings;
     assertions = [
       {
         assertion = hasValidBootLoader;
@@ -206,14 +205,6 @@
         '';
       }
       {
-        assertion = kernel.requested == null || kernel.exists;
-        message = ''
-          Requested kernel '${kernel.requested}' does not exist in pkgs.
-          Available kernel packages start with: linuxPackages*
-          Examples: linuxPackages_cachyos, linuxPackages_cachyos-lto, linuxPackages_zen
-        '';
-      }
-      {
         assertion = hasPrefix "/" efiSysMountPoint;
         message = ''
           devices.boot.efiSysMountPoint must be an absolute path.
@@ -235,7 +226,7 @@
     ];
 
     boot = {
-      kernelPackages = kernel.selected;
+      kernelPackages = kernelPackages;
 
       loader = {
         #~@ systemd-boot configuration

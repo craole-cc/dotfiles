@@ -1,6 +1,6 @@
 # Error message formatting and value rendering.
 # Provides the string-building primitives used by debug/module.nix and debug/trace.nix.
-{lib, ...}: let
+{_, ...}: let
   exports = {
     inherit
       isExample
@@ -14,8 +14,9 @@
       ;
   };
 
-  inherit (lib.attrsets) isAttrs hasAttr;
-  inherit (lib.strings) typeOf concatStringsSep toJSON;
+  inherit (_.attrsets.predicates) isAttrs hasAttr;
+  inherit (_.strings.construction) concatStringsSep toJSON;
+  inherit (_.types.access) typeOf;
 
   /**
   Convert a path list to a dotted namespace string.

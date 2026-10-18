@@ -1,6 +1,6 @@
 {_, ...}: let
   inherit (_.attrsets.access) attrNames attrValues;
-  inherit (_.attrsets.construction) listToAttrs;
+  inherit (_.attrsets.construction) listToAttrs optionalAttrs;
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.transformation) mapAttrs filterAttrs;
   inherit (_.lists.access) head length;
@@ -10,6 +10,8 @@
   inherit (_.filesystem.construction) mkTree;
   inherit (_.schema.packages) merge normalize policyFields;
   inherit (_.schema.ui) mkUI;
+  inherit (_.schema.fonts) getFonts;
+  inherit (_.schema.theme) mkTheme;
 
   mkUser = {
     name,
@@ -33,8 +35,12 @@
         };
   in
     normalized
+    // optionalAttrs (user ? interface) {
+      interface = (removeAttrs user.interface ["theme"]) // {fonts = getFonts user;};
+    }
     // {
       inherit uid;
+      theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});
       paths = mkTree {
         stems = recursiveUpdate stems (user.paths.stems or {});
         roots =
@@ -255,7 +261,16 @@
     stems ? {},
     roots ? {},
   }: let
-    enrich = mapAttrs (name: user: mkUser {inherit name user host stems roots;});
+    enrich = mapAttrs (name: user: let
+      profile = mkUser {inherit name user host stems roots;};
+    in
+      profile
+      // {
+        theme = mkTheme {
+          inherit host;
+          user = profile;
+        };
+      });
 
     all = enrich (getAll {inherit host users;});
     enabled = getEnabled (enrich (getAllWithDefault {
