@@ -1,27 +1,16 @@
-{
-  bins,
-  config,
-  inputs,
-  lix,
-  pkgs,
-}: let
+{lix, ...} @ args: let
   inherit (lix.lists.aggregation) concatMap foldl';
   inherit (lix.lists.transformation) unique;
 
-  categories = [
-    (import ./desktop.nix {inherit config pkgs;})
-    (import ./media.nix pkgs)
-    (import ./messengers.nix {inherit inputs lix pkgs;})
-    (import ./monitoring.nix pkgs)
-    (import ./productivity.nix)
-    (import ./utilities.nix)
-    (import ./wallpapers.nix pkgs)
-  ];
-  migration = import ./migration.nix {inherit bins config inputs lix;};
-in {
-  inherit (migration) files;
-  migration = migration.activation;
-  plugins = foldl' (plugins: category: plugins // category.plugins) {} categories;
-  packages = unique (concatMap (category: category.packages or []) categories);
-  activation = import ./activation.nix {inherit bins config inputs lix pkgs;};
-}
+  categories = import ./types args;
+  plugins =
+    foldl'
+    (plugins: category: plugins // category.plugins) {}
+    categories;
+  packages =
+    unique
+    (concatMap (category: category.packages or []) categories);
+in
+  (import ./migration.nix args)
+  // (import ./activation.nix args)
+  // {inherit plugins packages categories;}

@@ -125,7 +125,7 @@
       expr = browserOf {packages.browser = [];};
       expected = [];
     };
-    testNormalizationIsIdempotent = {
+    testNormalisationIsIdempotent = {
       expr = let
         once = normalize {record = base;};
       in
@@ -143,7 +143,7 @@
         (normalize {record = once // {packages.browser = ["firefox"];};}).packages.browser;
       expected = ["firefox"];
     };
-    testLegacyUtilityNormalizationIsIdempotent = {
+    testLegacyUtilityNormalisationIsIdempotent = {
       expr = let
         once = normalize {
           record.applications.utilities = {
@@ -545,7 +545,7 @@
         }).browser;
       expected = [];
     };
-    testSchemaNormalizesGlobalUser = {
+    testSchemaNormalisesGlobalUser = {
       expr = schema.users.demo.packages.browser;
       expected = browsers;
     };

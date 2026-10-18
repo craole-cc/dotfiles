@@ -1,13 +1,13 @@
 {
   bins,
-  config,
-  inputs,
+  configHome,
+  stateHome,
+  entryAfter,
   lix,
   style,
   themes,
   user,
 }: let
-  inherit (inputs.home-manager.lib.hm.dag) entryAfter;
   inherit (lix.strings.construction) toJSON;
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (themes) icons;
@@ -15,8 +15,8 @@
   inherit (themes) catppuccin foot ghostty hermes kitty;
 in
   entryAfter ["writeBoundary"] ''
-    settings=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/settings.json"}
-    session=${escapeShellArg "${config.xdg.stateHome}/DankMaterialShell/session.json"}
+    settings=${escapeShellArg "${configHome}/DankMaterialShell/settings.json"}
+    session=${escapeShellArg "${stateHome}/DankMaterialShell/session.json"}
     foot_theme=${escapeShellArg foot.path}
     ghostty_opacity=${escapeShellArg ghostty.opacity.path}
     kitty_opacity=${escapeShellArg kitty.opacity.path}

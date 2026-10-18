@@ -11,15 +11,15 @@
   derived = let
     lib = let
       nixpkgs = args.inputs.${args.nixpkgsTag or "nixPackages"} or {};
-      isValib = target: target ? attrsets.attrNames && target ? trivial;
+      isNixLib = target: target ? attrsets.attrNames && target ? trivial;
       lib' =
-        if isValib (args.lib or null)
+        if isNixLib (args.lib or null)
         then args.lib
-        else if isValib (nixpkgs.lib or {})
+        else if isNixLib (nixpkgs.lib or {})
         then nixpkgs.lib
         else import <nixpkgs/lib>;
     in
-      if isValib lib'
+      if isNixLib lib'
       then lib'
       else throw "Failed to resolve a valid Nix library instance (lib.trivial not found).";
 
@@ -61,12 +61,15 @@
   defined = let
     _ = init.libraries.default;
     inherit (_.attrsets.aggregation) recursiveUpdate;
+    # inherit (_.attrsets.construction) optionalAttrs;
     inherit (_.filesystem.construction) mkTree;
     inherit (_.schema.construction) mkSchema;
 
     schema = mkSchema {
       api = init.paths.repo.api.default.store;
     };
+
+    # flake = optionalAttrs (inputs ? treefmt) {inherit (inputs) treefmt;};
 
     # API-owned structural tree used when no physical host is selected.
     # Its repository store projection is sufficient for importing modules,

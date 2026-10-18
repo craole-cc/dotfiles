@@ -7,11 +7,6 @@
   style,
   ...
 }: let
-  inherit (lix.attrsets.aggregation) mergeSafe;
-  inherit (lix.modules.construction) mkConfig mkContext mkForce;
-  inherit (lix.options.construction) mkEnable mkOption;
-  inherit (lix.styles.icons.types) icon;
-
   context = mkContext {
     inherit config;
     dom = "interface";
@@ -19,12 +14,33 @@
     mod = "dms-shell";
   };
   inherit (context) cfg ctx;
+  inherit (lix.attrsets.aggregation) mergeSafe;
+  inherit (lix.modules.construction) mkConfig mkContext mkForce;
+  inherit (lix.options.construction) mkEnable mkOption;
+  inherit (lix.styles.icons.types) icon;
+  inherit (lix.filesystem.primitives) concat;
 
-  inherit (import ./packages.nix {inherit inputs lix pkgs;}) tools bins package;
-  themes = import ./themes {inherit config inputs lix pkgs style user;};
-  sync = import ./sync.nix {inherit bins config lix pkgs style themes;};
-  activation = import ./activation.nix {inherit bins config inputs lix style themes user;};
-  pluginSetup = import ./plugins {inherit bins config inputs lix pkgs;};
+  args = {
+    inherit bins config inputs lix pkgs style themes user;
+    inherit (inputs.home-manager.lib.hm.dag) entryAfter;
+    configHome =
+      config.xdg.configHome or (concat {
+        root = user.home;
+        stem = ".config";
+      });
+
+    stateHome =
+      config.xdg.stateHome or (concat {
+        root = user.home;
+        stem = ".local/state";
+      });
+  };
+
+  inherit (import ./packages.nix args) tools bins package;
+  themes = import ./themes args;
+  sync = import ./sync.nix args;
+  activation = import ./activation.nix args;
+  addons = import ./plugins args;
 in
   mkConfig {
     inherit context;
@@ -41,7 +57,7 @@ in
     outputs = {
       programs.dank-material-shell = {
         inherit (cfg) enable;
-        inherit (pluginSetup) plugins;
+        inherit (addons) plugins;
         inherit package;
         quickshell = {inherit (tools.quickshell) package;};
         systemd = {
@@ -51,13 +67,14 @@ in
       };
 
       xdg = {
-        configFile = mergeSafe [
-          pluginSetup.files
-          themes.catppuccin.configFile
-          themes.foot.configFile
-          themes.hermes.configFile
-          themes.helix.configFile
-        ];
+        configFile =
+          mergeSafe [addons.files]
+          ++ (with themes; [
+            catppuccin.configFile
+            foot.configFile
+            hermes.configFile
+            helix.configFile
+          ]);
         inherit (themes) dataFile;
       };
 
@@ -67,13 +84,20 @@ in
       };
 
       home = {
-        packages = [themes.resolved.cursors.dark.package themes.resolved.cursors.light.package] ++ pluginSetup.packages;
-        sessionVariables.QS_ICON_THEME = themes.icons.dark.theme;
+        packages =
+          (with themes.resolved.cursors; [
+            dark.package
+            light.package
+          ])
+          ++ addons.packages;
+        sessionVariables = {
+          QS_ICON_THEME = themes.icons.dark.theme;
+        };
         activation = {
           configureDmsTheme = activation;
           configureDmsHelixTheme = themes.helix.activation;
-          configureDmsPlugins = pluginSetup.activation;
-          migrateDmsPlugins = pluginSetup.migration;
+          configureDmsPlugins = addons.activation;
+          migrateDmsPlugins = addons.migration;
         };
       };
 

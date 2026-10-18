@@ -72,7 +72,7 @@ in {
       (pkgs.stdenv.hostPlatform.isLinux && cfg.gateway.multiplex && config.services.hermes-agent.gateway.enable)
       [
         (pkgs.writeText "hermes-team.json" (toJSON {
-          profiles = cfg.profiles;
+          inherit (cfg) profiles;
           inherit (config.services.hermes-agent) settings;
         }))
       ];

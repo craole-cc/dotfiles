@@ -1,8 +1,10 @@
 {
   bins,
+  configHome,
   config,
   inputs,
   lix,
+  ...
 }: let
   inherit (inputs.home-manager.lib.hm.dag) entryBetween;
   inherit (lix.attrsets.access) attrNames;
@@ -12,7 +14,6 @@
   inherit (bins) mkdir mv readlink;
   enabled = attrNames (filterAttrs (_: plugin: plugin.enable) config.programs.dank-material-shell.plugins);
   pluginPath = name: "DankMaterialShell/plugins/${name}";
-in {
   # Permit the selected paths through collision checking; migrate them only
   # after the write boundary and before Home Manager installs its links.
   files = listToAttrs (map (name: {
@@ -22,8 +23,8 @@ in {
     enabled);
 
   activation = entryBetween ["linkGeneration"] ["writeBoundary"] ''
-    plugin_dir=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/plugins"}
-    backup_dir=${escapeShellArg "${config.xdg.configHome}/DankMaterialShell/plugins.dms-backup"}
+    plugin_dir=${escapeShellArg "${configHome}/DankMaterialShell/plugins"}
+    backup_dir=${escapeShellArg "${configHome}/DankMaterialShell/plugins.dms-backup"}
     for plugin in ${escapeShellArgs enabled}; do
       target="$plugin_dir/$plugin"
       if [ ! -e "$target" ] && [ ! -L "$target" ]; then
@@ -44,4 +45,7 @@ in {
       fi
     done
   '';
+in {
+  inherit files activation;
+  migration = activation;
 }

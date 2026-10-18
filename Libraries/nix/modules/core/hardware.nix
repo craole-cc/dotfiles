@@ -155,7 +155,8 @@
       user = host.users.data.primary or {};
     };
     bareCachyOS =
-      kernel.requested != null
+      kernel.requested
+      != null
       && elem (toLowerCase kernel.requested) ["cachy" "cachyos" "linux-cachyos"];
     useGenericV3 =
       bareCachyOS
@@ -167,12 +168,17 @@
       if useGenericV3
       then
         kernel.packages.cachyOverride {
-          cachyVars = kernel.packages.kernel.cachyConfig.cachyVars // {
-            "_processor_opt" = "GENERIC_V3";
-          };
+          cachyVars =
+            kernel.packages.kernel.cachyConfig.cachyVars
+            // {
+              "_processor_opt" = "GENERIC_V3";
+            };
         }
       else kernel.packages;
-    kernelWarnings = if useGenericV3 then [] else kernel.warnings;
+    kernelWarnings =
+      if useGenericV3
+      then []
+      else kernel.warnings;
   in {
     warnings = kernelWarnings;
     assertions = [
@@ -226,7 +232,7 @@
     ];
 
     boot = {
-      kernelPackages = kernelPackages;
+      inherit kernelPackages;
 
       loader = {
         #~@ systemd-boot configuration

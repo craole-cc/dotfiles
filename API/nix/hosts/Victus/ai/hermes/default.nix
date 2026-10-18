@@ -52,7 +52,7 @@
     "lab"
     "ling-translator"
     "local"
-    "performance-optimizer"
+    "performance-optimiser"
     "prompt-engineer"
     "refactorer"
     "research"

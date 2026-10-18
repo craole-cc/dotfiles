@@ -60,7 +60,9 @@
   };
   source = writeText "dotdots-dms-catppuccin.json" (toJSON theme);
 in {
-  inherit name path;
-  pathStr = escapeShellArg path;
-  configFile.${relativePath} = {inherit source;};
+  catppuccin = {
+    inherit name path;
+    pathStr = escapeShellArg path;
+    configFile.${relativePath} = {inherit source;};
+  };
 }

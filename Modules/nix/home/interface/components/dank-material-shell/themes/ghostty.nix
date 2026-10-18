@@ -9,12 +9,14 @@
   inherit (lix.styles.palettes) mkGhosttyPalette;
   inherit (pkgs) writeText;
 in {
-  # DMS provides the `dankcolors` theme and generates its palette.
-  matugenTemplateEnabled = true;
-  opacity = {
-    path = "${configHome}/ghostty/dotdots-opacity";
-    fallback = writeText "dotdots-ghostty-opacity" ''
-      background-opacity = ${toString style.opacity.terminal.dark}
-    '';
+  ghostty = {
+    # DMS provides the `dankcolors` theme and generates its palette.
+    matugenTemplateEnabled = true;
+    opacity = {
+      path = "${configHome}/ghostty/dotdots-opacity";
+      fallback = writeText "dotdots-ghostty-opacity" ''
+        background-opacity = ${toString style.opacity.terminal.dark}
+      '';
+    };
   };
 }

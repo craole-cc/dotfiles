@@ -5,6 +5,7 @@
   pkgs,
   style,
   themes,
+  ...
 }: let
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (pkgs) writeShellScript;

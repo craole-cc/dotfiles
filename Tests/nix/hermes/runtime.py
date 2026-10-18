@@ -5,10 +5,10 @@ import copy
 import importlib
 import json
 import os
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 
@@ -57,10 +57,14 @@ class SettingsContract(unittest.TestCase):
 
     def test_shared_bot_route_does_not_capture_a_different_bot(self):
         route = MODULES["gateway.config"].load_gateway_config().profile_routes[0]
-        self.assertFalse(route.matches("telegram", chat_id="123", adapter_profile="reviewer"))
+        self.assertFalse(
+            route.matches("telegram", chat_id="123", adapter_profile="reviewer")
+        )
 
     def dispatcher_settings(self, settings):
-        return MODULES["gateway.kanban_watchers_dispatcher"]._resolve_dispatcher_settings(
+        return MODULES[
+            "gateway.kanban_watchers_dispatcher"
+        ]._resolve_dispatcher_settings(
             settings["kanban"], MODULES["hermes_cli.kanban_db"]
         )
 
@@ -95,7 +99,9 @@ class SettingsContract(unittest.TestCase):
 
     def test_null_bot_metadata_clears_managed_marker(self):
         directory = self.home / "profiles" / "intake"
-        (directory / "profile.yaml").write_text(json.dumps({"ui_meta": {"hermes-bots": None}}))
+        (directory / "profile.yaml").write_text(
+            json.dumps({"ui_meta": {"hermes-bots": None}})
+        )
         self.assertFalse(MODULES["tools.bot_mode_probe"]._is_bot_managed(directory))
 
     def test_decomposer_roster_is_wider_than_dispatch_allowlist(self):
@@ -118,8 +124,13 @@ if __name__ == "__main__":
     inherited_path = os.environ.get("PATH", "")
     with tempfile.TemporaryDirectory(prefix="hermes-settings-imports-") as directory:
         os.environ.clear()
-        os.environ.update(HOME=directory, HERMES_HOME=directory + "/hermes", PATH=inherited_path)
-        with patch("socket.socket.connect", side_effect=AssertionError("Network calls are forbidden in these checks")):
+        os.environ.update(
+            HOME=directory, HERMES_HOME=directory + "/hermes", PATH=inherited_path
+        )
+        with patch(
+            "socket.socket.connect",
+            side_effect=AssertionError("Network calls are forbidden in these checks"),
+        ):
             MODULES = {
                 name: importlib.import_module(name)
                 for name in (

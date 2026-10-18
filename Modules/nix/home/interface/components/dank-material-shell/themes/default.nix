@@ -1,11 +1,8 @@
 {
   config,
-  inputs,
   lix,
-  pkgs,
-  style,
-  user,
-}: let
+  ...
+} @ args: let
   inherit (lix.attrsets.access) getAttr;
   inherit (lix.attrsets.transformation) mapAttrs;
   inherit (lix.attrsets.aggregation) mergeSafe;
@@ -53,7 +50,6 @@
   dataFile = mergeSafe (mkThemeModals {});
 
   resolved = {inherit (config.themes) cursors icons;};
-  args = {inherit config lix pkgs user style;};
 in
   {inherit cursors dataFile icons resolved;}
   // (import ./catppuccin.nix args)

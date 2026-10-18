@@ -29,12 +29,14 @@
     defaultWorkingDirectory = service.workingDirectory;
     defaultWorkingDirectoryText = "services.hermes-agent.workingDirectory";
   };
-  mergeScript =
-    (common.mkConfigFiles {
+  inherit
+    ((common.mkConfigFiles {
       inherit pkgs;
       cfg = service;
-      workingDirectory = service.workingDirectory;
-    }).mergeScript;
+      inherit (service) workingDirectory;
+    }))
+    mergeScript
+    ;
 
   profileConfig = profile:
     service

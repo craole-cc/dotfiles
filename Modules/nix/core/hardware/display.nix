@@ -39,10 +39,17 @@
   isWayland = protocol == "wayland";
 
   gpu = host.hardware.gpu or {};
-  primaryGpu = if (gpu.primary or null) == null then {} else gpu.primary;
-  secondaryGpu = if (gpu.secondary or null) == null then {} else gpu.secondary;
+  primaryGpu =
+    if (gpu.primary or null) == null
+    then {}
+    else gpu.primary;
+  secondaryGpu =
+    if (gpu.secondary or null) == null
+    then {}
+    else gpu.secondary;
   nvidiaDeclared =
-    (primaryGpu.brand or "") == "nvidia"
+    (primaryGpu.brand or "")
+    == "nvidia"
     || (secondaryGpu.brand or "") == "nvidia";
   nvidiaEnabled = (config.hardware.nvidia.modesetting.enable or false) || nvidiaDeclared;
   nvidiaVersionAtLeast = version: versionAtLeast (config.hardware.nvidia.package.version or "0") version;

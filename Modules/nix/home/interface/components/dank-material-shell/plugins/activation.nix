@@ -4,6 +4,7 @@
   inputs,
   lix,
   pkgs,
+  ...
 }: let
   inherit (inputs.home-manager.lib.hm.dag) entryAfter;
   inherit (lix.attrsets.transformation) filterAttrs mapAttrs;
@@ -17,8 +18,8 @@
   flags = (pkgs.formats.json {}).generate "dms-enabled-plugins.json" (
     mapAttrs (_: _: {enabled = true;}) enabled
   );
-in
-  mkIf (!cfg.managePluginSettings) (entryAfter ["configureDmsTheme" "linkGeneration"] ''
+in {
+  activation = mkIf (!cfg.managePluginSettings) (entryAfter ["configureDmsTheme" "linkGeneration"] ''
     settings=${escapeShellArg "${configHome}/DankMaterialShell/plugin_settings.json"}
     if [ -n "$DRY_RUN_CMD" ]; then
       ${gum} log --level info "Would enable declared DMS plugins in $settings"
@@ -39,4 +40,5 @@ in
       ${rm} -f "$tmp"
       trap - EXIT
     fi
-  '')
+  '');
+}
