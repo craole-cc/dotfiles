@@ -1,15 +1,11 @@
 {
   config,
   lix,
-  paths,
+  inputs,
   pkgs,
+  user,
   ...
-}:
-let
-  inherit (lix.modules.construction) mkConfig mkContext;
-  inherit (lix.applications.construction) mkScriptWrappers;
-  inherit (lix.options.construction) mkEnable;
-
+}: let
   context = mkContext {
     inherit config;
     dom = "interface";
@@ -17,30 +13,49 @@ let
     mod = "wallpaper";
   };
   inherit (context) cfg ctx;
-  wallpaperLib = paths.store.lib.sh + "/wallpaper";
-  wallpaperCommands = mkScriptWrappers {
-    inherit pkgs;
-    scripts = {
-      variety_next = "${wallpaperLib}/variety_next";
-      variety_previous = "${wallpaperLib}/variety_previous";
-      variety_love = "${wallpaperLib}/variety_love";
-    };
-  };
-in
-{
-  imports = [ ./variety ];
-}
-// mkConfig {
-  inherit context;
-  options.enable = mkEnable {
-    inherit context;
-    condition = ctx.wantsHyprland.condition;
-  };
+  inherit (lix.applications.construction) mkScriptWrapper;
+  inherit (lix.attrsets.access) attrValues;
+  inherit (lix.attrsets.construction) genAttrs mapAttrs optionalAttrs;
+  inherit (lix.filesystem.construction) concatPath;
+  inherit (lix.modules.construction) mkConfig mkContext;
+  inherit (lix.options.construction) mkEnable;
+  inherit (lix.lists.predicates) isIn;
+  inherit (lix.lists.construction) optional;
+  inherit (lix.sources.packages) pkgsFrom;
 
-  outputs = {
-    # Variety installs its profile-aware package through its Home Manager
-    # module, so don't also install pkgs.variety here.
-    programs.variety.enable = cfg.enable;
-    home.packages = [ pkgs.hyprpaper ] ++ wallpaperCommands;
-  };
-}
+  tool = let
+    resolved = pkgsFrom {
+      inherit inputs pkgs;
+      sources = optionalAttrs cfg.hyprpaper.enable {hyprpaper = null;};
+    };
+  in {inherit (resolved) packages;};
+in
+  mkConfig {
+    inherit context;
+    imports = [(import ./variety {wallpaper = context;})];
+
+    options = {
+      enable = mkEnable {
+        inherit context;
+        condition = with ctx; windowManagers != null || desktopEnvironments != null;
+      };
+      hyprpaper.enable = mkEnable {
+        inherit context;
+        condition =
+          cfg.enable
+          && ctx.wantsHyprland.condition;
+      };
+      # variety.enable = mkEnable {
+      #   inherit context;
+      #   condition =
+      #     cfg.enable
+      #     && isIn "variety" (user.applications.wallpaper or []);
+      # };
+    };
+
+    outputs = {
+      home = {
+        inherit (tool) packages;
+      };
+    };
+  }

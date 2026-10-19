@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   inherit (lib) mkOption mkEnableOption types;
   cfg = config.programs.variety;
   home = config.home.homeDirectory;
@@ -37,7 +41,7 @@ let
         type = types.bool;
         default = false;
       };
-      name = mkOption { type = types.str; };
+      name = mkOption {type = types.str;};
       args = mkOption {
         type = types.str;
         default = "";
@@ -45,8 +49,7 @@ let
       };
     };
   };
-in
-{
+in {
   options.programs.variety = {
     enable = mkEnableOption "the Variety wallpaper manager, configured declaratively";
 
@@ -74,13 +77,15 @@ in
       readOnly = true;
       description = "Resolved configuration folder of the profile.";
       default =
-        if cfg.profile == null then "${home}/.config/variety"
-        else if lib.hasPrefix "/" cfg.profile then cfg.profile
+        if cfg.profile == null
+        then "${home}/.config/variety"
+        else if lib.hasPrefix "/" cfg.profile
+        then cfg.profile
         else "${config.xdg.configHome}/variety-profiles/${cfg.profile}";
     };
 
     seedMode = mkOption {
-      type = types.enum [ "overwrite" "ifMissing" ];
+      type = types.enum ["overwrite" "ifMissing"];
       default = "overwrite";
       description = ''
         overwrite: every switch rewrites variety.conf, so Nix is the source
@@ -93,7 +98,7 @@ in
 
     runtimeInputs = mkOption {
       type = types.listOf types.package;
-      default = [ pkgs.coreutils pkgs.gnused pkgs.procps ];
+      default = [pkgs.coreutils pkgs.gnused pkgs.procps];
       description = ''
         Packages appended to PATH for the hook scripts. They are appended,
         so tools from your session (hyprctl, dms, swaybg) still win.
@@ -116,8 +121,14 @@ in
     };
 
     change = {
-      onStart = mkOption { type = types.bool; default = true; };
-      enable = mkOption { type = types.bool; default = true; };
+      onStart = mkOption {
+        type = types.bool;
+        default = true;
+      };
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+      };
       interval = mkOption {
         type = types.ints.between 5 31536000;
         default = 3600;
@@ -125,11 +136,20 @@ in
       };
     };
 
-    internet = mkOption { type = types.bool; default = true; };
-    safeMode = mkOption { type = types.bool; default = false; };
+    internet = mkOption {
+      type = types.bool;
+      default = true;
+    };
+    safeMode = mkOption {
+      type = types.bool;
+      default = false;
+    };
 
     quota = {
-      enable = mkOption { type = types.bool; default = true; };
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+      };
       size = mkOption {
         type = types.ints.between 50 100000000;
         default = 1000;
@@ -155,25 +175,49 @@ in
 
     displayMode = mkOption {
       type = types.enum [
-        "os" "smart" "zoom" "fill-with-black" "fill-with-blur"
-        "gnome-zoom" "gnome-centered" "gnome-scaled" "gnome-stretched"
-        "gnome-spanned" "gnome-wallpaper"
+        "os"
+        "smart"
+        "zoom"
+        "fill-with-black"
+        "fill-with-blur"
+        "gnome-zoom"
+        "gnome-centered"
+        "gnome-scaled"
+        "gnome-stretched"
+        "gnome-spanned"
+        "gnome-wallpaper"
       ];
       default = "os";
       description = "Passed to the hook script as its fourth argument.";
     };
 
-    autoRotate = mkOption { type = types.bool; default = true; };
+    autoRotate = mkOption {
+      type = types.bool;
+      default = true;
+    };
 
     clipboard = {
-      enable = mkOption { type = types.bool; default = false; };
-      useWhitelist = mkOption { type = types.bool; default = true; };
+      enable = mkOption {
+        type = types.bool;
+        default = false;
+      };
+      useWhitelist = mkOption {
+        type = types.bool;
+        default = true;
+      };
       hosts = mkOption {
         type = types.listOf types.str;
         default = [
-          "wallhaven.cc" "wallpapers.net" "flickr.com" "imgur.com"
-          "deviantart.com" "interfacelift.com" "vladstudio.com"
-          "imageshack.us" "deviantart.net" "imageshack.com"
+          "wallhaven.cc"
+          "wallpapers.net"
+          "flickr.com"
+          "imgur.com"
+          "deviantart.com"
+          "interfacelift.com"
+          "vladstudio.com"
+          "imageshack.us"
+          "deviantart.net"
+          "imageshack.com"
         ];
       };
     };
@@ -194,13 +238,25 @@ in
           current wallpapers feed back into the pool.
         '';
       };
-      folder = mkOption { type = types.str; default = "Default"; };
+      folder = mkOption {
+        type = types.str;
+        default = "Default";
+      };
     };
 
     clock = {
-      enable = mkOption { type = types.bool; default = false; };
-      font = mkOption { type = types.str; default = "Serif 70"; };
-      dateFont = mkOption { type = types.str; default = "Serif 30"; };
+      enable = mkOption {
+        type = types.bool;
+        default = false;
+      };
+      font = mkOption {
+        type = types.str;
+        default = "Serif 70";
+      };
+      dateFont = mkOption {
+        type = types.str;
+        default = "Serif 30";
+      };
       filter = mkOption {
         type = types.str;
         description = "ImageMagick arguments that draw the clock.";
@@ -208,7 +264,10 @@ in
       };
     };
 
-    quotes.enable = mkOption { type = types.bool; default = false; };
+    quotes.enable = mkOption {
+      type = types.bool;
+      default = false;
+    };
 
     lockScreen = mkOption {
       type = types.bool;
@@ -219,12 +278,18 @@ in
       '';
     };
 
-    sync = mkOption { type = types.bool; default = false; };
-    stats = mkOption { type = types.bool; default = false; };
+    sync = mkOption {
+      type = types.bool;
+      default = false;
+    };
+    stats = mkOption {
+      type = types.bool;
+      default = false;
+    };
 
     sources = mkOption {
       type = types.listOf sourceType;
-      default = [ ];
+      default = [];
       description = "Wallpaper sources, written as src1, src2, ... in order.";
     };
 
@@ -232,20 +297,44 @@ in
       type = types.listOf filterType;
       description = "ImageMagick filters applied randomly to wallpapers.";
       default = [
-        { name = "Keep original"; args = ""; }
-        { name = "Grayscale"; args = "-type Grayscale"; }
-        { name = "Heavy blur"; args = "-scale 20% -blur 0x10 -resize 500%"; }
-        { name = "Soft blur"; args = "-scale 20% -blur 0x2 -resize 500%"; }
-        { name = "Oil painting"; args = "-paint 8"; }
-        { name = "Pointilism"; args = "-spread 10 -noise 3"; }
-        { name = "Pixellate"; args = "-scale 3% -scale 3333%"; }
+        {
+          name = "Keep original";
+          args = "";
+        }
+        {
+          name = "Grayscale";
+          args = "-type Grayscale";
+        }
+        {
+          name = "Heavy blur";
+          args = "-scale 20% -blur 0x10 -resize 500%";
+        }
+        {
+          name = "Soft blur";
+          args = "-scale 20% -blur 0x2 -resize 500%";
+        }
+        {
+          name = "Oil painting";
+          args = "-paint 8";
+        }
+        {
+          name = "Pointilism";
+          args = "-spread 10 -noise 3";
+        }
+        {
+          name = "Pixellate";
+          args = "-scale 3% -scale 3333%";
+        }
       ];
     };
 
     extraSettings = mkOption {
-      type = types.attrsOf (types.oneOf [ types.bool types.int types.float types.str ]);
-      default = { };
-      example = { min_size_enabled = true; min_size = 80; };
+      type = types.attrsOf (types.oneOf [types.bool types.int types.float types.str]);
+      default = {};
+      example = {
+        min_size_enabled = true;
+        min_size = 80;
+      };
       description = ''
         Any other top-level variety.conf key. These win over everything
         else, including defaults.nix.

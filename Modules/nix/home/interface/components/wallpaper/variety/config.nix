@@ -11,35 +11,12 @@
   inherit (lix.debug.assertions) withContext;
   inherit (lix.lists.transformation) imap1;
   inherit (lix.modules.construction) mkContext mkConfig mkIf;
-  inherit (lix.sources.packages) pkgsFrom;
   inherit (lix.strings.construction) concat fromBool optionalString;
   inherit (lix.strings.transformation) escapeShellArg;
   inherit (lix.strings.transformation) hasInfix;
   inherit (lix.types.predicates) isBool isFloat isInt;
   inherit (pkgs) writeText makeWrapper symlinkJoin;
   inherit (lix.filesystem.construction) concatPath;
-
-  tool = let
-    all = pkgsFrom {
-      inherit inputs pkgs;
-      sources = {
-        #? `null` means taken from nixpkgs
-        coreutils = null;
-        variety = null;
-      };
-      required = true;
-    };
-    bins = let
-      coreutils = "${all.coreutils.paths.binary}";
-      inherit (all.binaries) git;
-      rm = "${coreutils}/rm";
-    in {
-      inherit git rm;
-      gitCfgFile = "${git} config --file";
-      rmf = "${rm} --force";
-    };
-  in {inherit all bins;};
-  inherit (tool) bins;
 
   # wallpapers=
   # TODO: This doesn't exist
