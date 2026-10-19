@@ -1,7 +1,8 @@
 # variety.conf keys without a dedicated option, mirroring a stock config.
-# Override any of them through programs.variety.extraSettings.
+# Override any of them through the extraSettings option.
 {
-  paths,
+  cfg,
+  wallpaperPath,
   concatPath,
   ...
 }: {
@@ -41,7 +42,7 @@
   quotes_change_enabled = false;
   quotes_change_interval = 300;
   quotes_favorites_file = concatPath {
-    root = paths.profiles.main;
+    root = cfg.profileDir;
     stem = "favorite_quotes.txt";
   };
   quotes_favorites_format = "fortune";
@@ -51,7 +52,7 @@
   slideshow_sources_enabled = true;
   slideshow_downloads_enabled = false;
   slideshow_custom_enabled = false;
-  slideshow_custom_folder = paths.wallpapers;
+  slideshow_custom_folder = wallpaperPath;
   slideshow_sort_order = "Random";
   slideshow_monitor = "All";
   slideshow_mode = "Fullscreen";

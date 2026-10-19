@@ -1,5 +1,6 @@
 {
   config,
+  entryAfter,
   lix,
   inputs,
   paths,
@@ -14,14 +15,9 @@
     mod = "wallpaper";
   };
   inherit (context) cfg ctx;
-  inherit (lix.applications.construction) mkScriptWrapper;
-  inherit (lix.attrsets.access) attrValues;
-  inherit (lix.attrsets.construction) genAttrs mapAttrs optionalAttrs;
-  inherit (lix.filesystem.construction) concatPath;
+  inherit (lix.attrsets.construction) optionalAttrs;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable;
-  inherit (lix.lists.predicates) isIn;
-  inherit (lix.lists.construction) optional;
   inherit (lix.sources.packages) pkgsFrom;
 
   tool = let
@@ -32,7 +28,7 @@
   in {inherit (resolved) packages;};
 
   args = {
-    inherit config inputs lix paths pkgs user;
+    inherit config entryAfter inputs lix paths pkgs user;
     wallpaper = context;
   };
 in
@@ -51,12 +47,6 @@ in
           cfg.enable
           && ctx.wantsHyprland.condition;
       };
-      # variety.enable = mkEnable {
-      #   inherit context;
-      #   condition =
-      #     cfg.enable
-      #     && isIn "variety" (user.applications.wallpaper or []);
-      # };
     };
 
     outputs = {

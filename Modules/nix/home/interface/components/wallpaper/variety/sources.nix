@@ -89,7 +89,7 @@
     ];
 
     generated = map (handle:
-      source "artstation" "https://artstation.com{handle}.rss")
+      source "artstation" "https://www.artstation.com/${handle}.rss")
     handles;
   in {inherit handles generated;};
 
@@ -105,8 +105,8 @@
     ];
 
     generated =
-      (map (group: source "flickr" "group:://flickr.com{group}/") groups)
-      ++ (map (user: source "flickr" "user:://flickr.com{user};") users);
+      (map (group: source "flickr" "group:https://www.flickr.com/groups/${group}/") groups)
+      ++ (map (handle: source "flickr" "user:https://www.flickr.com/photos/${handle};") users);
   in {inherit groups users generated;};
 in
   [

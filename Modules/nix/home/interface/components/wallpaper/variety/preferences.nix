@@ -2,26 +2,24 @@
 # so any other module can override it without mkForce.
 {
   config,
-  lib,
+  context,
   lix,
   paths,
   user,
   ...
 }: let
-  inherit (lib.modules) mkDefault;
+  inherit (lix.modules.construction) mkDefault;
+  inherit (lix.attrsets.transformation) setAttrByPath;
   home = config.home.homeDirectory;
   legacy = "${home}/.config/variety";
-in {
-  programs.variety = {
-    # The parent component sets enable from its Hyprland-specific condition.
-    profile = lib.mkDefault "declarative";
-
+in
+  setAttrByPath (context.path ++ ["explicit"]) {
     # Reuse the images already collected by the default profile.
     # Only run one Variety instance at a time while these are shared.
     folders = {
-      downloaded = lib.mkDefault "${legacy}/Downloaded";
-      fetched = lib.mkDefault "${legacy}/Fetched";
-      favorites = lib.mkDefault "${home}/Pictures/Wallpapers/variety";
+      downloaded = mkDefault "${legacy}/Downloaded";
+      fetched = mkDefault "${legacy}/Fetched";
+      favorites = mkDefault "${home}/Pictures/Wallpapers/variety";
     };
 
     clock = {
@@ -34,5 +32,4 @@ in {
         inherit home lix paths user;
       }
     );
-  };
-}
+  }

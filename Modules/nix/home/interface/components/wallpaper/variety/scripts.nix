@@ -3,20 +3,19 @@
 # symlink problem a profile scripts/ folder would have.
 {
   pkgs,
-  lib,
+  lix,
   paths,
-  runtimeInputs ? [ ],
-}:
-let
+  runtimeInputs ? [],
+}: let
+  inherit (lix.filesystem.access) readFile;
+  inherit (lix.strings.construction) makeBinPath;
   wallpaperLib = paths.store.lib.sh + "/wallpaper";
-  mk =
-    name: file:
+  mk = name: file:
     pkgs.writeShellScript name ''
-      export PATH="$PATH:${lib.makeBinPath runtimeInputs}"
-      ${builtins.readFile file}
+      export PATH="$PATH:${makeBinPath runtimeInputs}"
+      ${readFile file}
     '';
-in
-{
+in {
   setWallpaper = mk "variety-set-wallpaper" "${wallpaperLib}/variety_set";
   getWallpaper = mk "variety-get-wallpaper" "${wallpaperLib}/variety_get";
 }
