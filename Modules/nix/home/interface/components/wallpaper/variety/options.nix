@@ -1,22 +1,31 @@
 {
   config,
-  lib,
+  lix,
+  user,
   pkgs,
+  context,
+  wallpaper,
+  tool,
   ...
 }: let
-  inherit (lib) mkOption mkEnableOption types;
+  inherit (lix.lists.predicates) isIn;
+  inherit (lix.options.construction) literalExpression mkOption mkEnable;
+  inherit (lix.strings.predicates) hasPrefix;
+  inherit (lix.types.combinators) attrsOf enum listOf nullOr oneOf submodule;
+  inherit (lix.types.primitives) bool float package int ints str;
+
   cfg = config.programs.variety;
   home = config.home.homeDirectory;
 
-  sourceType = types.submodule {
+  sourceType = submodule {
     options = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = true;
         description = "Whether this source is active.";
       };
       type = mkOption {
-        type = types.str;
+        type = str;
         example = "wallhaven";
         description = ''
           Variety source type: favorites, fetched, folder, bing, apod,
@@ -25,7 +34,7 @@
         '';
       };
       location = mkOption {
-        type = types.str;
+        type = str;
         example = "waterfalls";
         description = ''
           Depends on the type: a path, a URL, a search query, or just a
@@ -35,32 +44,38 @@
     };
   };
 
-  filterType = types.submodule {
+  filterType = submodule {
     options = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = false;
       };
-      name = mkOption {type = types.str;};
+      name = mkOption {type = str;};
       args = mkOption {
-        type = types.str;
+        type = str;
         default = "";
         description = "Arguments passed to ImageMagick.";
       };
     };
   };
 in {
-  options.programs.variety = {
-    enable = mkEnableOption "the Variety wallpaper manager, configured declaratively";
+  options = {
+    enable = mkEnable {
+      inherit context;
+      condition =
+        wallpaper.cfg.enable
+        && isIn "variety" (user.packages.wallpaper or []);
+    };
+    # enable = mkEnableOption "the Variety wallpaper manager, configured declaratively";
 
     package = mkOption {
-      type = types.package;
-      default = pkgs.variety;
-      defaultText = lib.literalExpression "pkgs.variety";
+      type = package;
+      default = tool.defined.package;
+      defaultText = literalExpression "pkgs.variety";
     };
 
     profile = mkOption {
-      type = types.nullOr types.str;
+      type = nullOr str;
       default = "declarative";
       example = "declarative";
       description = ''
@@ -73,19 +88,19 @@ in {
     };
 
     profileDir = mkOption {
-      type = types.str;
+      type = str;
       readOnly = true;
       description = "Resolved configuration folder of the profile.";
       default =
         if cfg.profile == null
         then "${home}/.config/variety"
-        else if lib.hasPrefix "/" cfg.profile
+        else if hasPrefix "/" cfg.profile
         then cfg.profile
         else "${config.xdg.configHome}/variety-profiles/${cfg.profile}";
     };
 
     seedMode = mkOption {
-      type = types.enum ["overwrite" "ifMissing"];
+      type = enum ["overwrite" "ifMissing"];
       default = "overwrite";
       description = ''
         overwrite: every switch rewrites variety.conf, so Nix is the source
@@ -97,7 +112,7 @@ in {
     };
 
     runtimeInputs = mkOption {
-      type = types.listOf types.package;
+      type = listOf package;
       default = [pkgs.coreutils pkgs.gnused pkgs.procps];
       description = ''
         Packages appended to PATH for the hook scripts. They are appended,
@@ -107,63 +122,63 @@ in {
 
     folders = {
       downloaded = mkOption {
-        type = types.str;
+        type = str;
         default = "${cfg.profileDir}/Downloaded";
       };
       fetched = mkOption {
-        type = types.str;
+        type = str;
         default = "${cfg.profileDir}/Fetched";
       };
       favorites = mkOption {
-        type = types.str;
+        type = str;
         default = "${cfg.profileDir}/Favorites";
       };
     };
 
     change = {
       onStart = mkOption {
-        type = types.bool;
+        type = bool;
         default = true;
       };
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = true;
       };
       interval = mkOption {
-        type = types.ints.between 5 31536000;
+        type = ints.between 5 31536000;
         default = 3600;
         description = "Seconds between wallpaper changes (minimum 5).";
       };
     };
 
     internet = mkOption {
-      type = types.bool;
+      type = bool;
       default = true;
     };
     safeMode = mkOption {
-      type = types.bool;
+      type = bool;
       default = false;
     };
 
     quota = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = true;
       };
       size = mkOption {
-        type = types.ints.between 50 100000000;
+        type = ints.between 50 100000000;
         default = 1000;
         description = "Download folder size cap in MB (minimum 50).";
       };
     };
 
     downloadPreferenceRatio = mkOption {
-      type = types.float;
+      type = float;
       default = 0.9;
     };
 
     wallhaven.apiKeyFile = mkOption {
-      type = types.nullOr types.str;
+      type = nullOr str;
       default = null;
       example = "/run/secrets/wallhaven";
       description = ''
@@ -174,7 +189,7 @@ in {
     };
 
     displayMode = mkOption {
-      type = types.enum [
+      type = enum [
         "os"
         "smart"
         "zoom"
@@ -192,21 +207,21 @@ in {
     };
 
     autoRotate = mkOption {
-      type = types.bool;
+      type = bool;
       default = true;
     };
 
     clipboard = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = false;
       };
       useWhitelist = mkOption {
-        type = types.bool;
+        type = bool;
         default = true;
       };
       hosts = mkOption {
-        type = types.listOf types.str;
+        type = listOf str;
         default = [
           "wallhaven.cc"
           "wallpapers.net"
@@ -223,14 +238,14 @@ in {
     };
 
     icon = mkOption {
-      type = types.str;
+      type = str;
       default = "Current";
       description = "Light, Dark, Current, 1-4, None, or a full image path.";
     };
 
     copyTo = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = false;
         description = ''
           Copy each wallpaper to a world-readable folder (LightDM support).
@@ -239,38 +254,38 @@ in {
         '';
       };
       folder = mkOption {
-        type = types.str;
+        type = str;
         default = "Default";
       };
     };
 
     clock = {
       enable = mkOption {
-        type = types.bool;
+        type = bool;
         default = false;
       };
       font = mkOption {
-        type = types.str;
+        type = str;
         default = "Serif 70";
       };
       dateFont = mkOption {
-        type = types.str;
+        type = str;
         default = "Serif 30";
       };
       filter = mkOption {
-        type = types.str;
+        type = str;
         description = "ImageMagick arguments that draw the clock.";
         default = ''-density 100 -font `fc-match -f '%{file[0]}' '%CLOCK_FONT_NAME'` -pointsize %CLOCK_FONT_SIZE -gravity SouthEast -fill '#00000044' -annotate 0x0+[%HOFFSET+58]+[%VOFFSET+108] '%H:%M' -fill white -annotate 0x0+[%HOFFSET+60]+[%VOFFSET+110] '%H:%M' -font `fc-match -f '%{file[0]}' '%DATE_FONT_NAME'` -pointsize %DATE_FONT_SIZE -fill '#00000044' -annotate 0x0+[%HOFFSET+58]+[%VOFFSET+58] '%A, %B %d' -fill white -annotate 0x0+[%HOFFSET+60]+[%VOFFSET+60] '%A, %B %d' '';
       };
     };
 
     quotes.enable = mkOption {
-      type = types.bool;
+      type = bool;
       default = false;
     };
 
     lockScreen = mkOption {
-      type = types.bool;
+      type = bool;
       default = false;
       description = ''
         Maps to change_lock_screen. Variety's stock lock screen script only
@@ -279,22 +294,22 @@ in {
     };
 
     sync = mkOption {
-      type = types.bool;
+      type = bool;
       default = false;
     };
     stats = mkOption {
-      type = types.bool;
+      type = bool;
       default = false;
     };
 
     sources = mkOption {
-      type = types.listOf sourceType;
+      type = listOf sourceType;
       default = [];
       description = "Wallpaper sources, written as src1, src2, ... in order.";
     };
 
     filters = mkOption {
-      type = types.listOf filterType;
+      type = listOf filterType;
       description = "ImageMagick filters applied randomly to wallpapers.";
       default = [
         {
@@ -329,7 +344,7 @@ in {
     };
 
     extraSettings = mkOption {
-      type = types.attrsOf (types.oneOf [types.bool types.int types.float types.str]);
+      type = attrsOf (oneOf [bool int float str]);
       default = {};
       example = {
         min_size_enabled = true;

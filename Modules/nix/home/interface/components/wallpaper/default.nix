@@ -30,8 +30,14 @@
       sources = optionalAttrs cfg.hyprpaper.enable {hyprpaper = null;};
     };
   in {inherit (resolved) packages;};
+
+  args = {
+    inherit config inputs lix paths pkgs user;
+    wallpaper = context;
+  };
 in
-  mkConfig {
+  {imports = [(import ./variety args)];}
+  // mkConfig {
     inherit context;
 
     options = {
@@ -58,12 +64,4 @@ in
         inherit (tool) packages;
       };
     };
-  }
-  // {
-    imports = [
-      (import ./variety {
-        inherit config inputs lix paths pkgs user;
-        wallpaper = context;
-      })
-    ];
   }

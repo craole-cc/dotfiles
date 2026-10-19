@@ -15,14 +15,12 @@ The parent wallpaper component imports this module and controls enablement.
 */
 {
   config,
-  wallpaper,
   inputs,
   lix,
-  user,
   paths,
   pkgs,
   ...
-}: let
+} @ args: let
   context = mkContext {
     inherit config;
     dom = "media";
@@ -76,18 +74,12 @@ The parent wallpaper component imports this module and controls enablement.
   #   ./config.nix
   #   ./preferences.nix
   # ];
+  args' = args // {inherit context tool;};
 in
   mkConfig {
     inherit context;
 
-    options = {
-      enable = mkEnable {
-        inherit context;
-        condition =
-          wallpaper.cfg.enable
-          && isIn "variety" (user.packages.wallpaper or []);
-      };
-    };
+    options = import ./options.nix args';
 
     outputs = {
       home = mkIf cfg.enable {
