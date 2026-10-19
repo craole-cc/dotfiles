@@ -2,6 +2,7 @@
   config,
   lix,
   inputs,
+  paths,
   pkgs,
   user,
   ...
@@ -32,7 +33,6 @@
 in
   mkConfig {
     inherit context;
-    imports = [(import ./variety {wallpaper = context;})];
 
     options = {
       enable = mkEnable {
@@ -58,4 +58,12 @@ in
         inherit (tool) packages;
       };
     };
+  }
+  // {
+    imports = [
+      (import ./variety {
+        inherit config inputs lix paths pkgs user;
+        wallpaper = context;
+      })
+    ];
   }

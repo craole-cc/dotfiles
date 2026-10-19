@@ -32,13 +32,13 @@ The parent wallpaper component imports this module and controls enablement.
   inherit (context) cfg;
 
   inherit (lix.modules.construction) mkConfig mkContext;
-  inherit (lix.applications.construction) mkScriptWrappers;
+  inherit (lix.applications.construction) mkScriptWrapper;
   inherit (lix.attrsets.access) attrValues;
-  inherit (lix.attrsets.construction) genAttrs mapAttrs;
+  inherit (lix.attrsets.construction) genAttrs optionalAttrs;
+  inherit (lix.attrsets.transformation) mapAttrs;
   inherit (lix.filesystem.construction) concat;
   inherit (lix.modules.construction) mkIf;
   inherit (lix.options.construction) mkEnable;
-  inherit (lix.lists.construction) optionalAttrs;
   inherit (lix.lists.predicates) isIn;
   inherit (lix.sources.packages) pkgsFrom;
 
@@ -55,7 +55,7 @@ The parent wallpaper component imports this module and controls enablement.
           root = paths.store.lib.sh;
           stem = ["wallpaper" name];
         });
-      resolved = mkScriptWrappers {inherit pkgs scripts;};
+      resolved = mapAttrs (name: script: mkScriptWrapper {inherit pkgs name script;}) scripts;
       binaries = mapAttrs (name: wrapper: "${wrapper}/bin/${name}") resolved;
       packages = attrValues resolved;
     in {inherit names scripts binaries packages;};
@@ -67,7 +67,10 @@ The parent wallpaper component imports this module and controls enablement.
       rmf = "${rm} --force";
     in
       {inherit variety rm rmf;} // custom.binaries;
-  in {inherit defined bins custom;};
+
+    packages = defined.packages ++ custom.packages;
+  in {inherit defined bins custom packages;};
+  # TODO: Wire these in
   # imports = [
   #   ./options.nix
   #   ./config.nix
@@ -87,6 +90,8 @@ in
     };
 
     outputs = {
-      home = mkIf cfg.enable {inherit (tool) packages;};
+      home = mkIf cfg.enable {
+        inherit (tool) packages;
+      };
     };
   }
