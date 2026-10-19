@@ -3,15 +3,19 @@
 {
   config,
   lib,
+  lix,
+  paths,
+  user,
   ...
-}: let
+}:
+let
   inherit (lib.modules) mkDefault;
   home = config.home.homeDirectory;
   legacy = "${home}/.config/variety";
-in {
+in
+{
   programs.variety = {
-    # `enable` is deliberately not set here: the wrapper in ../default.nix
-    # turns it on, so the existing wallpaper-component condition decides.
+    # The parent component sets enable from its Hyprland-specific condition.
     profile = lib.mkDefault "declarative";
 
     # Reuse the images already collected by the default profile.
@@ -24,9 +28,18 @@ in {
 
     clock = {
       enable = mkDefault true;
-      font = mkDefault "Rubik Heavy 70"; #TODO: This should use fonts.clock
+      font = mkDefault "Rubik Heavy 70"; # TODO: This should use fonts.clock
     };
 
-    sources = mkDefault (import ./sources.nix {inherit home;});
+    sources = mkDefault (
+      import ./sources.nix {
+        inherit
+          home
+          lix
+          paths
+          user
+          ;
+      }
+    );
   };
 }

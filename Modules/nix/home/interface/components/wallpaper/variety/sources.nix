@@ -1,11 +1,19 @@
 {
+  home,
   paths,
   lix,
+  user,
   ...
 }: let
   inherit (lix.attrsets.aggregation) recursiveUpdate;
   inherit (lix.lists.aggregation) concatMap;
   inherit (lix.types.predicates) isString;
+  wallpaperPath = lix.modules.home.paths.mkUserPath {
+    inherit home user;
+    dots = paths.local.src;
+    path = ["wallpapers"];
+    default = "home:Pictures/Wallpapers";
+  };
 
   #? Core defaults for every single wallpaper configuration source
   defaultProperties = {enable = true;};
@@ -104,7 +112,7 @@ in
   [
     (source "favorites" "The Favorites folder")
     (source "fetched" "The Fetched folder")
-    (source "folder" paths.wallpapers)
+    (source "folder" wallpaperPath)
     (source "bing" "Bing Photo of the Day")
     (source "earthview" "Google Earth View Wallpapers")
     (source "unsplash" "High-resolution photos from Unsplash.com")

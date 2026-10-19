@@ -1,10 +1,16 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  paths,
+  pkgs,
+  ...
+}:
 let
   cfg = config.programs.variety;
   home = config.home.homeDirectory;
   vlib = import ./lib.nix { inherit lib; };
   scripts = import ./scripts.nix {
-    inherit pkgs lib;
+    inherit paths pkgs lib;
     runtimeInputs = cfg.runtimeInputs;
   };
 
@@ -58,10 +64,12 @@ let
     }
     // cfg.extraSettings;
 
-  confFile = pkgs.writeText "variety.conf" (vlib.render {
-    inherit settings;
-    inherit (cfg) sources filters;
-  });
+  confFile = pkgs.writeText "variety.conf" (
+    vlib.render {
+      inherit settings;
+      inherit (cfg) sources filters;
+    }
+  );
 
   installConf = ''
     run install -Dm644 ${confFile} ${q conf}
@@ -88,7 +96,9 @@ let
           makeWrapper ${cfg.package}/bin/variety $out/bin/variety \
             --add-flags ${q "--profile ${cfg.profile}"}
         '';
-        meta = (cfg.package.meta or { }) // { mainProgram = "variety"; };
+        meta = (cfg.package.meta or { }) // {
+          mainProgram = "variety";
+        };
       };
 in
 {

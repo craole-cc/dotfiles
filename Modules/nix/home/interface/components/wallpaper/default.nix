@@ -4,8 +4,10 @@
   paths,
   pkgs,
   ...
-}: let
+}:
+let
   inherit (lix.modules.construction) mkConfig mkContext;
+  inherit (lix.applications.construction) mkScriptWrappers;
   inherit (lix.options.construction) mkEnable;
 
   context = mkContext {
@@ -14,20 +16,31 @@
     sub = "components";
     mod = "wallpaper";
   };
-  inherit (context) ctx;
-  variety = import ./variety {inherit lix paths;};
+  inherit (context) cfg ctx;
+  wallpaperLib = paths.store.lib.sh + "/wallpaper";
+  wallpaperCommands = mkScriptWrappers {
+    inherit pkgs;
+    scripts = {
+      variety_next = "${wallpaperLib}/variety_next";
+      variety_previous = "${wallpaperLib}/variety_previous";
+      variety_love = "${wallpaperLib}/variety_love";
+    };
+  };
 in
-  mkConfig {
+{
+  imports = [ ./variety ];
+}
+// mkConfig {
+  inherit context;
+  options.enable = mkEnable {
     inherit context;
-    options.enable = mkEnable {
-      inherit context;
-      condition = ctx.wantsHyprland.condition;
-    };
+    condition = ctx.wantsHyprland.condition;
+  };
 
-    outputs = {
-      # Home-manager module in ./variety (programs.variety.*). It installs a
-      # profile-aware `variety` wrapper, so pkgs.variety is no longer listed
-      # here: both on the profile would collide on bin/variety.
-      home.packages = with pkgs; [hyprpaper];
-    };
-  }
+  outputs = {
+    # Variety installs its profile-aware package through its Home Manager
+    # module, so don't also install pkgs.variety here.
+    programs.variety.enable = cfg.enable;
+    home.packages = [ pkgs.hyprpaper ] ++ wallpaperCommands;
+  };
+}
