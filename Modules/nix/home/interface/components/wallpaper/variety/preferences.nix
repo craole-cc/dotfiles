@@ -7,13 +7,11 @@
   paths,
   user,
   ...
-}:
-let
+}: let
   inherit (lib.modules) mkDefault;
   home = config.home.homeDirectory;
   legacy = "${home}/.config/variety";
-in
-{
+in {
   programs.variety = {
     # The parent component sets enable from its Hyprland-specific condition.
     profile = lib.mkDefault "declarative";
@@ -33,12 +31,7 @@ in
 
     sources = mkDefault (
       import ./sources.nix {
-        inherit
-          home
-          lix
-          paths
-          user
-          ;
+        inherit home lix paths user;
       }
     );
   };

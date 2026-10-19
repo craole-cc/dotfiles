@@ -4,16 +4,14 @@
   # __moduleRef,
   ...
 }: let
-  exports = {
-    internal = {
-      inherit
-        concat
-        mkPath
-        ground
-        construct
-        ;
+  exports = rec {
+    external = {
+      concatPath = concat;
+      constructPath = construct;
+      groundPath = ground;
+      inherit mkPath;
     };
-    external = {};
+    internal = external // {inherit concat ground construct;};
   };
 
   inherit (_.filesystem.predicates) pathExists;

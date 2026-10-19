@@ -106,12 +106,15 @@
         "options"
         "pkgs"
       ];
-      extraSpecialArgs =
+      extraSpecialArgs = let
+        lib = extend (_self: _super: {
+          inherit (inputs.home-manager.lib) hm;
+        });
+      in
         specialArgs
         // {
-          lib = extend (_self: _super: {
-            inherit (inputs.home-manager.lib) hm;
-          });
+          inherit lib;
+          inherit (lib.hm.dag) entryAfter;
         };
     in
       hostArgs // {inherit hostArgs specialArgs extraSpecialArgs;};

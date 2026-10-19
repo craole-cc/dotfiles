@@ -638,28 +638,12 @@ in
         simpleList = mkTest {
           desired = "a,b,c";
           command = ''concat "," ["a" "b" "c"]'';
-          outcome = concat "," [
-            "a"
-            "b"
-            "c"
-          ];
+          outcome = concat "," ["a" "b" "c"];
         };
         nestedLists = mkTest {
-          desired = [
-            "a,b"
-            "c,d"
-          ];
+          desired = ["a,b" "c,d"];
           command = ''concat "," [["a" "b"] ["c" "d"]]'';
-          outcome = concat "," [
-            [
-              "a"
-              "b"
-            ]
-            [
-              "c"
-              "d"
-            ]
-          ];
+          outcome = concat "," [["a" "b"] ["c" "d"]];
         };
         emptyInput = mkTest {
           desired = "";
@@ -707,17 +691,10 @@ in
           };
         };
         attrsetMultipleDelimiters = mkTest {
-          desired = [
-            "foo"
-            "bar"
-            "baz"
-          ];
+          desired = ["foo" "bar" "baz"];
           command = ''tokenize { delimiters = ["." "-"]; include = false; input = "foo.bar-baz"; }'';
           outcome = tokenize {
-            delimiters = [
-              "."
-              "-"
-            ];
+            delimiters = ["." "-"];
             include = false;
             input = "foo.bar-baz";
           };
@@ -727,17 +704,10 @@ in
         # Split on both "." and "-"; retain only "." at the start of the
         # following chunk. The "-" before "baz" is discarded.
         attrsetIncludeOneOfTwo = mkTest {
-          desired = [
-            "foo"
-            ".bar"
-            "baz"
-          ];
+          desired = ["foo" ".bar" "baz"];
           command = ''tokenize { delimiters = ["." "-"]; include = "."; input = "foo.bar-baz"; }'';
           outcome = tokenize {
-            delimiters = [
-              "."
-              "-"
-            ];
+            delimiters = ["." "-"];
             include = ".";
             input = "foo.bar-baz";
           };
@@ -745,17 +715,10 @@ in
 
         # ── Attrset form — include = true ─────────────────────────────────
         attrsetIncludeAll = mkTest {
-          desired = [
-            "foo"
-            ".bar"
-            "-baz"
-          ];
+          desired = ["foo" ".bar" "-baz"];
           command = ''tokenize { delimiters = ["." "-"]; include = true; input = "foo.bar-baz"; }'';
           outcome = tokenize {
-            delimiters = [
-              "."
-              "-"
-            ];
+            delimiters = ["." "-"];
             include = true;
             input = "foo.bar-baz";
           };

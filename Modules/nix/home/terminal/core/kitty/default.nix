@@ -41,7 +41,6 @@
 in
   mkConfig {
     inherit context;
-    # options.enable = mkTrue "Kitty Terminal Emulator";
     options.enable = mkEnable {
       inherit context;
       condition = resolved.enable;

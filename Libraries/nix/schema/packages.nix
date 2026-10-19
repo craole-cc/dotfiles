@@ -153,12 +153,22 @@
   }: let
     utilities = record.applications.utilities or null;
     legacyUtilities = optionalAttrs (isUtilityFlags utilities) {
-      utilities.list = attrNames (filterAttrs (_name: config: config.enable) utilities);
+      utilities.list = attrNames (
+        filterAttrs
+        (_name: config: config.enable)
+        utilities
+      );
     };
     groups = recursiveUpdate legacyUtilities (declarations record);
-    policy = filterAttrs (name: _value: elem name policyFields) (record.packages or {});
+    policy =
+      filterAttrs
+      (name: _value: elem name policyFields)
+      (record.packages or {});
   in
-    policy // mapAttrs (name: value: resolveGroup {inherit name value protocol;}) groups;
+    policy
+    // mapAttrs
+    (name: value: resolveGroup {inherit name value protocol;})
+    groups;
 
   selectedPackages = record: let
     groups = removeAttrs (resolve {inherit record;}) policyFields;

@@ -160,7 +160,7 @@ in {
   #   ./terminal/tools/tmux
 
   #   # Version control
-  #   ./version-control/core/git.nix
+  #   ./version-control/core/git
   #   ./version-control/core/jujutsu.nix
   #   ./version-control/clients/github.nix
   #   ./version-control/clients/gitui.nix

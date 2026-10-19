@@ -12,6 +12,7 @@
   inherit (_.schema.ui) mkUI;
   inherit (_.schema.fonts) getFonts;
   inherit (_.schema.theme) mkTheme;
+  inherit (_.types.predicates) isList;
 
   mkUser = {
     name,
@@ -40,6 +41,12 @@
     }
     // {
       inherit uid;
+      git = let
+        record = user.git or {};
+      in
+        if isList record
+        then {identities = record;}
+        else record;
       theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});
       paths = mkTree {
         stems = recursiveUpdate stems (user.paths.stems or {});

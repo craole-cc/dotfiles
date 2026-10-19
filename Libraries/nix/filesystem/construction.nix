@@ -3,6 +3,16 @@
   _defaults,
   ...
 }: let
+  exports = {
+    internal =
+      _.filesystem.primitives
+      // {inherit flattenTree mkTree mkLocal wallman;};
+    external = {
+      flattenProjectTree = flattenTree;
+      mkProjectTree = mkTree;
+      mkLocalTree = mkLocal;
+    };
+  };
   inherit (_.attrsets.access) attrNames;
   inherit (_.attrsets.transformation) mapAttrs mapAttrsToList;
   inherit (_.filesystem.primitives) construct;
@@ -26,17 +36,6 @@
       _defaults.names.src or (
         _defaults.flake.name or "dots"
       );
-  };
-
-  exports = {
-    internal = {
-      inherit flattenTree mkTree mkLocal wallman;
-    };
-    external = {
-      flattenProjectTree = flattenTree;
-      mkProjectTree = mkTree;
-      mkLocalTree = mkLocal;
-    };
   };
 
   wallman = ./wallman.sh;
