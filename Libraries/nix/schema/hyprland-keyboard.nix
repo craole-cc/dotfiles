@@ -54,6 +54,11 @@ in {
     ];
     workspaceNext = navigation "r" "e+1";
     workspacePrev = navigation "l" "e-1";
+    wallpaper = [
+      (command "variety --next")
+      (command "variety --previous")
+      (command "variety --show-preferences")
+    ];
     volumeUp = volume "increment";
     volumeDown = volume "decrement";
     volumeMute = [(media "dms ipc call audio mute")];
