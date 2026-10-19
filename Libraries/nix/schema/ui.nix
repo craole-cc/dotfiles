@@ -27,6 +27,7 @@
   };
 
   inherit (_.attrsets.access) attrNames;
+  inherit (_.attrsets.transformation) removeAttrs;
   inherit (_.attrsets.construction) genAttrs listToAttrs optionalAttrs;
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.predicates) hasAttr isAttrs;
@@ -503,16 +504,7 @@
       };
   in {
     hyprland = recursiveUpdate (mkWayland "hyprland") {
-      keyboard.bindings =
-        {
-          overview.action = "dms ipc call hypr toggleOverview";
-          workspaceRename.action = "dms ipc call workspace-rename open";
-          keybinds.action = "dms ipc call keybinds toggle hyprland";
-          screenshot.action = "dms screenshot full";
-          screenshotRegion.action = "dms screenshot";
-          screenshotWindow.action = "dms screenshot window";
-        }
-        // (import ./hyprland-keyboard.nix {inherit _;}).legacy;
+      keyboard.bindings = (import ./keyboard/hyprland.nix {inherit _;}).legacy;
     };
     niri = recursiveUpdate (mkWayland "niri") {
       keyboard.bindings = {
@@ -724,6 +716,39 @@
       wm = windowManager.config;
     };
 
+    dmsPanel =
+      (interface.panel or environment.config.panel or null)
+      == "dms-shell";
+    hyprlandKeyboard = import ./keyboard/hyprland.nix {inherit _;};
+    dmsHyprlandKeyboard = import ./keyboard/dms/hyprland.nix {inherit _;};
+    dmsBindingGroups = [
+      "overview"
+      "workspaceRename"
+      "keybinds"
+      "lock"
+      "screenshot"
+      "screenshotRegion"
+      "screenshotWindow"
+      "launcher"
+      "clipboard"
+      "notifications"
+      "controlCenter"
+      "powerMenu"
+      "taskManager"
+      "nightMode"
+      "doNotDisturb"
+      "dash"
+    ];
+    wmKeyboard = configs.wm.keyboard or {};
+    selectedWmKeyboard =
+      if dmsPanel
+      then wmKeyboard
+      else
+        wmKeyboard
+        // {
+          bindings = removeAttrs (wmKeyboard.bindings or {}) dmsBindingGroups;
+        };
+
     environment =
       if windowManager.name != null
       then windowManager
@@ -790,13 +815,17 @@
     keyboard = mergeKeyboards ([
         keyboardDefaults
         (configs.de.keyboard or {})
-        (configs.wm.keyboard or {})
+        selectedWmKeyboard
+        (optionalAttrs (windowManager.name == "hyprland" && dmsPanel) {
+          bindings = dmsHyprlandKeyboard.bindings;
+        })
         {
           bindings =
             if windowManager.name == "hyprland"
             then
               filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
-              (import ./hyprland-keyboard.nix {inherit _;}).ordered
+              (hyprlandKeyboard.ordered
+                // optionalAttrs (dmsPanel) dmsHyprlandKeyboard.ordered)
             else {};
         }
       ]

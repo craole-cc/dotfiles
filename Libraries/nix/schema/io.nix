@@ -26,7 +26,7 @@
     };
   };
 
-  inherit (import ./keyboard.nix {inherit _;}) mergeKeyboards normalizeKeyboard;
+  inherit (import ./keyboard/default.nix {inherit _;}) mergeKeyboards normalizeKeyboard;
 
   composites = {
     #~@ Types

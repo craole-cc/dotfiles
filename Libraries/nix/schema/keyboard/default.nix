@@ -12,28 +12,7 @@
   inherit (_.strings.transformation) toUpper;
   inherit (_.types.predicates) isAttrs isList;
 
-  # Group aliases describe application categories; all keys and modifiers live
-  # in the keyboard definitions supplied to mergeKeyboards.
-  categories = {
-    terminal = "terminal";
-    browser = "browser";
-    editor = "editor";
-    ide = "ide";
-    explorer = "explorer";
-    agent = "ai";
-    ai = "ai";
-    media = "media";
-  };
-  legacyAliases = {
-    terminal = ["terminalSec"];
-    browser = ["browserSec"];
-    editor = ["code" "visual" "visualSec"];
-    explorer = ["fileManager" "fileManagerSec"];
-    launcher = ["launcherSec"];
-    close = ["logout" "shutdown"];
-    window = ["fullscreen" "float"];
-    lock = ["logout"];
-  };
+  inherit (import ./applications.nix) categories legacyAliases;
   ranks = ["primary" "secondary" "tertiary"];
 
   normalizeValue = value:
