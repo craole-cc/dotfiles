@@ -1,4 +1,4 @@
-{_, ...}: let
+_: let
   native = action: {
     kind = "hyprland";
     inherit action;
@@ -13,8 +13,21 @@
   groupLock = native ''group.lock_active({ action = "toggle" })'';
 
   media = action: (command action) // {locked = true;};
-  volume = direction: map (step: (media "dms ipc call audio ${direction} ${toString step}") // {repeating = true;}) [5 1 10];
-  brightness = direction: map (step: (media ''dms ipc call brightness ${direction} ${toString step} ""'') // {repeating = true;}) [5 1 10];
+
+  volume = direction:
+    map (
+      step:
+        (media "dms ipc call audio ${direction} ${toString step}")
+        // {repeating = true;}
+    ) [5 1 10];
+
+  brightness = direction:
+    map (
+      step:
+        (media ''dms ipc call brightness ${direction} ${toString step} ""'')
+        // {repeating = true;}
+    ) [5 1 10];
+
   navigation = direction: workspace: [
     (native ''focus({ direction = "${direction}" })'')
     (native ''window.move({ direction = "${direction}" })'')

@@ -11,13 +11,7 @@
     internal =
       composites
       // {
-        inherit
-          defaults
-          normalizeKeyboard
-          mergeKeyboards
-          mkKeyboard
-          mkKeybindings
-          ;
+        inherit defaults normalizeKeyboard mergeKeyboards mkKeyboard mkKeybindings;
         keyboardDefaults = defaults.keyboard;
         mkHyprKeybindings = mkKeybindings.hyprland;
       };
@@ -26,7 +20,7 @@
     };
   };
 
-  inherit (import ./keyboard/default.nix {inherit _;}) mergeKeyboards normalizeKeyboard;
+  inherit (import ./keyboard {inherit _;}) mergeKeyboards normalizeKeyboard;
 
   composites = {
     #~@ Types
