@@ -1,6 +1,7 @@
 {
   config,
   lix,
+  paths,
   pkgs,
   ...
 }: let
@@ -14,6 +15,7 @@
     mod = "wallpaper";
   };
   inherit (context) ctx;
+  variety = import ./variety {inherit lix paths;};
 in
   mkConfig {
     inherit context;
@@ -21,5 +23,11 @@ in
       inherit context;
       condition = ctx.wantsHyprland.condition;
     };
-    outputs.home.packages = [pkgs.variety pkgs.hyprpaper];
+
+    outputs = {
+      # Home-manager module in ./variety (programs.variety.*). It installs a
+      # profile-aware `variety` wrapper, so pkgs.variety is no longer listed
+      # here: both on the profile would collide on bin/variety.
+      home.packages = with pkgs; [hyprpaper];
+    };
   }

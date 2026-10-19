@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+# Variety expects the active wallpaper path on stdout.
+if command -v hyprctl > /dev/null 2>&1; then
+  active="$(hyprctl hyprpaper listactive 2> /dev/null || true)"
+  while IFS= read -r line; do
+    [[ $line == *": "* ]] || continue
+    wallpaper="${line#*: }"
+    if [[ -n $wallpaper && -f $wallpaper ]]; then
+      printf '%s\n' "$wallpaper"
+      exit 0
+    fi
+  done <<< "$active"
+fi
+
+# swaybg has no IPC query; read the image argument from its running process.
+if command -v pgrep > /dev/null 2>&1; then
+  while IFS= read -r pid; do
+    [[ -r "/proc/$pid/cmdline" ]] || continue
+    args=()
+    mapfile -d '' -t args < "/proc/$pid/cmdline"
+    for ((i = 0; i < ${#args[@]}; i++)); do
+      case "${args[$i]}" in
+        -i | --image)
+          if ((i + 1 < ${#args[@]})) && [[ -f ${args[$((i + 1))]} ]]; then
+            printf '%s\n' "${args[$((i + 1))]}"
+            exit 0
+          fi
+          ;;
+        --image=*)
+          wallpaper="${args[$i]#--image=}"
+          if [[ -f $wallpaper ]]; then
+            printf '%s\n' "$wallpaper"
+            exit 0
+          fi
+          ;;
+      esac
+    done
+  done < <(pgrep -x swaybg 2> /dev/null || true)
+fi
+
+printf '%s\n' 'variety_get: no active wallpaper found from hyprpaper or swaybg' >&2
+exit 1
