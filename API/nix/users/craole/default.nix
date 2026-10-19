@@ -724,12 +724,12 @@
           (mkBinding common {
             description = "${description}: Next";
             modifier = cycle;
-            key = "Period";
+            key = "greater";
           })
           (mkBinding common {
             description = "${description}: Previous";
             modifier = cycle;
-            key = "Comma";
+            key = "less";
           })
           (mkBinding common {
             description = "${description}: Open";
