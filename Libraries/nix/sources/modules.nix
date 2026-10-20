@@ -111,7 +111,9 @@
       default = inputs.dank-material-shell.homeModules.default or {};
       niri = inputs.dank-material-shell.homeModules.niri or {};
     };
-    dms-plugin-registry = inputs.dms-plugin-registry.homeModules or {};
+    dms-plugin-registry =
+      (inputs.dms-plugin-registry.homeModules or {})
+      // (inputs.dms-plugin-registry.nixosModules or {});
     niri = {
       default = inputs.niri.homeModules.niri or {};
     };
