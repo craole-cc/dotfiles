@@ -1,5 +1,6 @@
 {
   config,
+  apps,
   lib,
   lix,
   host,
@@ -17,6 +18,16 @@
     mod = "mpv";
   };
   isAllowed = isIn "video" (host.functionalities or []);
+  primaryTerminal = apps.legacy.terminal.primary or null;
+  yaziScripts =
+    if primaryTerminal == null
+    then []
+    else [
+      (import ./yazi.nix {
+        inherit pkgs;
+        terminal = primaryTerminal;
+      })
+    ];
 in
   mkConfig {
     inherit context;
@@ -26,7 +37,10 @@ in
     };
     outputs = {
       programs.mpv = mkMerge [
-        {enable = true;}
+        {
+          enable = true;
+          scripts = yaziScripts;
+        }
         (import ./bindings.nix)
         (import ./settings.nix {inherit pkgs;})
       ];
