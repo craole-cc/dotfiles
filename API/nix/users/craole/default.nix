@@ -625,13 +625,13 @@
           key = "M";
           common = {inherit category description modifier key;};
         in [
-          (mkBinding common {description = description + ": MPV";})
+          (mkBinding common {description = description + ": Primary";})
           (mkBinding common {
-            description = description + ": FreeTube";
+            description = description + ": Secondary";
             modifier = modifier ++ ["Shift"];
           })
           (mkBinding common {
-            description = description + ": Shortwave";
+            description = description + ": Tertiary";
             modifier = modifier ++ ["Alt"];
           })
         ];
