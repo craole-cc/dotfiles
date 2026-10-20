@@ -5,7 +5,7 @@
   terminalCommand = terminal.command;
   terminalExecFlag = terminal.wrap.execFlag or "-e";
 in
-  pkgs.writeTextDir "share/mpv/scripts/yazi.lua" ''
+  (pkgs.writeTextDir "share/mpv/scripts/yazi.lua" ''
     local mp = require "mp"
 
     local function media_directory()
@@ -64,4 +64,6 @@ in
     end
 
     mp.add_key_binding("Ctrl+o", "open-with-yazi", open_with_yazi)
-  ''
+  '').overrideAttrs (previous: {
+    passthru = (previous.passthru or {}) // {scriptName = "yazi.lua";};
+  })
