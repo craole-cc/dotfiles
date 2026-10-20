@@ -11,18 +11,39 @@ usage() {
     '    original-file is preferred for the lock link; mode is argument 4.' \
     '    Modes: wallpaper, centered, scaled, stretched, zoom (default), spanned.' \
     '  VARIETYCTL_BACKEND=auto|dms|hyprpaper|swaybg (default: auto)' \
-    '    Auto chooses once: reachable DMS, else hyprpaper on Hyprland, else swaybg.' \
+    '    Auto: DMS when it is running (a running DMS with broken IPC is an error),' \
+    '    otherwise hyprpaper on Hyprland if reachable, otherwise swaybg.' \
     '    Failure of the chosen backend is final; there is no backend fall-through.' \
     '  WALLPAPER_BACKEND is a deprecated standalone alias; VARIETYCTL_BACKEND wins.' \
     '    The Nix wrapper fixes the backend to its declared module option.' \
+    '  VARIETYCTL_DMS_PATTERN: ERE matched against process command lines to detect DMS.' \
     '  VARIETYCTL_LOCKSCREEN_LINK overrides the Wayland lock image symlink.' \
     '    Default: ${XDG_STATE_HOME:-$HOME/.local/state}/varietyctl/lockscreen' \
     '  VARIETYCTL_SWAYBG_SETTLE: seconds, at most one decimal place (default 0.5).' \
+    '  VARIETYCTL_ERROR_LOG=0 disables the set-failure log in' \
+    '    ${XDG_STATE_HOME:-$HOME/.local/state}/varietyctl/last-error (last 20 lines).' \
     '  VARIETYCTL_DEBUG=1 logs backend and tool decisions to stderr.' \
     '  VARIETYCTL_POSIX_ONLY=1 tests POSIX parsing and process fallbacks.'
 }
 
+# Hook output is not captured by Variety, so record set failures on disk.
+log_failure() {
+  [ "${action:-}" = set ] && [ "${VARIETYCTL_ERROR_LOG:-1}" != 0 ] || return 0
+  [ -n "${XDG_STATE_HOME:-}${HOME:-}" ] || return 0
+  log_directory=${XDG_STATE_HOME:-${HOME:-}/.local/state}/varietyctl
+  case "$log_directory" in /*) ;; *) return 0 ;; esac
+  mkdir -p "$log_directory" 2>/dev/null || return 0
+  log_file=$log_directory/last-error
+  printf '%s %s %s\n' "$(date '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || :)" "${backend:-unknown}" "$1" \
+    >>"$log_file" 2>/dev/null || return 0
+  if tail -n 20 "$log_file" >"$log_file.tmp" 2>/dev/null; then
+    mv -f "$log_file.tmp" "$log_file" 2>/dev/null || rm -f "$log_file.tmp"
+  fi
+  return 0
+}
+
 fail() {
+  log_failure "$*"
   printf 'varietyctl: %s%s\n' "${backend:+$backend: }" "$*" >&2
   exit 1
 }
@@ -35,41 +56,12 @@ need() {
   [ -n "$1" ] || fail "missing required tool: $2"
 }
 
-# Resolve only requested tools; an empty cached value also means unavailable.
+# Resolve each named tool once (found or not) into tool_<name>.
+# Tool names are fixed literals from this file, so eval is safe here.
 resolve_tools() {
   for tool_name; do
-    case "$tool_name" in
-    variety) tool_variety=${tool_variety-$(command -v variety 2>/dev/null || :)} ;;
-    dms) tool_dms=${tool_dms-$(command -v dms 2>/dev/null || :)} ;;
-    niri) tool_niri=${tool_niri-$(command -v niri 2>/dev/null || :)} ;;
-    hyprctl) tool_hyprctl=${tool_hyprctl-$(command -v hyprctl 2>/dev/null || :)} ;;
-    swaybg) tool_swaybg=${tool_swaybg-$(command -v swaybg 2>/dev/null || :)} ;;
-    gsettings) tool_gsettings=${tool_gsettings-$(command -v gsettings 2>/dev/null || :)} ;;
-    kwriteconfig6) tool_kwriteconfig6=${tool_kwriteconfig6-$(command -v kwriteconfig6 2>/dev/null || :)} ;;
-    kwriteconfig5) tool_kwriteconfig5=${tool_kwriteconfig5-$(command -v kwriteconfig5 2>/dev/null || :)} ;;
-    rg) tool_rg=${tool_rg-$(command -v rg 2>/dev/null || :)} ;;
-    jaq) tool_jaq=${tool_jaq-$(command -v jaq 2>/dev/null || :)} ;;
-    jq) tool_jq=${tool_jq-$(command -v jq 2>/dev/null || :)} ;;
-    sed) tool_sed=${tool_sed-$(command -v sed 2>/dev/null || :)} ;;
-    pgrep) tool_pgrep=${tool_pgrep-$(command -v pgrep 2>/dev/null || :)} ;;
-    ps) tool_ps=${tool_ps-$(command -v ps 2>/dev/null || :)} ;;
-    awk) tool_awk=${tool_awk-$(command -v awk 2>/dev/null || :)} ;;
-    xargs) tool_xargs=${tool_xargs-$(command -v xargs 2>/dev/null || :)} ;;
-    sh) tool_sh=${tool_sh-$(command -v sh 2>/dev/null || :)} ;;
-    od) tool_od=${tool_od-$(command -v od 2>/dev/null || :)} ;;
-    id) tool_id=${tool_id-$(command -v id 2>/dev/null || :)} ;;
-    setsid) tool_setsid=${tool_setsid-$(command -v setsid 2>/dev/null || :)} ;;
-    sleep) tool_sleep=${tool_sleep-$(command -v sleep 2>/dev/null || :)} ;;
-    stat) tool_stat=${tool_stat-$(command -v stat 2>/dev/null || :)} ;;
-    ls) tool_ls=${tool_ls-$(command -v ls 2>/dev/null || :)} ;;
-    flock) tool_flock=${tool_flock-$(command -v flock 2>/dev/null || :)} ;;
-    mkdir) tool_mkdir=${tool_mkdir-$(command -v mkdir 2>/dev/null || :)} ;;
-    rmdir) tool_rmdir=${tool_rmdir-$(command -v rmdir 2>/dev/null || :)} ;;
-    ln) tool_ln=${tool_ln-$(command -v ln 2>/dev/null || :)} ;;
-    mv) tool_mv=${tool_mv-$(command -v mv 2>/dev/null || :)} ;;
-    rm) tool_rm=${tool_rm-$(command -v rm 2>/dev/null || :)} ;;
-    esac
-    debug "resolved $tool_name (cached when already checked)"
+    eval "[ -n \"\${tool_$tool_name+x}\" ] || tool_$tool_name=\$(command -v $tool_name 2>/dev/null || :)"
+    eval "[ -n \"\$tool_$tool_name\" ]" || debug "tool unavailable: $tool_name"
   done
   if [ "${VARIETYCTL_POSIX_ONLY:-0}" = 1 ]; then
     tool_rg='' tool_jaq='' tool_jq='' tool_pgrep=''
@@ -77,9 +69,72 @@ resolve_tools() {
   fi
 }
 
+# The numeric user ID is computed once per invocation.
+need_uid() {
+  [ -z "${user_id:-}" ] || return 0
+  resolve_tools id
+  need "$tool_id" id
+  user_id=$("$tool_id" -u) || fail 'cannot determine current user'
+  case "$user_id" in '' | *[!0-9]*) fail 'invalid numeric user ID' ;; esac
+}
+
 run_variety() {
   need "$tool_variety" variety
   exec "$tool_variety" "$@"
+}
+
+# Variety's hook can run with a thin environment. Fill in only what is unset
+# or empty, never overriding, using shell globbing and tests alone.
+ensure_session_env() {
+  if [ -z "${XDG_RUNTIME_DIR:-}" ] && [ -d "/run/user/$user_id" ]; then
+    XDG_RUNTIME_DIR=/run/user/$user_id
+    export XDG_RUNTIME_DIR
+    debug "filled XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
+  fi
+  [ -n "${XDG_RUNTIME_DIR:-}" ] || return 0
+  if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    newest=
+    for candidate in "$XDG_RUNTIME_DIR"/hypr/*; do
+      [ -e "$candidate/.socket.sock" ] || continue
+      if [ -z "$newest" ] || [ "$candidate/.socket.sock" -nt "$newest/.socket.sock" ]; then
+        newest=$candidate
+      fi
+    done
+    if [ -n "$newest" ]; then
+      HYPRLAND_INSTANCE_SIGNATURE=${newest##*/}
+      export HYPRLAND_INSTANCE_SIGNATURE
+      debug "filled HYPRLAND_INSTANCE_SIGNATURE=$HYPRLAND_INSTANCE_SIGNATURE"
+    fi
+  fi
+  if [ -z "${NIRI_SOCKET:-}" ]; then
+    for candidate in "$XDG_RUNTIME_DIR"/niri.*.sock; do
+      [ -S "$candidate" ] || continue
+      NIRI_SOCKET=$candidate
+      export NIRI_SOCKET
+      debug "filled NIRI_SOCKET=$NIRI_SOCKET"
+      break
+    done
+  fi
+  if [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    for candidate in "$XDG_RUNTIME_DIR"/wayland-*; do
+      [ -S "$candidate" ] || continue # skips wayland-N.lock regular files
+      WAYLAND_DISPLAY=${candidate##*/}
+      export WAYLAND_DISPLAY
+      debug "filled WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+      break
+    done
+  fi
+  if [ -z "${XDG_CURRENT_DESKTOP:-}" ]; then
+    if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+      XDG_CURRENT_DESKTOP=Hyprland
+    elif [ -n "${NIRI_SOCKET:-}" ]; then
+      XDG_CURRENT_DESKTOP=niri
+    fi
+    if [ -n "${XDG_CURRENT_DESKTOP:-}" ]; then
+      export XDG_CURRENT_DESKTOP
+      debug "filled XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP"
+    fi
+  fi
 }
 
 hyprpaper_reachable() (
@@ -92,13 +147,39 @@ hyprpaper_reachable() (
   return 0
 )
 
+# Process names DMS runs under are kept in this one ERE, matched against the
+# start of the command line (argv0 plus arguments), so `grep qs` cannot match.
+dms_running() {
+  dms_pattern=${VARIETYCTL_DMS_PATTERN-}
+  [ -n "$dms_pattern" ] || dms_pattern='^([^ ]*/)?\.?(quickshell|qs)(-wrapped)?( |$)'
+  need_uid
+  resolve_tools pgrep
+  if [ -n "$tool_pgrep" ]; then
+    "$tool_pgrep" -u "$user_id" -f "$dms_pattern" >/dev/null 2>&1
+    return $?
+  fi
+  resolve_tools ps awk
+  [ -n "$tool_ps" ] && [ -n "$tool_awk" ] || return 1
+  # The pattern travels in the environment so awk's own command line cannot match it.
+  DMS_PATTERN=$dms_pattern "$tool_ps" -e -o uid= -o pid= -o args= | "$tool_awk" -v owner="$user_id" -v self="$$" '
+    $1 == owner && $2 != self {
+      sub(/^ *[0-9]+ +[0-9]+ +/, "")
+      if ($0 ~ ENVIRON["DMS_PATTERN"]) found = 1
+    }
+    END { exit !found }
+  '
+}
+
 # Auto probes once per invocation; every later operation uses this choice.
 choose_backend() {
   [ "$backend" = auto ] || return 0
   resolve_tools dms
-  if [ -n "$tool_dms" ] && "$tool_dms" ipc call wallpaper get >/dev/null 2>&1; then
+  if [ -n "$tool_dms" ] && dms_running; then
     backend=dms
+    "$tool_dms" ipc call wallpaper get >/dev/null 2>&1 ||
+      fail 'DMS is running but its IPC is unreachable; not touching other backends'
   else
+    debug 'DMS is not running'
     case "${XDG_CURRENT_DESKTOP:-}" in
     *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
       resolve_tools hyprctl
@@ -170,9 +251,8 @@ monitors() {
 }
 
 swaybg_processes() {
-  resolve_tools pgrep id
-  need "$tool_id" id
-  user_id=${user_id-$("$tool_id" -u)}
+  resolve_tools pgrep
+  need_uid
   if [ -n "$tool_pgrep" ]; then
     "$tool_pgrep" -u "$user_id" -x swaybg 2>/dev/null && return 0
     # pgrep uses 1 for an empty result and higher statuses for actual errors.
@@ -371,10 +451,7 @@ set_hyprpaper() (
   *) fit_mode=cover ;;
   esac
   case "$1" in
-  *,*)
-    printf '%s\n' 'varietyctl: hyprpaper cannot encode a comma in the image path' >&2
-    exit 1
-    ;;
+  *,*) fail 'hyprpaper cannot encode a comma in the image path' ;;
   esac
   active=$("$tool_hyprctl" hyprpaper listactive 2>/dev/null) || exit 1
   monitor_count=0
@@ -445,9 +522,8 @@ set_swaybg() {
   wallpaper) sway_mode=tile ;;
   *) sway_mode=fill ;;
   esac
-  resolve_tools setsid sleep id
+  resolve_tools setsid sleep
   need "$tool_sleep" sleep
-  need "$tool_id" id
   swaybg_settle_ticks
   processes=$(swaybg_processes) || return 1
   if [ -n "$tool_setsid" ]; then
@@ -615,67 +691,17 @@ release_lock() {
   "$tool_rmdir" "$lock_directory" 2>/dev/null || :
 }
 
-private_tmp_root() {
-  resolve_tools mkdir stat
-  need "$tool_mkdir" mkdir
-  lock_root=/tmp/varietyctl-$user_id
-  [ ! -L "$lock_root" ] || fail 'refusing a symlink temporary directory'
-  "$tool_mkdir" -m 700 "$lock_root" 2>/dev/null ||
-    [ -d "$lock_root" ] || fail 'cannot create private temporary directory'
-  [ ! -L "$lock_root" ] || fail 'refusing a symlink temporary directory'
-  if [ -n "$tool_stat" ] && directory_metadata=$("$tool_stat" -c '%u %a' -- "$lock_root" 2>/dev/null); then
-    :
-  else
-    # POSIX ls -n supplies a numeric owner when GNU stat is unavailable.
-    resolve_tools ls awk
-    need "$tool_ls" ls
-    need "$tool_awk" awk
-    directory_listing=$("$tool_ls" -nd "$lock_root") || fail 'cannot inspect private temporary directory'
-    directory_metadata=$(printf '%s\n' "$directory_listing" | "$tool_awk" 'NR == 1 { print $3, $1 }')
-  fi
-  IFS=' ' read -r directory_owner directory_mode <<EOF
-$directory_metadata
-EOF
-  [ "$directory_owner" = "$user_id" ] || fail 'private temporary directory has a different owner'
-  case "$directory_mode" in
-  700 | drwx------*) ;;
-  *) fail 'private temporary directory must have mode 0700' ;;
-  esac
-}
-
-reclaim_empty_lock() {
-  [ "$lock_ever_owned" = false ] && [ -n "$lock_identity" ] || return 1
-  "$tool_mkdir" "$lock_directory.reaping" 2>/dev/null || return 1
-  current_identity=$("$tool_ls" -di "$lock_directory" 2>/dev/null) || current_identity=
-  current_owner=
-  if [ -r "$lock_directory/pid" ]; then
-    IFS= read -r current_owner <"$lock_directory/pid" || current_owner=
-  fi
-  reclaimed=false
-  if [ "$current_identity" = "$lock_identity" ] && [ -z "$current_owner" ]; then
-    # The same empty generation survived the whole bounded wait.
-    "$tool_rm" -f "$lock_directory/pid"
-    if "$tool_rmdir" "$lock_directory" 2>/dev/null; then
-      debug 'reclaimed an empty wallpaper lock after the bounded wait'
-      reclaimed=true
-    fi
-  fi
-  "$tool_rmdir" "$lock_directory.reaping" 2>/dev/null || :
-  [ "$reclaimed" = true ]
-}
-
+# Only the swaybg setter races (kill old, start new), so only it locks.
+# Without XDG_RUNTIME_DIR there is no safe per-user place, so skip the lock.
 lock_set() {
-  resolve_tools id flock
-  need "$tool_id" id
-  user_id=$("$tool_id" -u) || fail 'cannot determine current user'
-  case "$user_id" in '' | *[!0-9]*) fail 'invalid numeric user ID' ;; esac
-  umask 077
-  if [ -n "${XDG_RUNTIME_DIR:-}" ]; then
-    lock_file=$XDG_RUNTIME_DIR/varietyctl-$user_id.lock
-  else
-    private_tmp_root
-    lock_file=$lock_root/set.lock
+  if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    debug 'no XDG_RUNTIME_DIR; skipping wallpaper lock'
+    return 0
   fi
+  need_uid
+  lock_file=$XDG_RUNTIME_DIR/varietyctl-$user_id.lock
+  umask 077
+  resolve_tools flock
   if [ -n "$tool_flock" ]; then
     [ ! -L "$lock_file" ] || fail 'refusing a symlink lock file'
     exec 9>"$lock_file"
@@ -689,55 +715,36 @@ lock_set() {
     debug "flock unusable (status $flock_status); using mkdir lock"
     exec 9>&-
   fi
-  resolve_tools mkdir rmdir rm sleep ls
+  resolve_tools mkdir rmdir rm sleep
   need "$tool_mkdir" mkdir
   need "$tool_rmdir" rmdir
   need "$tool_rm" rm
   need "$tool_sleep" sleep
-  need "$tool_ls" ls
   lock_directory=$lock_file.d
   lock_attempt=0
-  lock_identity=
-  lock_ever_owned=false
   while ! "$tool_mkdir" "$lock_directory" 2>/dev/null; do
     [ ! -L "$lock_directory" ] || fail 'refusing a symlink lock directory'
-    if [ -z "$lock_identity" ]; then
-      lock_identity=$("$tool_ls" -di "$lock_directory" 2>/dev/null) || lock_identity=
-    fi
     owner=
     if [ -r "$lock_directory/pid" ]; then
       IFS= read -r owner <"$lock_directory/pid" || owner=
     fi
-    [ -z "$owner" ] || lock_ever_owned=true
     case "$owner" in
     '' | *[!0-9]* | 0) ;;
     *)
-      if ! kill -0 "$owner" 2>/dev/null &&
-        "$tool_mkdir" "$lock_directory.reaping" 2>/dev/null; then
-        # Only one waiter may reclaim this dead owner's lock directory.
-        # Recheck after taking the reaper lock: another waiter may already
-        # have replaced the directory with a live owner's lock.
-        current_owner=
-        if [ -r "$lock_directory/pid" ]; then
-          IFS= read -r current_owner <"$lock_directory/pid" || current_owner=
-        fi
-        if [ "$current_owner" = "$owner" ] && ! kill -0 "$owner" 2>/dev/null; then
-          debug "reclaiming stale lock from PID $owner"
-          "$tool_rm" -f "$lock_directory/pid"
-          "$tool_rmdir" "$lock_directory" 2>/dev/null || :
-        fi
-        "$tool_rmdir" "$lock_directory.reaping" 2>/dev/null || :
-        lock_identity=
-        lock_ever_owned=false
+      if ! kill -0 "$owner" 2>/dev/null; then
+        debug "reclaiming stale lock from PID $owner"
+        "$tool_rm" -f "$lock_directory/pid"
+        "$tool_rmdir" "$lock_directory" 2>/dev/null || :
         continue
       fi
       ;;
     esac
     lock_attempt=$((lock_attempt + 1))
     if [ "$lock_attempt" -ge 100 ]; then
-      if reclaim_empty_lock; then
-        lock_attempt=0
-        lock_identity=
+      # A crash between mkdir and the PID write leaves an ownerless directory;
+      # clear that once, otherwise give up.
+      if [ "$lock_attempt" -eq 100 ] && [ ! -e "$lock_directory/pid" ]; then
+        "$tool_rmdir" "$lock_directory" 2>/dev/null || :
         continue
       fi
       fail 'timed out waiting for wallpaper directory lock'
@@ -802,6 +809,9 @@ if [ "$action" != get ]; then
   shift
   set -- "$image" "$@"
 fi
+
+need_uid
+ensure_session_env
 
 if [ "$action" = set-lockscreen ]; then
   set_lockscreen "$@"
