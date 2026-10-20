@@ -490,6 +490,21 @@
           })
         ];
 
+        terminalOpen = let
+          description = "Open Terminal";
+          key = "Return";
+          category = "application";
+          common = {inherit category description modifier key;};
+        in [
+          (mkBinding common {
+            description = description + ": Primary";
+          })
+          (mkBinding common {
+            description = description + ": Secondary";
+            modifier = modifier ++ ["Shift"];
+          })
+        ];
+
         terminal = let
           description = "Terminal";
           key = "Grave";
@@ -719,21 +734,27 @@
           description = "Wallpaper";
           category = "controller";
           common = {inherit category description;};
-          cycle = modifier ++ ["Alt" "Shift"];
+          altMod = modifier ++ ["Alt"];
+          mod = altMod ++ ["Shift"];
         in [
           (mkBinding common {
             description = "${description}: Next";
-            modifier = cycle;
-            key = "greater";
+            modifier = mod;
+            key = "Period";
           })
           (mkBinding common {
             description = "${description}: Previous";
-            modifier = cycle;
-            key = "less";
+            modifier = mod;
+            key = "Comma";
           })
           (mkBinding common {
             description = "${description}: Open";
-            modifier = modifier ++ ["Alt"];
+            modifier = altMod;
+            key = "W";
+          })
+          (mkBinding common {
+            description = "${description}: Favourite";
+            modifier = mod;
             key = "W";
           })
         ];

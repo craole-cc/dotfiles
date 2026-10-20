@@ -71,6 +71,10 @@
     greeter = null;
     protocol = null;
     session = null;
+    wallpaper = {
+      engine = "variety";
+      backend = "auto";
+    };
     compositor = {
       desktop = null;
       window = null;
@@ -122,6 +126,18 @@
   };
 
   options = {
+    wallpaper = {
+      engine = mkOption {
+        type = nullOr str;
+        default = defaults.wallpaper.engine;
+        description = "Wallpaper selection engine. An explicit value takes precedence over the first wallpaper package; null disables selection.";
+      };
+      backend = mkOption {
+        type = str;
+        default = defaults.wallpaper.backend;
+        description = "Wallpaper display backend, or auto for automatic selection.";
+      };
+    };
     enable = mkTrue "User Interface";
     registry = mkOption {
       description = "Detailed interface registry";
@@ -696,6 +712,8 @@
 
   normalizeWith = {
     interface,
+    terminals ? [],
+    wallpaperPackages ? [],
     keyboardScopes ? [interface.keyboard or {}],
   }: let
     inherit
@@ -719,7 +737,9 @@
     dmsPanel =
       (interface.panel or environment.config.panel or null)
       == "dms-shell";
-    hyprlandKeyboard = import ./keyboard/hyprland.nix {inherit _;};
+    hyprlandKeyboard = import ./keyboard/hyprland.nix {
+      inherit _ terminals;
+    };
     dmsHyprlandKeyboard = import ./keyboard/dms/hyprland.nix {inherit _;};
     dmsBindingGroups = [
       "overview"
@@ -825,7 +845,7 @@
             then
               filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
               (hyprlandKeyboard.ordered
-                // optionalAttrs (dmsPanel) dmsHyprlandKeyboard.ordered)
+                // optionalAttrs dmsPanel dmsHyprlandKeyboard.ordered)
             else {};
         }
       ]
@@ -840,6 +860,16 @@
         session
         ;
       fonts = getFonts {inherit interface;};
+      wallpaper = recursiveUpdate defaults.wallpaper (
+        (interface.wallpaper or {})
+        // {
+          engine = (interface.wallpaper or {}).engine or (
+            if wallpaperPackages == []
+            then defaults.wallpaper.engine
+            else head wallpaperPackages
+          );
+        }
+      );
       desktops = interface.desktops or enabled;
       defaultSession = session;
       desktopEnvironment = desktopEnvironment.name;
@@ -866,9 +896,12 @@
   }: let
     hostInterface = host.defaults.interface or (host.interface or {});
     interface = recursiveUpdate hostInterface (user.interface or {});
+    applications = appSchema.mkApplications {inherit host user;};
   in
     (normalizeWith {
       inherit interface;
+      terminals = applications.terminal;
+      wallpaperPackages = applications.packages.wallpaper or [];
       keyboardScopes = [
         (host.keyboard or {})
         (hostInterface.keyboard or {})

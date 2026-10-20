@@ -41,6 +41,31 @@
   };
   ranks = ["primary" "secondary" "tertiary"];
   primaryTerminal = head apps.terminal;
+  terminalHost.interface.windowManager = "hyprland";
+  terminalLua = terminals: let
+    requested = user // {packages = user.packages // {terminal = terminals;};};
+    interface = lix.schema.ui.mkUI {
+      host = terminalHost;
+      user = requested;
+    };
+    keyboard = lix.modules.home.control.mkKeyboard {
+      host = terminalHost;
+      user = requested // {inherit interface;};
+    };
+  in
+    import ../../../Modules/nix/home/interface/manager/hyprland/bindings.nix {
+      inherit keyboard lix;
+      ghosttyEnabled = false;
+    };
+  terminalChord = binding: concatStringsSep " + " ((splitString " " binding.mod) ++ [binding.key]);
+  terminalChecks = listToAttrs (imap0 (index: binding: {
+      name = "testTerminalOpen${toString (index + 1)}";
+      value = {
+        expr = hasInfix ''hl.bind(${toJSON (terminalChord binding)}, hl.dsp.exec_cmd(${toJSON (elemAt apps.terminal index).command})'' (terminalLua user.packages.terminal);
+        expected = true;
+      };
+    })
+    declared.terminalOpen);
   checks = listToAttrs (concatLists (mapAttrsToList (group: spec:
     concatLists (imap0 (index: binding: let
         suffix =
@@ -83,7 +108,12 @@
   groups));
   tests =
     checks
+    // terminalChecks
     // {
+      testTerminalOpenMissingSecondaryIsOmitted = {
+        expr = hasInfix ''hl.bind(${toJSON (terminalChord (elemAt declared.terminalOpen 1))},'' (terminalLua [(head user.packages.terminal)]);
+        expected = false;
+      };
       testLegacyVisualUsesGuiSelection = {
         expr =
           (import ../../../Modules/nix/home/interface/manager/hyprland/settings/core.nix {

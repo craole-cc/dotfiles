@@ -214,7 +214,7 @@
   mkAddons = target:
     mkIf cfg.withAddons
     (import ./addons {
-      inherit lib mkMerge dmsEnabled;
+      inherit config lib lix mkMerge dmsEnabled;
     }).${
       target
     };

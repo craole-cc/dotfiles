@@ -1,5 +1,5 @@
-{lib, ...}: let
-  inherit (lib.modules) mkDefault;
+{config, lix, ...}: let
+  inherit (lix.modules.construction) mkDefault;
 in {
   hyprlock = {
     enable = true;
@@ -11,7 +11,8 @@ in {
 
       background = mkDefault [
         {
-          path = "screenshot";
+          # Variety updates this link; the controller never edits locker config.
+          path = "${config.xdg.stateHome}/varietyctl/lockscreen";
           blur_passes = 3;
           blur_size = 8;
         }

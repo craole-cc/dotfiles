@@ -1,0 +1,826 @@
+#!/bin/sh
+
+# Minimum hyprpaper version: 0.8.0.
+set -u
+
+usage() {
+  printf '%s\n' \
+    'Usage: varietyctl {next|previous|love|preferences|get|set|set-lockscreen} [arguments...]' \
+    '  set|set-lockscreen <file> [change-reason [original-file [mode]]]' \
+    '    Variety passes change-reason (manual|auto|refresh), original-file and mode.' \
+    '    original-file is preferred for the lock link; mode is argument 4.' \
+    '    Modes: wallpaper, centered, scaled, stretched, zoom (default), spanned.' \
+    '  VARIETYCTL_BACKEND=auto|dms|hyprpaper|swaybg (default: auto)' \
+    '    Auto chooses once: reachable DMS, else hyprpaper on Hyprland, else swaybg.' \
+    '    Failure of the chosen backend is final; there is no backend fall-through.' \
+    '  WALLPAPER_BACKEND is a deprecated standalone alias; VARIETYCTL_BACKEND wins.' \
+    '    The Nix wrapper fixes the backend to its declared module option.' \
+    '  VARIETYCTL_LOCKSCREEN_LINK overrides the Wayland lock image symlink.' \
+    '    Default: ${XDG_STATE_HOME:-$HOME/.local/state}/varietyctl/lockscreen' \
+    '  VARIETYCTL_SWAYBG_SETTLE: seconds, at most one decimal place (default 0.5).' \
+    '  VARIETYCTL_DEBUG=1 logs backend and tool decisions to stderr.' \
+    '  VARIETYCTL_POSIX_ONLY=1 tests POSIX parsing and process fallbacks.'
+}
+
+fail() {
+  printf 'varietyctl: %s%s\n' "${backend:+$backend: }" "$*" >&2
+  exit 1
+}
+
+debug() {
+  [ "${VARIETYCTL_DEBUG:-0}" != 1 ] || printf 'varietyctl: debug: %s\n' "$*" >&2
+}
+
+need() {
+  [ -n "$1" ] || fail "missing required tool: $2"
+}
+
+# Resolve only requested tools; an empty cached value also means unavailable.
+resolve_tools() {
+  for tool_name; do
+    case "$tool_name" in
+    variety) tool_variety=${tool_variety-$(command -v variety 2>/dev/null || :)} ;;
+    dms) tool_dms=${tool_dms-$(command -v dms 2>/dev/null || :)} ;;
+    niri) tool_niri=${tool_niri-$(command -v niri 2>/dev/null || :)} ;;
+    hyprctl) tool_hyprctl=${tool_hyprctl-$(command -v hyprctl 2>/dev/null || :)} ;;
+    swaybg) tool_swaybg=${tool_swaybg-$(command -v swaybg 2>/dev/null || :)} ;;
+    gsettings) tool_gsettings=${tool_gsettings-$(command -v gsettings 2>/dev/null || :)} ;;
+    kwriteconfig6) tool_kwriteconfig6=${tool_kwriteconfig6-$(command -v kwriteconfig6 2>/dev/null || :)} ;;
+    kwriteconfig5) tool_kwriteconfig5=${tool_kwriteconfig5-$(command -v kwriteconfig5 2>/dev/null || :)} ;;
+    rg) tool_rg=${tool_rg-$(command -v rg 2>/dev/null || :)} ;;
+    jaq) tool_jaq=${tool_jaq-$(command -v jaq 2>/dev/null || :)} ;;
+    jq) tool_jq=${tool_jq-$(command -v jq 2>/dev/null || :)} ;;
+    sed) tool_sed=${tool_sed-$(command -v sed 2>/dev/null || :)} ;;
+    pgrep) tool_pgrep=${tool_pgrep-$(command -v pgrep 2>/dev/null || :)} ;;
+    ps) tool_ps=${tool_ps-$(command -v ps 2>/dev/null || :)} ;;
+    awk) tool_awk=${tool_awk-$(command -v awk 2>/dev/null || :)} ;;
+    xargs) tool_xargs=${tool_xargs-$(command -v xargs 2>/dev/null || :)} ;;
+    sh) tool_sh=${tool_sh-$(command -v sh 2>/dev/null || :)} ;;
+    od) tool_od=${tool_od-$(command -v od 2>/dev/null || :)} ;;
+    id) tool_id=${tool_id-$(command -v id 2>/dev/null || :)} ;;
+    setsid) tool_setsid=${tool_setsid-$(command -v setsid 2>/dev/null || :)} ;;
+    sleep) tool_sleep=${tool_sleep-$(command -v sleep 2>/dev/null || :)} ;;
+    stat) tool_stat=${tool_stat-$(command -v stat 2>/dev/null || :)} ;;
+    ls) tool_ls=${tool_ls-$(command -v ls 2>/dev/null || :)} ;;
+    flock) tool_flock=${tool_flock-$(command -v flock 2>/dev/null || :)} ;;
+    mkdir) tool_mkdir=${tool_mkdir-$(command -v mkdir 2>/dev/null || :)} ;;
+    rmdir) tool_rmdir=${tool_rmdir-$(command -v rmdir 2>/dev/null || :)} ;;
+    ln) tool_ln=${tool_ln-$(command -v ln 2>/dev/null || :)} ;;
+    mv) tool_mv=${tool_mv-$(command -v mv 2>/dev/null || :)} ;;
+    rm) tool_rm=${tool_rm-$(command -v rm 2>/dev/null || :)} ;;
+    esac
+    debug "resolved $tool_name (cached when already checked)"
+  done
+  if [ "${VARIETYCTL_POSIX_ONLY:-0}" = 1 ]; then
+    tool_rg='' tool_jaq='' tool_jq='' tool_pgrep=''
+    xargs_null=false
+  fi
+}
+
+run_variety() {
+  need "$tool_variety" variety
+  exec "$tool_variety" "$@"
+}
+
+hyprpaper_reachable() (
+  [ -n "$tool_hyprctl" ] || return 1
+  probe_reply=$("$tool_hyprctl" hyprpaper listactive 2>&1) || return 1
+  # A running daemon can have no active images. Reject IPC error text too.
+  case "$probe_reply" in
+  error:* | ERROR:* | '[hw] err:'*) return 1 ;;
+  esac
+  return 0
+)
+
+# Auto probes once per invocation; every later operation uses this choice.
+choose_backend() {
+  [ "$backend" = auto ] || return 0
+  resolve_tools dms
+  if [ -n "$tool_dms" ] && "$tool_dms" ipc call wallpaper get >/dev/null 2>&1; then
+    backend=dms
+  else
+    case "${XDG_CURRENT_DESKTOP:-}" in
+    *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
+      resolve_tools hyprctl
+      if hyprpaper_reachable; then
+        backend=hyprpaper
+      else
+        backend=swaybg
+      fi
+      ;;
+    *) backend=swaybg ;;
+    esac
+  fi
+  debug "selected backend $backend"
+}
+
+monitors() {
+  resolve_tools jaq jq
+  case "${XDG_CURRENT_DESKTOP:-}" in
+  *[Nn][Ii][Rr][Ii]*)
+    resolve_tools niri
+    need "$tool_niri" niri
+    if [ -z "$tool_jaq$tool_jq" ]; then
+      resolve_tools sed
+      need "$tool_sed" sed
+      monitor_text=$("$tool_niri" msg outputs 2>/dev/null) || fail 'niri outputs IPC failed'
+      # Upstream print_output: Output "make model serial" (connector).
+      # Locally unverified: niri is not installed on the development host.
+      monitor_names=$(printf '%s\n' "$monitor_text" | "$tool_sed" -n 's/^Output ".*" (\([^()][^()]*\))$/\1/p') ||
+        fail 'cannot parse niri output names'
+      [ -n "$monitor_names" ] || fail 'cannot parse niri output names'
+      printf '%s\n' "$monitor_names"
+      return 0
+    fi
+    monitor_json=$("$tool_niri" msg --json outputs 2>/dev/null) || fail 'niri outputs IPC failed'
+    # niri's CLI serialises a map keyed by connector name, not an array.
+    for tool_json in "$tool_jaq" "$tool_jq"; do
+      [ -n "$tool_json" ] || continue
+      if monitor_names=$(printf '%s\n' "$monitor_json" | "$tool_json" -er 'keys[]'); then
+        printf '%s\n' "$monitor_names"
+        return 0
+      fi
+    done
+    fail 'cannot parse niri output names'
+    ;;
+  *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
+    resolve_tools hyprctl
+    need "$tool_hyprctl" hyprctl
+    ;;
+  *) fail 'monitor discovery requires a Hyprland or niri desktop' ;;
+  esac
+  if [ -n "$tool_jaq$tool_jq" ] && monitor_json=$("$tool_hyprctl" monitors -j 2>/dev/null); then
+    for tool_json in "$tool_jaq" "$tool_jq"; do
+      [ -n "$tool_json" ] || continue
+      if monitor_names=$(printf '%s\n' "$monitor_json" | "$tool_json" -er '.[].name'); then
+        printf '%s\n' "$monitor_names"
+        return 0
+      fi
+    done
+  fi
+  resolve_tools rg
+  if [ -n "$tool_rg" ] &&
+    monitor_names=$("$tool_hyprctl" monitors 2>/dev/null | "$tool_rg" --no-config --only-matching --replace '$1' '^Monitor ([^ ]+) '); then
+    printf '%s\n' "$monitor_names"
+    return 0
+  fi
+  resolve_tools sed
+  need "$tool_sed" sed
+  "$tool_hyprctl" monitors 2>/dev/null | "$tool_sed" -n 's/^Monitor \([^ ][^ ]*\) .*/\1/p'
+}
+
+swaybg_processes() {
+  resolve_tools pgrep id
+  need "$tool_id" id
+  user_id=${user_id-$("$tool_id" -u)}
+  if [ -n "$tool_pgrep" ]; then
+    "$tool_pgrep" -u "$user_id" -x swaybg 2>/dev/null && return 0
+    # pgrep uses 1 for an empty result and higher statuses for actual errors.
+    [ "$?" -eq 1 ]
+  else
+    resolve_tools ps awk
+    need "$tool_ps" ps
+    need "$tool_awk" awk
+    "$tool_ps" -e -o uid= -o pid= -o comm= | "$tool_awk" -v owner="$user_id" '
+      { sub(/^.*\//, "", $3) }
+      $1 == owner && $3 == "swaybg" { print $2 }
+    '
+  fi
+}
+
+# Subshell bodies scope exit to the helper; do not replace ( ) with { }.
+process_arguments() (
+  LC_ALL=C
+  export LC_ALL
+  need "$tool_xargs" xargs
+  need "$tool_sh" sh
+  if [ "$xargs_null" = true ]; then
+    "$tool_xargs" -0 "$tool_sh" -c "$1" varietyctl
+  else
+    resolve_tools od awk
+    need "$tool_od" od
+    need "$tool_awk" awk
+    # Octal encoding preserves every byte through POSIX xargs, including
+    # quotes and newlines. Decode as data without evaluating shell code.
+    "$tool_od" -A n -v -t u1 | "$tool_awk" '
+      {
+        for (index_ = 1; index_ <= NF; index_++) {
+          byte = $index_
+          if (!started) {
+            printf "x"
+            started = 1
+          }
+          if (byte == 0) {
+            printf "\n"
+            started = 0
+          } else {
+            printf "%c%c0%03o", 92, 92, byte
+          }
+        }
+      }
+    ' | "$tool_xargs" "$tool_sh" -c '
+      for argument do
+        decoded=$(printf "%b_" "${argument#x}")
+        decoded=${decoded%_}
+        shift
+        set -- "$@" "$decoded"
+      done
+    '"$1" varietyctl
+  fi
+)
+
+print_wallpaper() {
+  [ -n "$1" ] && [ -f "$1" ] || return 1
+  printf '%s\n' "$1"
+}
+
+get_dms() (
+  wallpaper=$("$tool_dms" ipc call wallpaper get 2>/dev/null && printf '.') || wallpaper=.
+  wallpaper=${wallpaper%.}
+  wallpaper=${wallpaper%'
+'}
+  print_wallpaper "$wallpaper" && exit 0
+  connected=$(monitors) || exit 1
+  while IFS= read -r monitor; do
+    [ -n "$monitor" ] || continue
+    wallpaper=$("$tool_dms" ipc call wallpaper getFor "$monitor" 2>/dev/null && printf '.') || wallpaper=.
+    wallpaper=${wallpaper%.}
+    wallpaper=${wallpaper%'
+'}
+    print_wallpaper "$wallpaper" && exit 0
+  done <<EOF
+$connected
+EOF
+  exit 1
+)
+
+get_hyprpaper() (
+  active=$("$tool_hyprctl" hyprpaper listactive 2>/dev/null) || exit 1
+  while IFS= read -r line; do
+    case "$line" in
+    *': '*) print_wallpaper "${line#*: }" && exit 0 ;;
+    esac
+  done <<EOF
+$active
+EOF
+  exit 1
+)
+
+get_swaybg() (
+  resolve_tools xargs sh
+  if [ "${xargs_null-unprobed}" = unprobed ]; then
+    xargs_null=false
+    if [ -n "$tool_xargs" ] && [ -n "$tool_sh" ] &&
+      printf '\000' | "$tool_xargs" -0 "$tool_sh" -c ':' >/dev/null 2>&1; then
+      xargs_null=true
+    fi
+  fi
+  need "$tool_xargs" xargs
+  need "$tool_sh" sh
+  if [ "$xargs_null" != true ]; then
+    resolve_tools od awk
+    need "$tool_od" od
+    need "$tool_awk" awk
+  fi
+  processes=$(swaybg_processes) || exit 1
+  while IFS= read -r pid; do
+    case "$pid" in '' | *[!0-9]*) continue ;; esac
+    [ -r "/proc/$pid/cmdline" ] || continue
+    # NUL separation preserves image paths containing spaces or newlines.
+    if process_arguments '
+      image_next=false
+      for argument do
+        if [ "$image_next" = true ]; then
+          if [ -f "$argument" ]; then
+            printf "%s\n" "$argument"
+            exit 0
+          fi
+          image_next=false
+        fi
+        case "$argument" in
+          -i | --image) image_next=true ;;
+          --image=*)
+            image=${argument#--image=}
+            if [ -f "$image" ]; then
+              printf "%s\n" "$image"
+              exit 0
+            fi
+            ;;
+        esac
+      done
+      exit 1
+    ' <"/proc/$pid/cmdline" 2>/dev/null; then
+      exit 0
+    fi
+  done <<EOF
+$processes
+EOF
+  exit 1
+)
+
+get_wallpaper() {
+  debug "reading backend $backend"
+  case "$backend" in
+  dms)
+    resolve_tools dms
+    need "$tool_dms" dms
+    get_dms && return 0
+    ;;
+  hyprpaper)
+    resolve_tools hyprctl
+    need "$tool_hyprctl" hyprctl
+    get_hyprpaper && return 0
+    ;;
+  swaybg) get_swaybg && return 0 ;;
+  esac
+  fail 'no readable active wallpaper'
+}
+
+set_dms() (
+  dms_call set "$1" && exit 0
+  connected=$(monitors) || exit 1
+  monitor_count=0
+  while IFS= read -r monitor; do
+    [ -n "$monitor" ] || continue
+    monitor_count=$((monitor_count + 1))
+    dms_call setFor "$monitor" "$1" || exit 1
+  done <<EOF
+$connected
+EOF
+  [ "$monitor_count" -gt 0 ]
+)
+
+dms_call() {
+  response=$("$tool_dms" ipc call wallpaper "$@" 2>&1) || {
+    debug "dms IPC failed: $response"
+    return 1
+  }
+  case "$response" in
+  ERROR:*)
+    debug "dms rejected the request: $response"
+    return 1
+    ;;
+  esac
+}
+
+set_hyprpaper() (
+  case "${4:-zoom}" in
+  centered | scaled) fit_mode=contain ;;
+  stretched) fit_mode=fill ;;
+  wallpaper) fit_mode=tile ;;
+  *) fit_mode=cover ;;
+  esac
+  case "$1" in
+  *,*)
+    printf '%s\n' 'varietyctl: hyprpaper cannot encode a comma in the image path' >&2
+    exit 1
+    ;;
+  esac
+  active=$("$tool_hyprctl" hyprpaper listactive 2>/dev/null) || exit 1
+  monitor_count=0
+  while IFS= read -r line; do
+    case "$line" in
+    *': '*) monitor=${line%%: *} ;;
+    *) continue ;;
+    esac
+    [ -n "$monitor" ] || continue
+    monitor_count=$((monitor_count + 1))
+    hyprpaper_call "$monitor, $1, $fit_mode" || exit 1
+  done <<EOF
+$active
+EOF
+  if [ "$monitor_count" -gt 0 ]; then
+    exit 0
+  fi
+  hyprpaper_call ", $1, $fit_mode"
+)
+
+hyprpaper_call() {
+  response=$("$tool_hyprctl" hyprpaper wallpaper "$1" 2>&1) || {
+    debug "hyprpaper IPC failed: $response"
+    return 1
+  }
+  [ "$response" = ok ] && return 0
+  debug "hyprpaper returned an error: $response"
+  return 1
+}
+
+swaybg_settle_ticks() {
+  settle=${VARIETYCTL_SWAYBG_SETTLE:-0.5}
+  case "$settle" in
+  *.*)
+    settle_seconds=${settle%.*}
+    settle_fraction=${settle#*.}
+    ;;
+  *)
+    settle_seconds=$settle
+    settle_fraction=0
+    ;;
+  esac
+  case "$settle_seconds" in '' | *[!0-9]*) fail 'invalid VARIETYCTL_SWAYBG_SETTLE: expected seconds with at most one decimal place' ;; esac
+  case "$settle_fraction" in [0-9]) ;; *) fail 'invalid VARIETYCTL_SWAYBG_SETTLE: expected seconds with at most one decimal place' ;; esac
+  # Strip leading zeroes before POSIX arithmetic, which interprets octal.
+  while [ "${settle_seconds#0}" != "$settle_seconds" ]; do settle_seconds=${settle_seconds#0}; done
+  settle_seconds=${settle_seconds:-0}
+  [ "${#settle_seconds}" -le 4 ] || fail 'VARIETYCTL_SWAYBG_SETTLE is too large'
+  settle_ticks=$((settle_seconds * 10 + settle_fraction))
+  [ "$settle_ticks" -gt 0 ] || fail 'VARIETYCTL_SWAYBG_SETTLE must be positive'
+}
+
+swaybg_survives() {
+  remaining_polls=$settle_ticks
+  while [ "$remaining_polls" -gt 0 ]; do
+    kill -0 "$new_pid" 2>/dev/null || return 1
+    pause_briefly
+    kill -0 "$new_pid" 2>/dev/null || return 1
+    remaining_polls=$((remaining_polls - 1))
+  done
+}
+
+set_swaybg() {
+  case "${4:-zoom}" in
+  centered) sway_mode=center ;;
+  scaled) sway_mode=fit ;;
+  stretched) sway_mode=stretch ;;
+  wallpaper) sway_mode=tile ;;
+  *) sway_mode=fill ;;
+  esac
+  resolve_tools setsid sleep id
+  need "$tool_sleep" sleep
+  need "$tool_id" id
+  swaybg_settle_ticks
+  processes=$(swaybg_processes) || return 1
+  if [ -n "$tool_setsid" ]; then
+    "$tool_setsid" "$tool_swaybg" -i "$1" -m "$sway_mode" </dev/null >/dev/null 2>&1 9>&- &
+  else
+    "$tool_swaybg" -i "$1" -m "$sway_mode" </dev/null >/dev/null 2>&1 9>&- &
+  fi
+  new_pid=$!
+  if ! swaybg_survives; then
+    wait "$new_pid" 2>/dev/null || :
+    return 1
+  fi
+  while IFS= read -r pid; do
+    case "$pid" in
+    '' | *[!0-9]*) continue ;;
+    esac
+    [ "$pid" -gt 0 ] && [ "$pid" != "$new_pid" ] || continue
+    kill "$pid" 2>/dev/null || :
+  done <<EOF
+$processes
+EOF
+  return 0
+}
+
+set_wallpaper() {
+  debug "setting backend $backend"
+  case "$backend" in
+  dms)
+    resolve_tools dms
+    need "$tool_dms" dms
+    set_dms "$@" && return 0
+    ;;
+  hyprpaper)
+    resolve_tools hyprctl
+    need "$tool_hyprctl" hyprctl
+    set_hyprpaper "$@" && return 0
+    ;;
+  swaybg)
+    resolve_tools swaybg
+    need "$tool_swaybg" swaybg
+    lock_set
+    set_swaybg "$@" && return 0
+    ;;
+  esac
+  fail 'wallpaper setter failed'
+}
+
+# Percent-encode bytes, retaining only URI unreserved characters and /.
+file_uri() (
+  resolve_tools od awk
+  need "$tool_od" od
+  need "$tool_awk" awk
+  LC_ALL=C
+  export LC_ALL
+  printf 'file://'
+  printf '%s' "$1" | "$tool_od" -A n -v -t u1 | "$tool_awk" '
+    {
+      for (byte_index = 1; byte_index <= NF; byte_index++) {
+        byte = $byte_index
+        if ((byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122) ||
+            (byte >= 48 && byte <= 57) || byte == 45 || byte == 46 ||
+            byte == 95 || byte == 126 || byte == 47)
+          printf "%c", byte
+        else
+          printf "%%%02X", byte
+      }
+    }
+  '
+)
+
+update_lockscreen_link() (
+  # Variety prunes processed wallpaper-* images; its original file survives that.
+  link_image=$1
+  if [ -n "${3:-}" ] && [ -f "$3" ]; then
+    case "$3" in /*) link_image=$3 ;; *) link_image=$PWD/$3 ;; esac
+  fi
+  resolve_tools mkdir ln mv rm
+  need "$tool_mkdir" mkdir
+  need "$tool_ln" ln
+  need "$tool_mv" mv
+  need "$tool_rm" rm
+  link=${VARIETYCTL_LOCKSCREEN_LINK:-${XDG_STATE_HOME:-$HOME/.local/state}/varietyctl/lockscreen}
+  case "$link" in /*) ;; *) link=$PWD/$link ;; esac
+  link_directory=${link%/*}
+  [ -n "${link##*/}" ] && [ ! -d "$link" ] || fail 'invalid lock screen link destination'
+  "$tool_mkdir" -p "$link_directory" || fail 'cannot create lock screen link directory'
+  for link_attempt in 0 1 2 3 4 5 6 7 8 9; do
+    temporary_link=$link_directory/.varietyctl-lockscreen-$$-$link_attempt
+    # Prefer --; absolute operands also make the POSIX form safe.
+    if "$tool_ln" -s -- "$link_image" "$temporary_link" 2>/dev/null ||
+      "$tool_ln" -s "$link_image" "$temporary_link" 2>/dev/null; then
+      trap '"$tool_rm" -f "$temporary_link"' 0
+      trap 'exit 1' HUP INT TERM
+      if "$tool_mv" -f -T "$temporary_link" "$link" 2>/dev/null ||
+        "$tool_mv" -f "$temporary_link" "$link" 2>/dev/null; then
+        exit 0
+      fi
+      fail 'cannot replace lock screen link'
+    fi
+  done
+  fail 'cannot create temporary lock screen link'
+)
+
+set_lockscreen() {
+  case "${XDG_CURRENT_DESKTOP:-}" in
+  *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]* | *[Nn][Ii][Rr][Ii]*)
+    update_lockscreen_link "$@"
+    ;;
+  *[Kk][Dd][Ee]*)
+    resolve_tools kwriteconfig6 kwriteconfig5
+    tool_kwriteconfig=${tool_kwriteconfig6:-$tool_kwriteconfig5}
+    need "$tool_kwriteconfig" 'kwriteconfig6 or kwriteconfig5'
+    uri=$(file_uri "$1") || return 1
+    # Plasma 6 org.kde.image consumes a QUrl (main.qml/ImageStackView);
+    # an encoded file:// URL also works in Plasma 5 and avoids URL ambiguity.
+    "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
+      --group org.kde.image --group General --key Image "$uri" || return 1
+    # QtQuick.Image: Stretch=0, Fit=1, Crop=2, Tile=3, Pad=6.
+    case "${4:-zoom}" in
+    centered) fill_mode=6 ;;
+    scaled) fill_mode=1 ;;
+    stretched) fill_mode=0 ;;
+    wallpaper) fill_mode=3 ;;
+    *) fill_mode=2 ;;
+    esac
+    "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
+      --group org.kde.image --group General --key FillMode "$fill_mode" || return 1
+    ;;
+  *[Gg][Nn][Oo][Mm][Ee]* | *[Uu][Nn][Ii][Tt][Yy]* | *[Bb][Uu][Dd][Gg][Ii][Ee]*)
+    resolve_tools gsettings
+    need "$tool_gsettings" gsettings
+    uri=$(file_uri "$1") || return 1
+    debug 'GNOME picture-uri is a compatibility write with no effect on stock GNOME Shell'
+    # Compatibility key: current GNOME Shell uses the desktop background
+    # for its blurred unlock dialog, rather than screensaver.picture-uri.
+    "$tool_gsettings" set org.gnome.desktop.screensaver picture-uri "$uri" || return 1
+    case "${4:-}" in
+    wallpaper | centered | scaled | stretched | zoom | spanned)
+      "$tool_gsettings" set org.gnome.desktop.screensaver picture-options "$4" || return 1
+      ;;
+    esac
+    picture_options=$("$tool_gsettings" get org.gnome.desktop.screensaver picture-options) || return 1
+    if [ "$picture_options" = "'none'" ]; then
+      "$tool_gsettings" set org.gnome.desktop.screensaver picture-options zoom || return 1
+    fi
+    ;;
+  *)
+    if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+      update_lockscreen_link "$@"
+    else
+      debug 'unsupported session; skipping lock screen change'
+    fi
+    ;;
+  esac
+}
+
+pause_briefly() {
+  # Fractional sleep is common; strictly POSIX implementations accept seconds.
+  "$tool_sleep" 0.1 2>/dev/null || "$tool_sleep" 1
+}
+
+release_lock() {
+  [ "${directory_locked:-false}" = true ] || return 0
+  "$tool_rm" -f "$lock_directory/pid"
+  "$tool_rmdir" "$lock_directory" 2>/dev/null || :
+}
+
+private_tmp_root() {
+  resolve_tools mkdir stat
+  need "$tool_mkdir" mkdir
+  lock_root=/tmp/varietyctl-$user_id
+  [ ! -L "$lock_root" ] || fail 'refusing a symlink temporary directory'
+  "$tool_mkdir" -m 700 "$lock_root" 2>/dev/null ||
+    [ -d "$lock_root" ] || fail 'cannot create private temporary directory'
+  [ ! -L "$lock_root" ] || fail 'refusing a symlink temporary directory'
+  if [ -n "$tool_stat" ] && directory_metadata=$("$tool_stat" -c '%u %a' -- "$lock_root" 2>/dev/null); then
+    :
+  else
+    # POSIX ls -n supplies a numeric owner when GNU stat is unavailable.
+    resolve_tools ls awk
+    need "$tool_ls" ls
+    need "$tool_awk" awk
+    directory_listing=$("$tool_ls" -nd "$lock_root") || fail 'cannot inspect private temporary directory'
+    directory_metadata=$(printf '%s\n' "$directory_listing" | "$tool_awk" 'NR == 1 { print $3, $1 }')
+  fi
+  IFS=' ' read -r directory_owner directory_mode <<EOF
+$directory_metadata
+EOF
+  [ "$directory_owner" = "$user_id" ] || fail 'private temporary directory has a different owner'
+  case "$directory_mode" in
+  700 | drwx------*) ;;
+  *) fail 'private temporary directory must have mode 0700' ;;
+  esac
+}
+
+reclaim_empty_lock() {
+  [ "$lock_ever_owned" = false ] && [ -n "$lock_identity" ] || return 1
+  "$tool_mkdir" "$lock_directory.reaping" 2>/dev/null || return 1
+  current_identity=$("$tool_ls" -di "$lock_directory" 2>/dev/null) || current_identity=
+  current_owner=
+  if [ -r "$lock_directory/pid" ]; then
+    IFS= read -r current_owner <"$lock_directory/pid" || current_owner=
+  fi
+  reclaimed=false
+  if [ "$current_identity" = "$lock_identity" ] && [ -z "$current_owner" ]; then
+    # The same empty generation survived the whole bounded wait.
+    "$tool_rm" -f "$lock_directory/pid"
+    if "$tool_rmdir" "$lock_directory" 2>/dev/null; then
+      debug 'reclaimed an empty wallpaper lock after the bounded wait'
+      reclaimed=true
+    fi
+  fi
+  "$tool_rmdir" "$lock_directory.reaping" 2>/dev/null || :
+  [ "$reclaimed" = true ]
+}
+
+lock_set() {
+  resolve_tools id flock
+  need "$tool_id" id
+  user_id=$("$tool_id" -u) || fail 'cannot determine current user'
+  case "$user_id" in '' | *[!0-9]*) fail 'invalid numeric user ID' ;; esac
+  umask 077
+  if [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+    lock_file=$XDG_RUNTIME_DIR/varietyctl-$user_id.lock
+  else
+    private_tmp_root
+    lock_file=$lock_root/set.lock
+  fi
+  if [ -n "$tool_flock" ]; then
+    [ ! -L "$lock_file" ] || fail 'refusing a symlink lock file'
+    exec 9>"$lock_file"
+    if "$tool_flock" -E 200 -w 10 9 2>/dev/null; then
+      debug "locked $lock_file with flock"
+      return 0
+    else
+      flock_status=$?
+    fi
+    [ "$flock_status" -ne 200 ] || fail 'timed out waiting for wallpaper lock'
+    debug "flock unusable (status $flock_status); using mkdir lock"
+    exec 9>&-
+  fi
+  resolve_tools mkdir rmdir rm sleep ls
+  need "$tool_mkdir" mkdir
+  need "$tool_rmdir" rmdir
+  need "$tool_rm" rm
+  need "$tool_sleep" sleep
+  need "$tool_ls" ls
+  lock_directory=$lock_file.d
+  lock_attempt=0
+  lock_identity=
+  lock_ever_owned=false
+  while ! "$tool_mkdir" "$lock_directory" 2>/dev/null; do
+    [ ! -L "$lock_directory" ] || fail 'refusing a symlink lock directory'
+    if [ -z "$lock_identity" ]; then
+      lock_identity=$("$tool_ls" -di "$lock_directory" 2>/dev/null) || lock_identity=
+    fi
+    owner=
+    if [ -r "$lock_directory/pid" ]; then
+      IFS= read -r owner <"$lock_directory/pid" || owner=
+    fi
+    [ -z "$owner" ] || lock_ever_owned=true
+    case "$owner" in
+    '' | *[!0-9]* | 0) ;;
+    *)
+      if ! kill -0 "$owner" 2>/dev/null &&
+        "$tool_mkdir" "$lock_directory.reaping" 2>/dev/null; then
+        # Only one waiter may reclaim this dead owner's lock directory.
+        # Recheck after taking the reaper lock: another waiter may already
+        # have replaced the directory with a live owner's lock.
+        current_owner=
+        if [ -r "$lock_directory/pid" ]; then
+          IFS= read -r current_owner <"$lock_directory/pid" || current_owner=
+        fi
+        if [ "$current_owner" = "$owner" ] && ! kill -0 "$owner" 2>/dev/null; then
+          debug "reclaiming stale lock from PID $owner"
+          "$tool_rm" -f "$lock_directory/pid"
+          "$tool_rmdir" "$lock_directory" 2>/dev/null || :
+        fi
+        "$tool_rmdir" "$lock_directory.reaping" 2>/dev/null || :
+        lock_identity=
+        lock_ever_owned=false
+        continue
+      fi
+      ;;
+    esac
+    lock_attempt=$((lock_attempt + 1))
+    if [ "$lock_attempt" -ge 100 ]; then
+      if reclaim_empty_lock; then
+        lock_attempt=0
+        lock_identity=
+        continue
+      fi
+      fail 'timed out waiting for wallpaper directory lock'
+    fi
+    pause_briefly
+  done
+  directory_locked=true
+  trap release_lock 0
+  trap 'exit 1' HUP INT TERM
+  printf '%s\n' "$$" >"$lock_directory/pid" || fail 'cannot record wallpaper lock owner'
+  debug "locked $lock_directory with mkdir"
+}
+
+action=${1:-}
+[ "$#" -eq 0 ] || shift
+case "$action" in
+-h | --help | help)
+  usage
+  exit 0
+  ;;
+next | previous | love | preferences | get | set | set-lockscreen) ;;
+*)
+  usage >&2
+  exit 2
+  ;;
+esac
+
+case "$action" in
+next | previous | love | preferences) resolve_tools variety ;;
+esac
+case "$action" in
+next) run_variety --next "$@" ;;
+previous) run_variety --previous "$@" ;;
+love) run_variety --favorite "$@" ;;
+preferences) run_variety --show-preferences "$@" ;;
+esac
+
+if [ "$action" != get ] && { [ -z "${1:-}" ] || [ ! -f "$1" ]; }; then
+  printf '%s\n' 'varietyctl: expected an existing wallpaper image path as the first argument' >&2
+  exit 2
+fi
+
+if [ "$action" != get ]; then
+  case "$1" in
+  /*) image=$1 ;;
+  *)
+    case "$1" in
+    */*)
+      image_dir=${1%/*}
+      image_name=${1##*/}
+      ;;
+    *)
+      image_dir=.
+      image_name=$1
+      ;;
+    esac
+    # Prefix ./ for leading dashes; a sentinel preserves trailing newlines.
+    image_dir=$(CDPATH='' cd -P "./$image_dir" && printf '%s_' "$PWD") || fail 'cannot resolve image directory'
+    image=${image_dir%_}/$image_name
+    ;;
+  esac
+  shift
+  set -- "$image" "$@"
+fi
+
+if [ "$action" = set-lockscreen ]; then
+  set_lockscreen "$@"
+  exit $?
+fi
+
+backend=${VARIETYCTL_BACKEND-${WALLPAPER_BACKEND:-auto}}
+case "$backend" in
+auto | dms | hyprpaper | swaybg) ;;
+*)
+  printf 'varietyctl: unknown wallpaper backend: %s\n' "$backend" >&2
+  exit 2
+  ;;
+esac
+
+choose_backend
+case "$action" in
+get) get_wallpaper ;;
+set)
+  set_wallpaper "$@"
+  ;;
+esac

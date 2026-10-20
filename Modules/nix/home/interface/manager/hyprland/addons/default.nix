@@ -1,11 +1,13 @@
 {
   dmsEnabled ? false,
+  config,
+  lix,
   lib,
   mkMerge,
   ...
 }: {
   programs = mkMerge [
-    (import ./lock.nix {inherit lib;})
+    (import ./lock.nix {inherit config lix;})
     # (import ./panel.nix)
     (import ./shot.nix)
   ];

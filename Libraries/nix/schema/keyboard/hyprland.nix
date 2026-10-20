@@ -1,4 +1,9 @@
-_: let
+{
+  _,
+  terminals ? [],
+}: let
+  inherit (_.lists.access) elemAt length;
+  inherit (_.lists.construction) genList;
   native = action: {
     kind = "hyprland";
     inherit action;
@@ -36,6 +41,11 @@ in {
   # Ordered groups are enabled only when a host or user declares their chords.
   # DMS-specific positions are supplied by dms/hyprland.nix when that panel is selected.
   ordered = {
+    terminalOpen = genList (index: command (elemAt terminals index).command) (
+      if length terminals < 2
+      then length terminals
+      else 2
+    );
     close = [
       (native "window.close()")
       (native "exit()")
@@ -49,9 +59,10 @@ in {
     workspaceNext = navigation "r" "e+1";
     workspacePrev = navigation "l" "e-1";
     wallpaper = [
-      (command "variety_next")
-      (command "variety_previous")
-      (command "variety --show-preferences")
+      (command "varietyctl next")
+      (command "varietyctl previous")
+      (command "varietyctl preferences")
+      (command "varietyctl love")
     ];
     volumeUp = [];
     volumeDown = [];

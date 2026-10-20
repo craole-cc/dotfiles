@@ -1,20 +1,40 @@
 {
-  home,
   paths,
   lix,
-  user,
   ...
 }: let
+  inherit (lix.options.construction) mkOption;
+  inherit (lix.types.combinators) listOf submodule;
+  inherit (lix.types.primitives) bool str;
+  sourceType = submodule {
+    options = {
+      enable = mkOption {
+        type = bool;
+        default = true;
+        description = "Whether this source is active.";
+      };
+      type = mkOption {
+        type = str;
+        example = "wallhaven";
+        description = ''
+          Variety source type: favorites, fetched, folder, bing, apod,
+          earthview, unsplash, unsplash-search, wallhaven, artstation,
+          flickr, ...
+        '';
+      };
+      location = mkOption {
+        type = str;
+        example = "waterfalls";
+        description = ''
+          Depends on the type: a path, a URL, a search query, or just a
+          label for sources that take no configuration.
+        '';
+      };
+    };
+  };
   inherit (lix.attrsets.aggregation) recursiveUpdate;
   inherit (lix.lists.aggregation) concatMap;
   inherit (lix.types.predicates) isString;
-  wallpaperPath = lix.modules.home.paths.mkUserPath {
-    inherit home user;
-    dots = paths.local.src;
-    path = ["wallpapers"];
-    default = "home:Pictures/Wallpapers";
-  };
-
   #? Core defaults for every single wallpaper configuration source
   defaultProperties = {enable = true;};
 
@@ -108,20 +128,26 @@
       (map (group: source "flickr" "group:https://www.flickr.com/groups/${group}/") groups)
       ++ (map (handle: source "flickr" "user:https://www.flickr.com/photos/${handle};") users);
   in {inherit groups users generated;};
-in
-  [
-    (source "favorites" "The Favorites folder")
-    (source "fetched" "The Fetched folder")
-    (source "folder" wallpaperPath)
-    (source "bing" "Bing Photo of the Day")
-    (source "earthview" "Google Earth View Wallpapers")
-    (source "unsplash" "High-resolution photos from Unsplash.com")
+in {
+  sources = mkOption {
+    type = listOf sourceType;
+    description = "Wallpaper sources, written as src1, src2, ... in order.";
+    default =
+      [
+        (source "favorites" "The Favorites folder")
+        (source "fetched" "The Fetched folder")
+        (source "bing" "Bing Photo of the Day")
+        (source "earthview" "Google Earth View Wallpapers")
+        (source "unsplash" "High-resolution photos from Unsplash.com")
 
-    (source "apod" {
-      location = "NASA's Astronomy Picture of the Day";
-      enable = false;
-    })
-  ]
-  ++ flickr.generated
-  ++ artisan.generated
-  ++ search.generated
+        (source "apod" {
+          location = "NASA's Astronomy Picture of the Day";
+          enable = false;
+        })
+      ]
+      ++ map (source "folder") paths.wallpapers.folders
+      ++ flickr.generated
+      ++ artisan.generated
+      ++ search.generated;
+  };
+}
