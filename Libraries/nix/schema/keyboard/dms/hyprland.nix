@@ -61,5 +61,7 @@ in {
     volumeMute = [(media "dms ipc call audio mute")];
     brightnessUp = brightness "increment";
     brightnessDown = brightness "decrement";
+    volume = volume "increment" ++ volume "decrement" ++ [(media "dms ipc call audio mute")];
+    brightness = brightness "increment" ++ brightness "decrement";
   };
 }

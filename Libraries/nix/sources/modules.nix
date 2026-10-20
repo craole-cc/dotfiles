@@ -112,6 +112,9 @@
       niri = inputs.dank-material-shell.homeModules.niri or {};
     };
     dms-plugin-registry = inputs.dms-plugin-registry.homeModules or {};
+    niri = {
+      default = inputs.niri.homeModules.niri or {};
+    };
     hermes-agent = inputs.hermes-agent.homeManagerModules or {};
     noctalia-shell = inputs.noctalia-shell.homeModules or {};
     caelestia = inputs.caelestia.homeManagerModules or {};

@@ -523,12 +523,12 @@
       keyboard.bindings = (import ./keyboard/hyprland.nix {inherit _;}).legacy;
     };
     niri = recursiveUpdate (mkWayland "niri") {
-      keyboard.bindings = {
+      keyboard.bindings = recursiveUpdate (import ./keyboard/niri.nix {inherit _;}).legacy {
         workspaceRename.action = "dms ipc call workspace-rename open";
         keybinds.action = "dms ipc call keybinds toggle niri";
         close.action = "niri msg action close-window";
         fullscreen.action = "niri msg action fullscreen-window";
-        maximise.action = "niri msg action maximise-column";
+        maximise.action = "niri msg action maximize-column";
         float.action = "niri msg action toggle-window-floating";
         workspacePrev.action = "niri msg action focus-workspace-previous";
         windowCycle.action = "niri msg action focus-window-previous";
@@ -740,7 +740,9 @@
     hyprlandKeyboard = import ./keyboard/hyprland.nix {
       inherit _ terminals;
     };
+    niriKeyboard = import ./keyboard/niri.nix {inherit _ terminals;};
     dmsHyprlandKeyboard = import ./keyboard/dms/hyprland.nix {inherit _;};
+    dmsNiriKeyboard = import ./keyboard/dms/niri.nix {inherit _;};
     dmsBindingGroups = [
       "overview"
       "workspaceRename"
@@ -846,6 +848,10 @@
               filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
               (hyprlandKeyboard.ordered
                 // optionalAttrs dmsPanel dmsHyprlandKeyboard.ordered)
+            else if windowManager.name == "niri"
+            then
+              filterAttrs (group: _: any (scope: isList (scope.bindings.${group} or null)) keyboardScopes)
+              (niriKeyboard.ordered // optionalAttrs dmsPanel dmsNiriKeyboard.ordered)
             else {};
         }
       ]

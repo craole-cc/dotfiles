@@ -13,6 +13,11 @@
       inputs.nixpkgs.follows = "nixPackages";
     };
 
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.nixpkgs.follows = "nixPackages";
+    };
+
     nixDarwin = {
       repo = "nix-darwin";
       owner = "LnL7";

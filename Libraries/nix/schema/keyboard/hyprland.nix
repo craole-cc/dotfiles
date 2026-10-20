@@ -15,6 +15,9 @@
   fullscreen = native ''window.fullscreen({ mode = "fullscreen", action = "toggle" })'';
   floating = native ''window.float({ action = "toggle" })'';
   groupLock = native ''group.lock_active({ action = "toggle" })'';
+  media = action: (command action) // {locked = true;};
+  scale = action:
+    map (step: (media (action step)) // {repeating = true;}) [5 1 10];
 
   navigation = direction: workspace: [
     (native ''focus({ direction = "${direction}" })'')
@@ -64,10 +67,17 @@ in {
       (command "varietyctl preferences")
       (command "varietyctl love")
     ];
-    volumeUp = [];
-    volumeDown = [];
-    volumeMute = [];
-    brightnessUp = [];
-    brightnessDown = [];
+    volume =
+      scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%+")
+      ++ scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%-")
+      ++ [ (media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") ];
+    brightness =
+      scale (step: "brightnessctl set +${toString step}%")
+      ++ scale (step: "brightnessctl set ${toString step}%-");
+    volumeUp = scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%+");
+    volumeDown = scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%-");
+    volumeMute = [ (media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") ];
+    brightnessUp = scale (step: "brightnessctl set +${toString step}%");
+    brightnessDown = scale (step: "brightnessctl set ${toString step}%-");
   };
 }
