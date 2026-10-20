@@ -111,7 +111,7 @@ in
           PartOf = ["graphical-session.target"];
         };
         Service = {
-          ExecStart = "${niriFloatSticky}/bin/niri-float-sticky --disable-auto-stick";
+          ExecStart = "${niriFloatSticky}/bin/niri-float-sticky --disable-auto-stick --allow-moving-to-foreign-monitors";
           Restart = "on-failure";
           RestartSec = 2;
         };

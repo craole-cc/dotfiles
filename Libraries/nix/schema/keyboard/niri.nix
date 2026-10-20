@@ -53,7 +53,7 @@ in {
       (native "toggle-window-floating")
       (native "maximize-column")
       (native "switch-focus-between-floating-and-tiling")
-      (command "niri msg action move-window-to-floating && niri-float-sticky -ipc toggle_sticky")
+      (command "niri msg action move-window-to-floating && sleep 0.2 && niri-float-sticky -ipc toggle_sticky")
     ];
     lock = [
       (command "dms ipc call lock lock")
