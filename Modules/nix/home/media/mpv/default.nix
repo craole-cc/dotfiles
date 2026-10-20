@@ -24,7 +24,7 @@
     then []
     else [
       (import ./yazi.nix {
-        inherit pkgs;
+        inherit lix pkgs;
         terminal = primaryTerminal;
       })
     ];
