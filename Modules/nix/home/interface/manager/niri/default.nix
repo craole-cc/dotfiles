@@ -6,6 +6,7 @@
   lix,
   pkgs,
   apps,
+  user,
   ...
 }:
 let
@@ -21,9 +22,20 @@ let
   inherit (lix.options.construction) mkEnable;
   inherit (lix.schema.io) mkNiriKeybindings;
   inherit (lib.modules) mkIf;
+  userInterface = lib.attrsets.removeAttrs (user.interface or {}) ["keyboard"];
+  niriInterface = (lix.schema.ui.mkUI {
+    inherit host;
+    user = user // {
+      interface = userInterface // {desktops = ["niri"];};
+    };
+  }).keyboard;
+  niriKeyboard = lix.schema.io.mergeKeyboards [keyboard niriInterface];
   niriPackage = config.programs.niri.package;
   scratchpads = import ./scratchpads.nix {
-    inherit actions apps keyboard lib niriPackage pkgs;
+    actions = actions;
+    apps = apps;
+    keyboard = niriKeyboard;
+    inherit lib niriPackage pkgs;
   };
   actions = config.lib.niri.actions;
 in
@@ -36,7 +48,8 @@ in
         package = pkgs.niri;
         settings = {
           binds = (mkNiriKeybindings {
-            inherit keyboard actions;
+            keyboard = niriKeyboard;
+            inherit actions;
           }) // scratchpads.binds;
           workspaces = scratchpads.workspaces;
           window-rules = scratchpads.window-rules;
