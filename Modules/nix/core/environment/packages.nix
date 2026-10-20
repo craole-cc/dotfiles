@@ -66,9 +66,7 @@
             category = "explorer";
           };
         in
-          resolvePackage {
-            inherit app inputs pkgs system;
-          }
+          resolvePackage {inherit app inputs pkgs system;}
       )
       (groups.explorer or [])
     ));
@@ -173,19 +171,13 @@
 
     #~@ System & Utilities
     utils = with pkgs; [
+      age
       bat
       bitwarden-cli
       bitwarden-desktop
-      dprint
-      gitui
-      gum
-      helix
-      jq
-      jql
-      patch
-      ripgrep
-      treefmt
       btop
+      biome #TODO: Should be gated based on need
+      dprint #TODO: Should be gated based on need
       coreutils
       diffutils
       fastfetch
@@ -194,14 +186,21 @@
       findutils
       gawk
       getent
-      gnome-randr
+      gitui
+      gnome-randr #TODO: Is there a more universal package?
       gnused
+      gum
+      helix
+      jaq
+      jq
+      jql
       lolcat
       lshw
+      patch
       pciutils
-      jq
-      jaq
       procs
+      sops
+      treefmt
       usbutils
       uutils-coreutils-noprefix
       wlr-randr
@@ -217,8 +216,10 @@
       lsd
       ouch
       p7zip
+      ripgrep
       rsync
       sad
+      sd
       trashy
       udiskie
     ];
@@ -227,21 +228,23 @@
       curl
       gh
       nftables
+      speedtest-go
+      speedtest-rs
       wget
     ];
 
     media = with pkgs; [
-      shortwave
+      ffmpeg-headless
+      ffmpegthumbnailer
       imagemagick
       imv
       nomacs
+      poppler
       qimgv
+      resvg
+      shortwave
       viu
       yazi
-      ffmpeg-headless
-      ffmpegthumbnailer
-      poppler
-      resvg
     ];
 
     #~@ Platform Helpers
@@ -257,28 +260,7 @@
     common = editor ++ browser ++ terminal ++ explorer ++ launcher ++ bar ++ ai;
     machine = wayland ++ linux ++ darwin;
     overall = utils ++ dev ++ files ++ network ++ media ++ common ++ machine;
-  in {
-    inherit
-      ai
-      bar
-      browser
-      common
-      darwin
-      dev
-      editor
-      explorer
-      files
-      launcher
-      linux
-      machine
-      media
-      network
-      overall
-      utils
-      terminal
-      wayland
-      ;
-  };
+  in {inherit ai bar browser common darwin dev editor explorer files launcher linux machine media network overall utils terminal wayland;};
 in
   mkConfig {
     inherit context;
