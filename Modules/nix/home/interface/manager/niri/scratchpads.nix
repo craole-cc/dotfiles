@@ -73,7 +73,6 @@ let
       name = "dotdots-niri-scratchpad-${category}-${toString application}";
       runtimeInputs = [ pkgs.bash pkgs.coreutils pkgs.jq niriPackage ];
       text = ''
-        workspace=${escapeShell workspace}
         app_id=${escapeShell appId}
         launch=${escapeShell launch}
         windows=$(niri msg --json windows)
@@ -93,7 +92,8 @@ let
         fi
 
         bash -lc "$launch" &
-        for attempt in $(seq 1 50); do
+        attempts_remaining=50
+        while [ "$attempts_remaining" -gt 0 ]; do
           windows=$(niri msg --json windows)
           window_id=$(printf '%s' "$windows" | jq -r --arg app_id "$app_id" '[.[] | select(.app_id == $app_id)][0].id // empty')
           if [ -n "$window_id" ]; then
@@ -103,6 +103,7 @@ let
             [ -n "$target_workspace" ] && niri msg action focus-workspace "$target_workspace"
             exit
           fi
+          attempts_remaining=$((attempts_remaining - 1))
           sleep 0.1
         done
       '';
