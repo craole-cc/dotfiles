@@ -1,5 +1,6 @@
 {
   config,
+  host,
   keyboard,
   lib,
   lix,
@@ -9,7 +10,7 @@
 }:
 let
   context = mkContext {
-    inherit config;
+    inherit config host;
     dom = "interface";
     sub = "managers";
     mod = "niri";
