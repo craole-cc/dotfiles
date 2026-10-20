@@ -12,6 +12,7 @@
     selection-clear-on-copy = true;
     mouse-hide-while-typing = true;
     confirm-close-surface = false;
+    window-decoration = "none";
 
     background-blur = true;
     background-opacity = style.opacity.terminal.dark;

@@ -32,12 +32,12 @@ log_failure() {
   [ -n "${XDG_STATE_HOME:-}${HOME:-}" ] || return 0
   log_directory=${XDG_STATE_HOME:-${HOME:-}/.local/state}/varietyctl
   case "$log_directory" in /*) ;; *) return 0 ;; esac
-  mkdir -p "$log_directory" 2>/dev/null || return 0
+  mkdir -p "$log_directory" 2> /dev/null || return 0
   log_file=$log_directory/last-error
-  printf '%s %s %s\n' "$(date '+%Y-%m-%dT%H:%M:%S' 2>/dev/null || :)" "${backend:-unknown}" "$1" \
-    >>"$log_file" 2>/dev/null || return 0
-  if tail -n 20 "$log_file" >"$log_file.tmp" 2>/dev/null; then
-    mv -f "$log_file.tmp" "$log_file" 2>/dev/null || rm -f "$log_file.tmp"
+  printf '%s %s %s\n' "$(date '+%Y-%m-%dT%H:%M:%S' 2> /dev/null || :)" "${backend:-unknown}" "$1" \
+    >> "$log_file" 2> /dev/null || return 0
+  if tail -n 20 "$log_file" > "$log_file.tmp" 2> /dev/null; then
+    mv -f "$log_file.tmp" "$log_file" 2> /dev/null || rm -f "$log_file.tmp"
   fi
   return 0
 }
@@ -142,7 +142,7 @@ hyprpaper_reachable() (
   probe_reply=$("$tool_hyprctl" hyprpaper listactive 2>&1) || return 1
   # A running daemon can have no active images. Reject IPC error text too.
   case "$probe_reply" in
-  error:* | ERROR:* | '[hw] err:'*) return 1 ;;
+    error:* | ERROR:* | '[hw] err:'*) return 1 ;;
   esac
   return 0
 )
@@ -155,7 +155,7 @@ dms_running() {
   need_uid
   resolve_tools pgrep
   if [ -n "$tool_pgrep" ]; then
-    "$tool_pgrep" -u "$user_id" -f "$dms_pattern" >/dev/null 2>&1
+    "$tool_pgrep" -u "$user_id" -f "$dms_pattern" > /dev/null 2>&1
     return $?
   fi
   resolve_tools ps awk
@@ -176,20 +176,20 @@ choose_backend() {
   resolve_tools dms
   if [ -n "$tool_dms" ] && dms_running; then
     backend=dms
-    "$tool_dms" ipc call wallpaper get >/dev/null 2>&1 ||
-      fail 'DMS is running but its IPC is unreachable; not touching other backends'
+    "$tool_dms" ipc call wallpaper get > /dev/null 2>&1 \
+      || fail 'DMS is running but its IPC is unreachable; not touching other backends'
   else
     debug 'DMS is not running'
     case "${XDG_CURRENT_DESKTOP:-}" in
-    *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
-      resolve_tools hyprctl
-      if hyprpaper_reachable; then
-        backend=hyprpaper
-      else
-        backend=swaybg
-      fi
-      ;;
-    *) backend=swaybg ;;
+      *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
+        resolve_tools hyprctl
+        if hyprpaper_reachable; then
+          backend=hyprpaper
+        else
+          backend=swaybg
+        fi
+        ;;
+      *) backend=swaybg ;;
     esac
   fi
   debug "selected backend $backend"
@@ -198,39 +198,39 @@ choose_backend() {
 monitors() {
   resolve_tools jaq jq
   case "${XDG_CURRENT_DESKTOP:-}" in
-  *[Nn][Ii][Rr][Ii]*)
-    resolve_tools niri
-    need "$tool_niri" niri
-    if [ -z "$tool_jaq$tool_jq" ]; then
-      resolve_tools sed
-      need "$tool_sed" sed
-      monitor_text=$("$tool_niri" msg outputs 2>/dev/null) || fail 'niri outputs IPC failed'
-      # Upstream print_output: Output "make model serial" (connector).
-      # Locally unverified: niri is not installed on the development host.
-      monitor_names=$(printf '%s\n' "$monitor_text" | "$tool_sed" -n 's/^Output ".*" (\([^()][^()]*\))$/\1/p') ||
-        fail 'cannot parse niri output names'
-      [ -n "$monitor_names" ] || fail 'cannot parse niri output names'
-      printf '%s\n' "$monitor_names"
-      return 0
-    fi
-    monitor_json=$("$tool_niri" msg --json outputs 2>/dev/null) || fail 'niri outputs IPC failed'
-    # niri's CLI serialises a map keyed by connector name, not an array.
-    for tool_json in "$tool_jaq" "$tool_jq"; do
-      [ -n "$tool_json" ] || continue
-      if monitor_names=$(printf '%s\n' "$monitor_json" | "$tool_json" -er 'keys[]'); then
+    *[Nn][Ii][Rr][Ii]*)
+      resolve_tools niri
+      need "$tool_niri" niri
+      if [ -z "$tool_jaq$tool_jq" ]; then
+        resolve_tools sed
+        need "$tool_sed" sed
+        monitor_text=$("$tool_niri" msg outputs 2> /dev/null) || fail 'niri outputs IPC failed'
+        # Upstream print_output: Output "make model serial" (connector).
+        # Locally unverified: niri is not installed on the development host.
+        monitor_names=$(printf '%s\n' "$monitor_text" | "$tool_sed" -n 's/^Output ".*" (\([^()][^()]*\))$/\1/p') \
+          || fail 'cannot parse niri output names'
+        [ -n "$monitor_names" ] || fail 'cannot parse niri output names'
         printf '%s\n' "$monitor_names"
         return 0
       fi
-    done
-    fail 'cannot parse niri output names'
-    ;;
-  *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
-    resolve_tools hyprctl
-    need "$tool_hyprctl" hyprctl
-    ;;
-  *) fail 'monitor discovery requires a Hyprland or niri desktop' ;;
+      monitor_json=$("$tool_niri" msg --json outputs 2> /dev/null) || fail 'niri outputs IPC failed'
+      # niri's CLI serialises a map keyed by connector name, not an array.
+      for tool_json in "$tool_jaq" "$tool_jq"; do
+        [ -n "$tool_json" ] || continue
+        if monitor_names=$(printf '%s\n' "$monitor_json" | "$tool_json" -er 'keys[]'); then
+          printf '%s\n' "$monitor_names"
+          return 0
+        fi
+      done
+      fail 'cannot parse niri output names'
+      ;;
+    *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]*)
+      resolve_tools hyprctl
+      need "$tool_hyprctl" hyprctl
+      ;;
+    *) fail 'monitor discovery requires a Hyprland or niri desktop' ;;
   esac
-  if [ -n "$tool_jaq$tool_jq" ] && monitor_json=$("$tool_hyprctl" monitors -j 2>/dev/null); then
+  if [ -n "$tool_jaq$tool_jq" ] && monitor_json=$("$tool_hyprctl" monitors -j 2> /dev/null); then
     for tool_json in "$tool_jaq" "$tool_jq"; do
       [ -n "$tool_json" ] || continue
       if monitor_names=$(printf '%s\n' "$monitor_json" | "$tool_json" -er '.[].name'); then
@@ -240,21 +240,21 @@ monitors() {
     done
   fi
   resolve_tools rg
-  if [ -n "$tool_rg" ] &&
-    monitor_names=$("$tool_hyprctl" monitors 2>/dev/null | "$tool_rg" --no-config --only-matching --replace '$1' '^Monitor ([^ ]+) '); then
+  if [ -n "$tool_rg" ] \
+    && monitor_names=$("$tool_hyprctl" monitors 2> /dev/null | "$tool_rg" --no-config --only-matching --replace '$1' '^Monitor ([^ ]+) '); then
     printf '%s\n' "$monitor_names"
     return 0
   fi
   resolve_tools sed
   need "$tool_sed" sed
-  "$tool_hyprctl" monitors 2>/dev/null | "$tool_sed" -n 's/^Monitor \([^ ][^ ]*\) .*/\1/p'
+  "$tool_hyprctl" monitors 2> /dev/null | "$tool_sed" -n 's/^Monitor \([^ ][^ ]*\) .*/\1/p'
 }
 
 swaybg_processes() {
   resolve_tools pgrep
   need_uid
   if [ -n "$tool_pgrep" ]; then
-    "$tool_pgrep" -u "$user_id" -x swaybg 2>/dev/null && return 0
+    "$tool_pgrep" -u "$user_id" -x swaybg 2> /dev/null && return 0
     # pgrep uses 1 for an empty result and higher statuses for actual errors.
     [ "$?" -eq 1 ]
   else
@@ -315,7 +315,7 @@ print_wallpaper() {
 }
 
 get_dms() (
-  wallpaper=$("$tool_dms" ipc call wallpaper get 2>/dev/null && printf '.') || wallpaper=.
+  wallpaper=$("$tool_dms" ipc call wallpaper get 2> /dev/null && printf '.') || wallpaper=.
   wallpaper=${wallpaper%.}
   wallpaper=${wallpaper%'
 '}
@@ -323,24 +323,24 @@ get_dms() (
   connected=$(monitors) || exit 1
   while IFS= read -r monitor; do
     [ -n "$monitor" ] || continue
-    wallpaper=$("$tool_dms" ipc call wallpaper getFor "$monitor" 2>/dev/null && printf '.') || wallpaper=.
+    wallpaper=$("$tool_dms" ipc call wallpaper getFor "$monitor" 2> /dev/null && printf '.') || wallpaper=.
     wallpaper=${wallpaper%.}
     wallpaper=${wallpaper%'
 '}
     print_wallpaper "$wallpaper" && exit 0
-  done <<EOF
+  done << EOF
 $connected
 EOF
   exit 1
 )
 
 get_hyprpaper() (
-  active=$("$tool_hyprctl" hyprpaper listactive 2>/dev/null) || exit 1
+  active=$("$tool_hyprctl" hyprpaper listactive 2> /dev/null) || exit 1
   while IFS= read -r line; do
     case "$line" in
-    *': '*) print_wallpaper "${line#*: }" && exit 0 ;;
+      *': '*) print_wallpaper "${line#*: }" && exit 0 ;;
     esac
-  done <<EOF
+  done << EOF
 $active
 EOF
   exit 1
@@ -350,8 +350,8 @@ get_swaybg() (
   resolve_tools xargs sh
   if [ "${xargs_null-unprobed}" = unprobed ]; then
     xargs_null=false
-    if [ -n "$tool_xargs" ] && [ -n "$tool_sh" ] &&
-      printf '\000' | "$tool_xargs" -0 "$tool_sh" -c ':' >/dev/null 2>&1; then
+    if [ -n "$tool_xargs" ] && [ -n "$tool_sh" ] \
+      && printf '\000' | "$tool_xargs" -0 "$tool_sh" -c ':' > /dev/null 2>&1; then
       xargs_null=true
     fi
   fi
@@ -389,10 +389,10 @@ get_swaybg() (
         esac
       done
       exit 1
-    ' <"/proc/$pid/cmdline" 2>/dev/null; then
+    ' < "/proc/$pid/cmdline" 2> /dev/null; then
       exit 0
     fi
-  done <<EOF
+  done << EOF
 $processes
 EOF
   exit 1
@@ -401,17 +401,17 @@ EOF
 get_wallpaper() {
   debug "reading backend $backend"
   case "$backend" in
-  dms)
-    resolve_tools dms
-    need "$tool_dms" dms
-    get_dms && return 0
-    ;;
-  hyprpaper)
-    resolve_tools hyprctl
-    need "$tool_hyprctl" hyprctl
-    get_hyprpaper && return 0
-    ;;
-  swaybg) get_swaybg && return 0 ;;
+    dms)
+      resolve_tools dms
+      need "$tool_dms" dms
+      get_dms && return 0
+      ;;
+    hyprpaper)
+      resolve_tools hyprctl
+      need "$tool_hyprctl" hyprctl
+      get_hyprpaper && return 0
+      ;;
+    swaybg) get_swaybg && return 0 ;;
   esac
   fail 'no readable active wallpaper'
 }
@@ -424,7 +424,7 @@ set_dms() (
     [ -n "$monitor" ] || continue
     monitor_count=$((monitor_count + 1))
     dms_call setFor "$monitor" "$1" || exit 1
-  done <<EOF
+  done << EOF
 $connected
 EOF
   [ "$monitor_count" -gt 0 ]
@@ -436,34 +436,34 @@ dms_call() {
     return 1
   }
   case "$response" in
-  ERROR:*)
-    debug "dms rejected the request: $response"
-    return 1
-    ;;
+    ERROR:*)
+      debug "dms rejected the request: $response"
+      return 1
+      ;;
   esac
 }
 
 set_hyprpaper() (
   case "${4:-zoom}" in
-  centered | scaled) fit_mode=contain ;;
-  stretched) fit_mode=fill ;;
-  wallpaper) fit_mode=tile ;;
-  *) fit_mode=cover ;;
+    centered | scaled) fit_mode=contain ;;
+    stretched) fit_mode=fill ;;
+    wallpaper) fit_mode=tile ;;
+    *) fit_mode=cover ;;
   esac
   case "$1" in
-  *,*) fail 'hyprpaper cannot encode a comma in the image path' ;;
+    *,*) fail 'hyprpaper cannot encode a comma in the image path' ;;
   esac
-  active=$("$tool_hyprctl" hyprpaper listactive 2>/dev/null) || exit 1
+  active=$("$tool_hyprctl" hyprpaper listactive 2> /dev/null) || exit 1
   monitor_count=0
   while IFS= read -r line; do
     case "$line" in
-    *': '*) monitor=${line%%: *} ;;
-    *) continue ;;
+      *': '*) monitor=${line%%: *} ;;
+      *) continue ;;
     esac
     [ -n "$monitor" ] || continue
     monitor_count=$((monitor_count + 1))
     hyprpaper_call "$monitor, $1, $fit_mode" || exit 1
-  done <<EOF
+  done << EOF
 $active
 EOF
   if [ "$monitor_count" -gt 0 ]; then
@@ -485,14 +485,14 @@ hyprpaper_call() {
 swaybg_settle_ticks() {
   settle=${VARIETYCTL_SWAYBG_SETTLE:-0.5}
   case "$settle" in
-  *.*)
-    settle_seconds=${settle%.*}
-    settle_fraction=${settle#*.}
-    ;;
-  *)
-    settle_seconds=$settle
-    settle_fraction=0
-    ;;
+    *.*)
+      settle_seconds=${settle%.*}
+      settle_fraction=${settle#*.}
+      ;;
+    *)
+      settle_seconds=$settle
+      settle_fraction=0
+      ;;
   esac
   case "$settle_seconds" in '' | *[!0-9]*) fail 'invalid VARIETYCTL_SWAYBG_SETTLE: expected seconds with at most one decimal place' ;; esac
   case "$settle_fraction" in [0-9]) ;; *) fail 'invalid VARIETYCTL_SWAYBG_SETTLE: expected seconds with at most one decimal place' ;; esac
@@ -507,42 +507,42 @@ swaybg_settle_ticks() {
 swaybg_survives() {
   remaining_polls=$settle_ticks
   while [ "$remaining_polls" -gt 0 ]; do
-    kill -0 "$new_pid" 2>/dev/null || return 1
+    kill -0 "$new_pid" 2> /dev/null || return 1
     pause_briefly
-    kill -0 "$new_pid" 2>/dev/null || return 1
+    kill -0 "$new_pid" 2> /dev/null || return 1
     remaining_polls=$((remaining_polls - 1))
   done
 }
 
 set_swaybg() {
   case "${4:-zoom}" in
-  centered) sway_mode=center ;;
-  scaled) sway_mode=fit ;;
-  stretched) sway_mode=stretch ;;
-  wallpaper) sway_mode=tile ;;
-  *) sway_mode=fill ;;
+    centered) sway_mode=center ;;
+    scaled) sway_mode=fit ;;
+    stretched) sway_mode=stretch ;;
+    wallpaper) sway_mode=tile ;;
+    *) sway_mode=fill ;;
   esac
   resolve_tools setsid sleep
   need "$tool_sleep" sleep
   swaybg_settle_ticks
   processes=$(swaybg_processes) || return 1
   if [ -n "$tool_setsid" ]; then
-    "$tool_setsid" "$tool_swaybg" -i "$1" -m "$sway_mode" </dev/null >/dev/null 2>&1 9>&- &
+    "$tool_setsid" "$tool_swaybg" -i "$1" -m "$sway_mode" < /dev/null > /dev/null 2>&1 9>&- &
   else
-    "$tool_swaybg" -i "$1" -m "$sway_mode" </dev/null >/dev/null 2>&1 9>&- &
+    "$tool_swaybg" -i "$1" -m "$sway_mode" < /dev/null > /dev/null 2>&1 9>&- &
   fi
   new_pid=$!
   if ! swaybg_survives; then
-    wait "$new_pid" 2>/dev/null || :
+    wait "$new_pid" 2> /dev/null || :
     return 1
   fi
   while IFS= read -r pid; do
     case "$pid" in
-    '' | *[!0-9]*) continue ;;
+      '' | *[!0-9]*) continue ;;
     esac
     [ "$pid" -gt 0 ] && [ "$pid" != "$new_pid" ] || continue
-    kill "$pid" 2>/dev/null || :
-  done <<EOF
+    kill "$pid" 2> /dev/null || :
+  done << EOF
 $processes
 EOF
   return 0
@@ -551,22 +551,22 @@ EOF
 set_wallpaper() {
   debug "setting backend $backend"
   case "$backend" in
-  dms)
-    resolve_tools dms
-    need "$tool_dms" dms
-    set_dms "$@" && return 0
-    ;;
-  hyprpaper)
-    resolve_tools hyprctl
-    need "$tool_hyprctl" hyprctl
-    set_hyprpaper "$@" && return 0
-    ;;
-  swaybg)
-    resolve_tools swaybg
-    need "$tool_swaybg" swaybg
-    lock_set
-    set_swaybg "$@" && return 0
-    ;;
+    dms)
+      resolve_tools dms
+      need "$tool_dms" dms
+      set_dms "$@" && return 0
+      ;;
+    hyprpaper)
+      resolve_tools hyprctl
+      need "$tool_hyprctl" hyprctl
+      set_hyprpaper "$@" && return 0
+      ;;
+    swaybg)
+      resolve_tools swaybg
+      need "$tool_swaybg" swaybg
+      lock_set
+      set_swaybg "$@" && return 0
+      ;;
   esac
   fail 'wallpaper setter failed'
 }
@@ -613,12 +613,12 @@ update_lockscreen_link() (
   for link_attempt in 0 1 2 3 4 5 6 7 8 9; do
     temporary_link=$link_directory/.varietyctl-lockscreen-$$-$link_attempt
     # Prefer --; absolute operands also make the POSIX form safe.
-    if "$tool_ln" -s -- "$link_image" "$temporary_link" 2>/dev/null ||
-      "$tool_ln" -s "$link_image" "$temporary_link" 2>/dev/null; then
+    if "$tool_ln" -s -- "$link_image" "$temporary_link" 2> /dev/null \
+      || "$tool_ln" -s "$link_image" "$temporary_link" 2> /dev/null; then
       trap '"$tool_rm" -f "$temporary_link"' 0
       trap 'exit 1' HUP INT TERM
-      if "$tool_mv" -f -T "$temporary_link" "$link" 2>/dev/null ||
-        "$tool_mv" -f "$temporary_link" "$link" 2>/dev/null; then
+      if "$tool_mv" -f -T "$temporary_link" "$link" 2> /dev/null \
+        || "$tool_mv" -f "$temporary_link" "$link" 2> /dev/null; then
         exit 0
       fi
       fail 'cannot replace lock screen link'
@@ -629,66 +629,66 @@ update_lockscreen_link() (
 
 set_lockscreen() {
   case "${XDG_CURRENT_DESKTOP:-}" in
-  *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]* | *[Nn][Ii][Rr][Ii]*)
-    update_lockscreen_link "$@"
-    ;;
-  *[Kk][Dd][Ee]*)
-    resolve_tools kwriteconfig6 kwriteconfig5
-    tool_kwriteconfig=${tool_kwriteconfig6:-$tool_kwriteconfig5}
-    need "$tool_kwriteconfig" 'kwriteconfig6 or kwriteconfig5'
-    uri=$(file_uri "$1") || return 1
-    # Plasma 6 org.kde.image consumes a QUrl (main.qml/ImageStackView);
-    # an encoded file:// URL also works in Plasma 5 and avoids URL ambiguity.
-    "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
-      --group org.kde.image --group General --key Image "$uri" || return 1
-    # QtQuick.Image: Stretch=0, Fit=1, Crop=2, Tile=3, Pad=6.
-    case "${4:-zoom}" in
-    centered) fill_mode=6 ;;
-    scaled) fill_mode=1 ;;
-    stretched) fill_mode=0 ;;
-    wallpaper) fill_mode=3 ;;
-    *) fill_mode=2 ;;
-    esac
-    "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
-      --group org.kde.image --group General --key FillMode "$fill_mode" || return 1
-    ;;
-  *[Gg][Nn][Oo][Mm][Ee]* | *[Uu][Nn][Ii][Tt][Yy]* | *[Bb][Uu][Dd][Gg][Ii][Ee]*)
-    resolve_tools gsettings
-    need "$tool_gsettings" gsettings
-    uri=$(file_uri "$1") || return 1
-    debug 'GNOME picture-uri is a compatibility write with no effect on stock GNOME Shell'
-    # Compatibility key: current GNOME Shell uses the desktop background
-    # for its blurred unlock dialog, rather than screensaver.picture-uri.
-    "$tool_gsettings" set org.gnome.desktop.screensaver picture-uri "$uri" || return 1
-    case "${4:-}" in
-    wallpaper | centered | scaled | stretched | zoom | spanned)
-      "$tool_gsettings" set org.gnome.desktop.screensaver picture-options "$4" || return 1
-      ;;
-    esac
-    picture_options=$("$tool_gsettings" get org.gnome.desktop.screensaver picture-options) || return 1
-    if [ "$picture_options" = "'none'" ]; then
-      "$tool_gsettings" set org.gnome.desktop.screensaver picture-options zoom || return 1
-    fi
-    ;;
-  *)
-    if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+    *[Hh][Yy][Pp][Rr][Ll][Aa][Nn][Dd]* | *[Nn][Ii][Rr][Ii]*)
       update_lockscreen_link "$@"
-    else
-      debug 'unsupported session; skipping lock screen change'
-    fi
-    ;;
+      ;;
+    *[Kk][Dd][Ee]*)
+      resolve_tools kwriteconfig6 kwriteconfig5
+      tool_kwriteconfig=${tool_kwriteconfig6:-$tool_kwriteconfig5}
+      need "$tool_kwriteconfig" 'kwriteconfig6 or kwriteconfig5'
+      uri=$(file_uri "$1") || return 1
+      # Plasma 6 org.kde.image consumes a QUrl (main.qml/ImageStackView);
+      # an encoded file:// URL also works in Plasma 5 and avoids URL ambiguity.
+      "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
+        --group org.kde.image --group General --key Image "$uri" || return 1
+      # QtQuick.Image: Stretch=0, Fit=1, Crop=2, Tile=3, Pad=6.
+      case "${4:-zoom}" in
+        centered) fill_mode=6 ;;
+        scaled) fill_mode=1 ;;
+        stretched) fill_mode=0 ;;
+        wallpaper) fill_mode=3 ;;
+        *) fill_mode=2 ;;
+      esac
+      "$tool_kwriteconfig" --file kscreenlockerrc --group Greeter --group Wallpaper \
+        --group org.kde.image --group General --key FillMode "$fill_mode" || return 1
+      ;;
+    *[Gg][Nn][Oo][Mm][Ee]* | *[Uu][Nn][Ii][Tt][Yy]* | *[Bb][Uu][Dd][Gg][Ii][Ee]*)
+      resolve_tools gsettings
+      need "$tool_gsettings" gsettings
+      uri=$(file_uri "$1") || return 1
+      debug 'GNOME picture-uri is a compatibility write with no effect on stock GNOME Shell'
+      # Compatibility key: current GNOME Shell uses the desktop background
+      # for its blurred unlock dialog, rather than screensaver.picture-uri.
+      "$tool_gsettings" set org.gnome.desktop.screensaver picture-uri "$uri" || return 1
+      case "${4:-}" in
+        wallpaper | centered | scaled | stretched | zoom | spanned)
+          "$tool_gsettings" set org.gnome.desktop.screensaver picture-options "$4" || return 1
+          ;;
+      esac
+      picture_options=$("$tool_gsettings" get org.gnome.desktop.screensaver picture-options) || return 1
+      if [ "$picture_options" = "'none'" ]; then
+        "$tool_gsettings" set org.gnome.desktop.screensaver picture-options zoom || return 1
+      fi
+      ;;
+    *)
+      if [ -n "${WAYLAND_DISPLAY:-}" ]; then
+        update_lockscreen_link "$@"
+      else
+        debug 'unsupported session; skipping lock screen change'
+      fi
+      ;;
   esac
 }
 
 pause_briefly() {
   # Fractional sleep is common; strictly POSIX implementations accept seconds.
-  "$tool_sleep" 0.1 2>/dev/null || "$tool_sleep" 1
+  "$tool_sleep" 0.1 2> /dev/null || "$tool_sleep" 1
 }
 
 release_lock() {
   [ "${directory_locked:-false}" = true ] || return 0
   "$tool_rm" -f "$lock_directory/pid"
-  "$tool_rmdir" "$lock_directory" 2>/dev/null || :
+  "$tool_rmdir" "$lock_directory" 2> /dev/null || :
 }
 
 # Only the swaybg setter races (kill old, start new), so only it locks.
@@ -704,8 +704,8 @@ lock_set() {
   resolve_tools flock
   if [ -n "$tool_flock" ]; then
     [ ! -L "$lock_file" ] || fail 'refusing a symlink lock file'
-    exec 9>"$lock_file"
-    if "$tool_flock" -E 200 -w 10 9 2>/dev/null; then
+    exec 9> "$lock_file"
+    if "$tool_flock" -E 200 -w 10 9 2> /dev/null; then
       debug "locked $lock_file with flock"
       return 0
     else
@@ -722,29 +722,29 @@ lock_set() {
   need "$tool_sleep" sleep
   lock_directory=$lock_file.d
   lock_attempt=0
-  while ! "$tool_mkdir" "$lock_directory" 2>/dev/null; do
+  while ! "$tool_mkdir" "$lock_directory" 2> /dev/null; do
     [ ! -L "$lock_directory" ] || fail 'refusing a symlink lock directory'
     owner=
     if [ -r "$lock_directory/pid" ]; then
-      IFS= read -r owner <"$lock_directory/pid" || owner=
+      IFS= read -r owner < "$lock_directory/pid" || owner=
     fi
     case "$owner" in
-    '' | *[!0-9]* | 0) ;;
-    *)
-      if ! kill -0 "$owner" 2>/dev/null; then
-        debug "reclaiming stale lock from PID $owner"
-        "$tool_rm" -f "$lock_directory/pid"
-        "$tool_rmdir" "$lock_directory" 2>/dev/null || :
-        continue
-      fi
-      ;;
+      '' | *[!0-9]* | 0) ;;
+      *)
+        if ! kill -0 "$owner" 2> /dev/null; then
+          debug "reclaiming stale lock from PID $owner"
+          "$tool_rm" -f "$lock_directory/pid"
+          "$tool_rmdir" "$lock_directory" 2> /dev/null || :
+          continue
+        fi
+        ;;
     esac
     lock_attempt=$((lock_attempt + 1))
     if [ "$lock_attempt" -ge 100 ]; then
       # A crash between mkdir and the PID write leaves an ownerless directory;
       # clear that once, otherwise give up.
       if [ "$lock_attempt" -eq 100 ] && [ ! -e "$lock_directory/pid" ]; then
-        "$tool_rmdir" "$lock_directory" 2>/dev/null || :
+        "$tool_rmdir" "$lock_directory" 2> /dev/null || :
         continue
       fi
       fail 'timed out waiting for wallpaper directory lock'
@@ -754,32 +754,32 @@ lock_set() {
   directory_locked=true
   trap release_lock 0
   trap 'exit 1' HUP INT TERM
-  printf '%s\n' "$$" >"$lock_directory/pid" || fail 'cannot record wallpaper lock owner'
+  printf '%s\n' "$$" > "$lock_directory/pid" || fail 'cannot record wallpaper lock owner'
   debug "locked $lock_directory with mkdir"
 }
 
 action=${1:-}
 [ "$#" -eq 0 ] || shift
 case "$action" in
--h | --help | help)
-  usage
-  exit 0
-  ;;
-next | previous | love | preferences | get | set | set-lockscreen) ;;
-*)
-  usage >&2
-  exit 2
-  ;;
+  -h | --help | help)
+    usage
+    exit 0
+    ;;
+  next | previous | love | preferences | get | set | set-lockscreen) ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
 esac
 
 case "$action" in
-next | previous | love | preferences) resolve_tools variety ;;
+  next | previous | love | preferences) resolve_tools variety ;;
 esac
 case "$action" in
-next) run_variety --next "$@" ;;
-previous) run_variety --previous "$@" ;;
-love) run_variety --favorite "$@" ;;
-preferences) run_variety --show-preferences "$@" ;;
+  next) run_variety --next "$@" ;;
+  previous) run_variety --previous "$@" ;;
+  love) run_variety --favorite "$@" ;;
+  preferences) run_variety --show-preferences "$@" ;;
 esac
 
 if [ "$action" != get ] && { [ -z "${1:-}" ] || [ ! -f "$1" ]; }; then
@@ -789,22 +789,22 @@ fi
 
 if [ "$action" != get ]; then
   case "$1" in
-  /*) image=$1 ;;
-  *)
-    case "$1" in
-    */*)
-      image_dir=${1%/*}
-      image_name=${1##*/}
-      ;;
+    /*) image=$1 ;;
     *)
-      image_dir=.
-      image_name=$1
+      case "$1" in
+        */*)
+          image_dir=${1%/*}
+          image_name=${1##*/}
+          ;;
+        *)
+          image_dir=.
+          image_name=$1
+          ;;
+      esac
+      # Prefix ./ for leading dashes; a sentinel preserves trailing newlines.
+      image_dir=$(CDPATH='' cd -P "./$image_dir" && printf '%s_' "$PWD") || fail 'cannot resolve image directory'
+      image=${image_dir%_}/$image_name
       ;;
-    esac
-    # Prefix ./ for leading dashes; a sentinel preserves trailing newlines.
-    image_dir=$(CDPATH='' cd -P "./$image_dir" && printf '%s_' "$PWD") || fail 'cannot resolve image directory'
-    image=${image_dir%_}/$image_name
-    ;;
   esac
   shift
   set -- "$image" "$@"
@@ -820,17 +820,17 @@ fi
 
 backend=${VARIETYCTL_BACKEND-${WALLPAPER_BACKEND:-auto}}
 case "$backend" in
-auto | dms | hyprpaper | swaybg) ;;
-*)
-  printf 'varietyctl: unknown wallpaper backend: %s\n' "$backend" >&2
-  exit 2
-  ;;
+  auto | dms | hyprpaper | swaybg) ;;
+  *)
+    printf 'varietyctl: unknown wallpaper backend: %s\n' "$backend" >&2
+    exit 2
+    ;;
 esac
 
 choose_backend
 case "$action" in
-get) get_wallpaper ;;
-set)
-  set_wallpaper "$@"
-  ;;
+  get) get_wallpaper ;;
+  set)
+    set_wallpaper "$@"
+    ;;
 esac

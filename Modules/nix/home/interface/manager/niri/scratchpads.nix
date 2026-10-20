@@ -5,8 +5,7 @@
   lib,
   pkgs,
   niriPackage,
-}:
-let
+}: let
   inherit (lib.attrsets) listToAttrs mapAttrsToList;
   inherit (lib.lists) elemAt toList;
   inherit (lib.strings) escapeRegex escapeShellArgs replaceStrings;
@@ -16,49 +15,67 @@ let
     {
       agent = "ai-agent";
       ai = "ai-agent";
-    }.${category} or category;
+    }.${
+      category
+    } or category;
   primaryTerminal = apps.legacy.terminal.primary or null;
-  scratchpadBindings = filterAttrs (
-    group: bindings:
-      (lib.lists.any (binding: (binding.kind or "exec") == "scratchpad") (toList bindings))
-      || (group == "ghosttyQuickTerminal"
-        && lib.lists.any (binding: (binding.kind or "exec") == "global") (toList bindings))
-  ) keyboard.bindings;
+  scratchpadBindings =
+    filterAttrs (
+      group: bindings:
+        (lib.lists.any (binding: (binding.kind or "exec") == "scratchpad") (toList bindings))
+        || (group
+          == "ghosttyQuickTerminal"
+          && lib.lists.any (binding: (binding.kind or "exec") == "global") (toList bindings))
+    )
+    keyboard.bindings;
 
   escapeShell = value: escapeShellArgs [value];
   mkWorkspace = category: application: "dotdots-${category}-${toString application}";
-  mkChord = binding:
-    let
-      modifiers =
-        map
-          (modifier:
-            replaceStrings
-              [ "SUPER" "SHIFT" "CTRL" "CONTROL" "ALT" ]
-              [ "Mod" "Shift" "Ctrl" "Ctrl" "Alt" ]
-              modifier)
-          (lib.strings.splitString " " (binding.mod or ""));
-      key =
-        {
-          RETURN = "Return";
-          SPACE = "Space";
-          SUPER_L = "Super_L";
-          ALT_L = "Alt_L";
-          ALT_R = "Alt_R";
-          TAB = "Tab";
-          PRINT = "Print";
-          grave = "Grave";
-          PAGE_DOWN = "Page_Down";
-          PAGE_UP = "Page_Up";
-        }.${binding.key} or binding.key;
-    in
-      lib.strings.concatStringsSep "+" (lib.lists.filter (part: part != "") (modifiers ++ [key]));
+  mkChord = binding: let
+    modifiers =
+      map
+      (modifier:
+        replaceStrings
+        ["SUPER" "SHIFT" "CTRL" "CONTROL" "ALT"]
+        ["Mod" "Shift" "Ctrl" "Ctrl" "Alt"]
+        modifier)
+      (lib.strings.splitString " " (binding.mod or ""));
+    key =
+      {
+        RETURN = "Return";
+        SPACE = "Space";
+        SUPER_L = "Super_L";
+        ALT_L = "Alt_L";
+        ALT_R = "Alt_R";
+        TAB = "Tab";
+        PRINT = "Print";
+        grave = "Grave";
+        PAGE_DOWN = "Page_Down";
+        PAGE_UP = "Page_Up";
+      }.${
+        binding.key
+      } or binding.key;
+  in
+    lib.strings.concatStringsSep "+" (lib.lists.filter (part: part != "") (modifiers ++ [key]));
 
   mkRecord = group: binding: let
-    category = if group == "ghosttyQuickTerminal" then "terminal" else group;
-    application = if group == "ghosttyQuickTerminal" then 1 else (binding.application or 1);
+    category =
+      if group == "ghosttyQuickTerminal"
+      then "terminal"
+      else group;
+    application =
+      if group == "ghosttyQuickTerminal"
+      then 1
+      else (binding.application or 1);
     entries = apps.${packageGroup category} or [];
-    entry = if application > 0 && application <= builtins.length entries then elemAt entries (application - 1) else null;
-    appId = if entry == null then null else (entry.class or null);
+    entry =
+      if application > 0 && application <= builtins.length entries
+      then elemAt entries (application - 1)
+      else null;
+    appId =
+      if entry == null
+      then null
+      else (entry.class or null);
     launch =
       if entry == null
       then null
@@ -71,7 +88,7 @@ let
     workspace = mkWorkspace category application;
     script = pkgs.writeShellApplication {
       name = "dotdots-niri-scratchpad-${category}-${toString application}";
-      runtimeInputs = [ pkgs.bash pkgs.coreutils pkgs.jq niriPackage ];
+      runtimeInputs = [pkgs.bash pkgs.coreutils pkgs.jq niriPackage];
       text = ''
         app_id=${escapeShell appId}
         launch=${escapeShell launch}
@@ -117,18 +134,23 @@ let
       || appId == null
       || launch == null
       || launch == ""
-    then
-      null
+    then null
     else {
       group = category;
       inherit appId application binding category launch script workspace;
       bind = {
         name = mkChord binding;
-        value = {
-          action = actions.spawn-sh "${script}/bin/${script.name}";
-          hotkey-overlay.title = binding.description or "Toggle ${category} ${toString application}";
-          repeat = false;
-        } // (if binding.locked or false then { allow-when-locked = true; } else {});
+        value =
+          {
+            action = actions.spawn-sh "${script}/bin/${script.name}";
+            hotkey-overlay.title = binding.description or "Toggle ${category} ${toString application}";
+            repeat = false;
+          }
+          // (
+            if binding.locked or false
+            then {allow-when-locked = true;}
+            else {}
+          );
       };
     };
 
@@ -142,7 +164,7 @@ let
     value = {};
   };
   mkWindowRule = record: {
-    matches = [ { app-id = "^${escapeRegex record.appId}$"; } ];
+    matches = [{app-id = "^${escapeRegex record.appId}$";}];
     open-on-workspace = record.workspace;
   };
 in {

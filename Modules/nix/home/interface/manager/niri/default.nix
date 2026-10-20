@@ -8,8 +8,7 @@
   apps,
   user,
   ...
-}:
-let
+}: let
   context = mkContext {
     inherit config host;
     dom = "interface";
@@ -90,6 +89,7 @@ in
         enable = true;
         package = pkgs.niri;
         settings = {
+          prefer-no-csd = true;
           binds =
             defaultBinds
             // (mkNiriKeybindings {

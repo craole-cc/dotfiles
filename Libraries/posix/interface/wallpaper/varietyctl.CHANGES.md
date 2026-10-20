@@ -11,23 +11,23 @@ with `sh Libraries/posix/tasks/varietyctl.test` from the repository root.
 
 ### Requested Items
 
-| Item | Status | Change |
-| --- | --- | --- |
-| 1 | Done | Dispatch the four Variety actions first, resolving only Variety. |
-| 2 | Done | Resolve tools on demand and cache both found and missing tools in shell variables. |
-| 3 | Done | Probe `xargs -0` only in `get_swaybg`; reuse the result for every process read. |
-| 4 | Done | Match desktop names with case-insensitive shell patterns, without `tr`. |
-| 5 | Done | Discover monitors with JSON and `jq`, then `rg --no-config`, then POSIX `sed`. |
-| 6 | Done | Validate and convert relative paths to absolute paths using shell parameter expansion and one directory subshell. Leading dashes and trailing newlines remain data. |
-| 7 | Done | Capture the current user's old swaybg PIDs, launch with detached input/output and optional `setsid`, check survival after a short delay, then retire only captured PIDs. Failed startup returns 1 and retains the old processes. |
-| 8 | Done | Require `ok` from every hyprpaper wallpaper call. All failures allow the next backend in auto mode; an explicit backend returns failure. Commas produce a clear diagnostic and allow fallback. |
-| 9 | Done | Check fallback dependencies before invoking them, including `sed`, `awk`, `ps`, `od`, `xargs` and `sh`. |
-| 10 | Done; live desktop checks limited | Percent-encode file URLs; support kwriteconfig6 and kwriteconfig5; document the KDE URL choice and map mode to Qt FillMode. Unsupported desktops mention manual hyprlock configuration. See verification below. |
-| 11 | Done | Serialise setters with a per-user `flock` file, or an atomic mkdir lock with recorded-owner stale checks and guarded reclamation. Both paths have bounded waits. |
-| 12 | Done | Prefer `VARIETYCTL_BACKEND`; retain `WALLPAPER_BACKEND` as the deprecated alias. |
-| 13 | Done | Log backend choices, tool resolution and suppressed backend errors to stderr with `VARIETYCTL_DEBUG=1`. |
-| 14 | Done | Force the requested parser/process fallbacks with `VARIETYCTL_POSIX_ONLY=1`. |
-| 15 | Done | Document image, change reason, original image and mode. Installed Variety source confirms mode is argument 4 after the action. |
+| Item | Status                            | Change                                                                                                                                                                                                                           |
+| ---- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Done                              | Dispatch the four Variety actions first, resolving only Variety.                                                                                                                                                                 |
+| 2    | Done                              | Resolve tools on demand and cache both found and missing tools in shell variables.                                                                                                                                               |
+| 3    | Done                              | Probe `xargs -0` only in `get_swaybg`; reuse the result for every process read.                                                                                                                                                  |
+| 4    | Done                              | Match desktop names with case-insensitive shell patterns, without `tr`.                                                                                                                                                          |
+| 5    | Done                              | Discover monitors with JSON and `jq`, then `rg --no-config`, then POSIX `sed`.                                                                                                                                                   |
+| 6    | Done                              | Validate and convert relative paths to absolute paths using shell parameter expansion and one directory subshell. Leading dashes and trailing newlines remain data.                                                              |
+| 7    | Done                              | Capture the current user's old swaybg PIDs, launch with detached input/output and optional `setsid`, check survival after a short delay, then retire only captured PIDs. Failed startup returns 1 and retains the old processes. |
+| 8    | Done                              | Require `ok` from every hyprpaper wallpaper call. All failures allow the next backend in auto mode; an explicit backend returns failure. Commas produce a clear diagnostic and allow fallback.                                   |
+| 9    | Done                              | Check fallback dependencies before invoking them, including `sed`, `awk`, `ps`, `od`, `xargs` and `sh`.                                                                                                                          |
+| 10   | Done; live desktop checks limited | Percent-encode file URLs; support kwriteconfig6 and kwriteconfig5; document the KDE URL choice and map mode to Qt FillMode. Unsupported desktops mention manual hyprlock configuration. See verification below.                  |
+| 11   | Done                              | Serialise setters with a per-user `flock` file, or an atomic mkdir lock with recorded-owner stale checks and guarded reclamation. Both paths have bounded waits.                                                                 |
+| 12   | Done                              | Prefer `VARIETYCTL_BACKEND`; retain `WALLPAPER_BACKEND` as the deprecated alias.                                                                                                                                                 |
+| 13   | Done                              | Log backend choices, tool resolution and suppressed backend errors to stderr with `VARIETYCTL_DEBUG=1`.                                                                                                                          |
+| 14   | Done                              | Force the requested parser/process fallbacks with `VARIETYCTL_POSIX_ONLY=1`.                                                                                                                                                     |
+| 15   | Done                              | Document image, change reason, original image and mode. Installed Variety source confirms mode is argument 4 after the action.                                                                                                   |
 
 The user also approved treating DMS `ERROR:` replies as failures even when IPC
 exits successfully. This enables its per-monitor setter and auto fallback.
@@ -106,15 +106,15 @@ a build or activation requires the usual separate publication and deployment ste
 
 ### Implementation Status
 
-| Item | Status | Result |
-| --- | --- | --- |
-| One backend | Done | Auto probes once per invocation: reachable DMS first, otherwise reachable hyprpaper on Hyprland, otherwise swaybg. Explicit selection uses only that backend. Getter/setter failure is final and names it. Compositor monitor discovery remains part of the same DMS per-monitor retry. |
-| 1. pkill | Done | Installed procps-ng 4.0.7 **does** list `-p, --pid` in `pkill --help`, separately from `-P, --parent`. Removed the branch, resolver, POSIX_ONLY entry and stub anyway, as requested. Captured, user-filtered PIDs use the kill builtin. |
-| 2. Wayland lock-screen hook | Done; niri runtime unverified | Hyprland/niri silently update the image symlink with a same-directory temporary link and atomic rename. There are POSIX ln/mv forms for implementations without `--`. Existing GNOME/KDE behaviour is retained; GNOME debug output explains the compatibility write. |
-| 3. Monitor discovery | Done; installed niri verification unavailable | Hyprland uses its JSON monitor array, then rg/sed text fallbacks. Niri uses its output-map keys and requires a JSON parser; missing or malformed JSON fails clearly. No hyprctl call is made for niri discovery. |
-| 4. Nix wrapper | Done | An unconditional, separately shell-escaped assignment fixes the backend to the module option. Removed the backend session export. Tests cover stale ambient values and quote/dollar/command-substitution text as literal data. |
-| 5. Extra Nix edits | Done | Retained the proven mkConfig repair. Renamed the wallpaper path list and its sole consumer to folders. Module checks preserve both its default and a supplied ordered list. Swaybg remains installed in auto mode. |
-| 6. Smaller items | Done | See the detailed checks below. |
+| Item                        | Status                                        | Result                                                                                                                                                                                                                                                                                  |
+| --------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| One backend                 | Done                                          | Auto probes once per invocation: reachable DMS first, otherwise reachable hyprpaper on Hyprland, otherwise swaybg. Explicit selection uses only that backend. Getter/setter failure is final and names it. Compositor monitor discovery remains part of the same DMS per-monitor retry. |
+| 1. pkill                    | Done                                          | Installed procps-ng 4.0.7 **does** list `-p, --pid` in `pkill --help`, separately from `-P, --parent`. Removed the branch, resolver, POSIX_ONLY entry and stub anyway, as requested. Captured, user-filtered PIDs use the kill builtin.                                                 |
+| 2. Wayland lock-screen hook | Done; niri runtime unverified                 | Hyprland/niri silently update the image symlink with a same-directory temporary link and atomic rename. There are POSIX ln/mv forms for implementations without `--`. Existing GNOME/KDE behaviour is retained; GNOME debug output explains the compatibility write.                    |
+| 3. Monitor discovery        | Done; installed niri verification unavailable | Hyprland uses its JSON monitor array, then rg/sed text fallbacks. Niri uses its output-map keys and requires a JSON parser; missing or malformed JSON fails clearly. No hyprctl call is made for niri discovery.                                                                        |
+| 4. Nix wrapper              | Done                                          | An unconditional, separately shell-escaped assignment fixes the backend to the module option. Removed the backend session export. Tests cover stale ambient values and quote/dollar/command-substitution text as literal data.                                                          |
+| 5. Extra Nix edits          | Done                                          | Retained the proven mkConfig repair. Renamed the wallpaper path list and its sole consumer to folders. Module checks preserve both its default and a supplied ordered list. Swaybg remains installed in auto mode.                                                                      |
+| 6. Smaller items            | Done                                          | See the detailed checks below.                                                                                                                                                                                                                                                          |
 
 The backend option is an enum: `auto`, `dms`, `hyprpaper`, `swaybg`. A repository
 search found no backend session-variable consumer outside the controller,
@@ -222,20 +222,19 @@ suite run exercises normal and forced POSIX modes; counts are per run, not an
 aggregate across stages. The later wrapper stages include the evaluated Nix
 fixtures described above.
 
-| Stage | sh Assertions | dash Assertions | Result |
-| --- | ---: | ---: | --- |
-| design | 100 | 100 | Passed |
-| item1 | 100 | 100 | Passed |
-| item2 | 124 | 124 | Passed |
-| item3 | 127 | 127 | Passed |
-| item4 | 131 | 131 | Passed |
-| item5 | 131 | 131 | Passed |
-| item6 | 159 | 159 | Passed |
+| Stage  | sh Assertions | dash Assertions | Result |
+| ------ | ------------: | --------------: | ------ |
+| design |           100 |             100 | Passed |
+| item1  |           100 |             100 | Passed |
+| item2  |           124 |             124 | Passed |
+| item3  |           127 |             127 | Passed |
+| item4  |           131 |             131 | Passed |
+| item5  |           131 |             131 | Passed |
+| item6  |           159 |             159 | Passed |
 
 The focused Nix suites passed with zero failures: 10 wallpaper tests and 22
 keyboard tests. Nix evaluation confirmed the hyprlock background, absent backend
 session export, literal wrapper assignment, and folders-list preservation.
-
 
 ## Round 3
 
@@ -364,14 +363,14 @@ after each item under sh and dash; each run covers both ordinary and
 VARIETYCTL_POSIX_ONLY modes:
 
 | Item | sh Checks | dash Checks | Result |
-| --- | ---: | ---: | --- |
-| 1 | 159 | 159 | Passed |
-| 2 | 172 | 172 | Passed |
-| 3 | 178 | 178 | Passed |
-| 4 | 178 | 178 | Passed |
-| 5 | 182 | 182 | Passed |
-| 6 | 190 | 190 | Passed |
-| 7 | 197 | 197 | Passed |
+| ---- | --------: | ----------: | ------ |
+| 1    |       159 |         159 | Passed |
+| 2    |       172 |         172 | Passed |
+| 3    |       178 |         178 | Passed |
+| 4    |       178 |         178 | Passed |
+| 5    |       182 |         182 | Passed |
+| 6    |       190 |         190 | Passed |
+| 7    |       197 |         197 | Passed |
 
 The final run includes four additional checks against freshly evaluated Nix
 wrappers: the declared backend overrides ambient values, and a metacharacter

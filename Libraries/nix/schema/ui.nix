@@ -528,7 +528,7 @@
         keybinds.action = "dms ipc call keybinds toggle niri";
         close.action = "niri msg action close-window";
         fullscreen.action = "niri msg action fullscreen-window";
-        maximise.action = "niri msg action maximize-column";
+        maximise.action = "niri msg action maximize-window-to-edges";
         float.action = "niri msg action toggle-window-floating";
         workspacePrev.action = "niri msg action focus-workspace-previous";
         windowCycle.action = "niri msg action focus-window-previous";
@@ -839,7 +839,7 @@
         (configs.de.keyboard or {})
         selectedWmKeyboard
         (optionalAttrs (windowManager.name == "hyprland" && dmsPanel) {
-          bindings = dmsHyprlandKeyboard.bindings;
+          inherit (dmsHyprlandKeyboard) bindings;
         })
         {
           bindings =
@@ -869,11 +869,13 @@
       wallpaper = recursiveUpdate defaults.wallpaper (
         (interface.wallpaper or {})
         // {
-          engine = (interface.wallpaper or {}).engine or (
-            if wallpaperPackages == []
-            then defaults.wallpaper.engine
-            else head wallpaperPackages
-          );
+          engine =
+            (interface.wallpaper or {
+              }).engine or (
+              if wallpaperPackages == []
+              then defaults.wallpaper.engine
+              else head wallpaperPackages
+            );
         }
       );
       desktops = interface.desktops or enabled;

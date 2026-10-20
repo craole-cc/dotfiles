@@ -159,8 +159,8 @@
             "plasma"
             "zen-browser"
           ]
-          ++ [ (modules.niri.default or {}) ]
-          ++ optionals (niriEnabled && dmsNiriEnabled) [ (modules.dms-shell.niri or {}) ]
+          ++ [(modules.niri.default or {})]
+          ++ optionals (niriEnabled && dmsNiriEnabled) [(modules.dms-shell.niri or {})]
           ++ [paths.store.mod.home]
           ++ (moduleUser.imports or []);
       }

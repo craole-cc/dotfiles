@@ -593,8 +593,14 @@ in {
           (mkBinding common {description = description + ": Fullscreen";})
           (
             mkBinding common {
-              description = description + ": Floating";
+              description = description + ": Maximize/Restore";
               modifier = modifier ++ ["Shift"];
+            }
+          )
+          (
+            mkBinding common {
+              description = description + ": Floating";
+              modifier = modifier ++ ["Ctrl"];
             }
           )
         ];

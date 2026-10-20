@@ -48,12 +48,13 @@
       else if isInt arg || isFloat arg
       then toJSON arg
       else if arg == "" || hasInfix "," arg
-      then assert withContext {
-        name = "mkSource";
-        context = "validating mkSource value";
-        assertion = !(hasInfix "\"" arg);
-        message = "variety.conf value cannot contain a double quote: ${arg}";
-      }; ''"${arg}"''
+      then
+        assert withContext {
+          name = "mkSource";
+          context = "validating mkSource value";
+          assertion = !(hasInfix "\"" arg);
+          message = "variety.conf value cannot contain a double quote: ${arg}";
+        }; ''"${arg}"''
       else arg;
 
     scalars = settings: concatStringsSep "\n" (mapAttrsToList (key: val: "${key} = ${prep val}") settings);

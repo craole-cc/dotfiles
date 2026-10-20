@@ -10,13 +10,13 @@ export work
 cleanup() {
   if [ -n "${private_root:-}" ]; then
     rm -f "$private_root/set.lock"
-    rmdir "$private_root" 2>/dev/null || :
+    rmdir "$private_root" 2> /dev/null || :
   fi
-  [ -z "${foreign_pid:-}" ] || kill "$foreign_pid" 2>/dev/null || :
+  [ -z "${foreign_pid:-}" ] || kill "$foreign_pid" 2> /dev/null || :
   for record in "$work"/pids/*; do
     [ -f "$record" ] || continue
-    read -r process <"$record" || continue
-    kill "$process" 2>/dev/null || :
+    read -r process < "$record" || continue
+    kill "$process" 2> /dev/null || :
   done
   rm -rf "$work"
 }
@@ -44,7 +44,7 @@ check() {
     exit 1
   fi
 }
-cat >"$work/bin/variety" <<'STUB'
+cat > "$work/bin/variety" << 'STUB'
 #!/bin/sh
 # Models Variety's argv dispatch only; flags were checked against --help.
 if [ "${VARIETYCTL_CAPTURE_BACKEND:-0}" = 1 ]; then
@@ -58,15 +58,15 @@ cp "$work/bin/variety" "$work/only-variety/variety"
 # Only Variety is available: no dependency resolution may execute other tools.
 for action in next previous love preferences; do
   case "$action" in
-  next) expected=--next ;;
-  previous) expected=--previous ;;
-  love) expected=--favorite ;;
-  preferences) expected=--show-preferences ;;
+    next) expected=--next ;;
+    previous) expected=--previous ;;
+    love) expected=--favorite ;;
+    preferences) expected=--show-preferences ;;
   esac
   actual=$(PATH="$work/only-variety" "$test_shell" "$controller" "$action")
   check test "$actual" = "$expected"
 done
-cat >"$work/bin/dms" <<'STUB'
+cat > "$work/bin/dms" << 'STUB'
 #!/bin/sh
 # Models DMS 1.6.3 wallpaper IPC, including successful IPC with ERROR text.
 printf 'dms %s\n' "$*" >> "$work/backend-calls"
@@ -110,17 +110,17 @@ export PATH
 for name in 'space name.jpg' "single'quote.jpg" 'double"quote.jpg' '-leading.jpg' 'embedded
 newline.jpg' 'trailing-newline
 ' 'percent%hash#?.jpg' 'utf8-é.jpg'; do
-  : >"$work/images/$name"
+  : > "$work/images/$name"
   for posix in 0 1; do
     export VARIETYCTL_POSIX_ONLY=$posix
     (cd "$work/images" && "$test_shell" "$controller" set "$name" manual "$name" scaled)
-    printf '%s\n' "$work/images/$name" >"$work/expected"
-    "$test_shell" "$controller" get >"$work/actual"
+    printf '%s\n' "$work/images/$name" > "$work/expected"
+    "$test_shell" "$controller" get > "$work/actual"
     check cmp "$work/expected" "$work/actual"
   done
 done
 
-cat >"$work/bin/hyprctl" <<'STUB'
+cat > "$work/bin/hyprctl" << 'STUB'
 #!/bin/sh
 # Models live Hyprland 0.56.2 monitor JSON (array of objects with name)
 # and hyprpaper 0.8.4's documented IPC; monitor labels are test fixtures.
@@ -149,7 +149,7 @@ case "$*" in
   *) exit 2 ;;
 esac
 STUB
-cat >"$work/bin/niri" <<'STUB'
+cat > "$work/bin/niri" << 'STUB'
 #!/bin/sh
 # Models niri's source-verified Outputs map and CLI JSON serialisation.
 # Local niri IPC is unverified because niri is not installed on this host.
@@ -172,7 +172,7 @@ else
   printf '%s\n' '{"DP-2":{"name":"DP-2","logical":{"x":0}},"eDP-1":{"name":"eDP-1","logical":{"x":1920}}}'
 fi
 STUB
-cat >"$work/bin/swaybg" <<'STUB'
+cat > "$work/bin/swaybg" << 'STUB'
 #!/bin/sh
 # Models swaybg argv and process lifetime; never opens a compositor connection.
 printf 'swaybg %s\n' "$*" >> "$work/backend-calls"
@@ -188,7 +188,7 @@ while :; do
   wait "$child" || :
 done
 STUB
-cat >"$work/bin/pgrep" <<'STUB'
+cat > "$work/bin/pgrep" << 'STUB'
 #!/bin/sh
 # Models procps pgrep -u UID -x NAME and its 0/1 match status.
 [ "${TEST_NO_SWAY:-0}" != 1 ] || exit 1
@@ -201,7 +201,7 @@ for record in "$work"/pids/*; do
 done
 "$found"
 STUB
-cat >"$work/bin/ps" <<'STUB'
+cat > "$work/bin/ps" << 'STUB'
 #!/bin/sh
 # Models POSIX ps columns, including a foreign owner's process for filtering.
 [ "$*" = '-e -o uid= -o pid= -o comm=' ] || exit 2
@@ -221,7 +221,7 @@ expect_status() {
   expected_status=$1
   shift
   actual_status=0
-  "$@" >"$work/stdout" 2>"$work/stderr" || actual_status=$?
+  "$@" > "$work/stdout" 2> "$work/stderr" || actual_status=$?
   check test "$actual_status" -eq "$expected_status"
 }
 
@@ -231,7 +231,7 @@ for selected in dms hyprpaper; do
   VARIETYCTL_BACKEND=$selected "$test_shell" "$controller" set "$work/images/space name.jpg"
   check test ! -e "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock"
   mkdir "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d"
-  printf '%s\n' "$$" >"$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid"
+  printf '%s\n' "$$" > "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid"
   VARIETYCTL_BACKEND=$selected "$test_shell" "$controller" set "$work/images/space name.jpg"
   check test "$(cat "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid")" = "$$"
   rm "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid"
@@ -243,8 +243,8 @@ export VARIETYCTL_BACKEND=dms DMS_PER_MONITOR=1
 for posix in 0 1; do
   export VARIETYCTL_POSIX_ONLY=$posix
   "$test_shell" "$controller" set "$work/images/space name.jpg"
-  "$test_shell" "$controller" get >"$work/actual"
-  printf '%s\n' "$work/images/space name.jpg" >"$work/expected"
+  "$test_shell" "$controller" get > "$work/actual"
+  printf '%s\n' "$work/images/space name.jpg" > "$work/expected"
   check cmp "$work/expected" "$work/actual"
 done
 VARIETYCTL_POSIX_ONLY=0 MONITOR_JSON_FAIL=1 RIPGREP_CONFIG_PATH=/nonexistent \
@@ -255,14 +255,14 @@ unset DMS_PER_MONITOR
 export XDG_CURRENT_DESKTOP=nIrI VARIETYCTL_BACKEND=dms DMS_PER_MONITOR=1
 for posix in 0 1; do
   export VARIETYCTL_POSIX_ONLY=$posix
-  : >"$work/backend-calls"
+  : > "$work/backend-calls"
   "$test_shell" "$controller" set "$work/images/space name.jpg"
-  "$test_shell" "$controller" get >"$work/actual"
+  "$test_shell" "$controller" get > "$work/actual"
   check cmp "$work/expected" "$work/actual"
   case "$(cat "$work/backend-calls")" in *'setFor DP-2'*'setFor eDP-1'*) : ;; *) exit 1 ;; esac
   while IFS= read -r call; do
     case "$call" in dms* | niri*) : ;; *) exit 1 ;; esac
-  done <"$work/backend-calls"
+  done < "$work/backend-calls"
 done
 VARIETYCTL_POSIX_ONLY=0 NIRI_JSON_BAD=1 expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 export XDG_CURRENT_DESKTOP=Hyprland
@@ -273,7 +273,7 @@ unset DMS_PER_MONITOR
 for utility in jaq jq; do
   if [ -e "$work/bin/$utility" ]; then mv "$work/bin/$utility" "$work/saved/$utility"; fi
 done
-cat >"$work/bin/jaq" <<'STUB'
+cat > "$work/bin/jaq" << 'STUB'
 #!/bin/sh
 parser=${0##*/}
 printf '%s\n' "$parser" >>"$work/json-calls"
@@ -291,10 +291,10 @@ for desktop in Hyprland niri; do
   export XDG_CURRENT_DESKTOP=$desktop DMS_PER_MONITOR=1 VARIETYCTL_POSIX_ONLY=0
   for parser in jaq jq; do
     if [ "$parser" = jq ]; then mv "$work/bin/jaq" "$work/jaq.hidden"; fi
-    : >"$work/json-calls"
-    : >"$work/backend-calls"
+    : > "$work/json-calls"
+    : > "$work/backend-calls"
     "$test_shell" "$controller" set "$work/images/space name.jpg"
-    "$test_shell" "$controller" get >"$work/$parser-output"
+    "$test_shell" "$controller" get > "$work/$parser-output"
     cp "$work/backend-calls" "$work/$parser-calls"
     case "$(cat "$work/json-calls")" in *"$parser"*) : ;; *) exit 1 ;; esac
     if [ "$parser" = jaq ]; then
@@ -304,11 +304,11 @@ for desktop in Hyprland niri; do
   mv "$work/jaq.hidden" "$work/bin/jaq"
   check cmp "$work/jaq-output" "$work/jq-output"
   check cmp "$work/jaq-calls" "$work/jq-calls"
-  : >"$work/json-calls"
+  : > "$work/json-calls"
   JSON_FAIL_JAQ=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
-  printf '%s\n' jaq jq >"$work/expected-json-calls"
+  printf '%s\n' jaq jq > "$work/expected-json-calls"
   check cmp "$work/expected-json-calls" "$work/json-calls"
-  : >"$work/json-calls"
+  : > "$work/json-calls"
   VARIETYCTL_POSIX_ONLY=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
   check test ! -s "$work/json-calls"
 done
@@ -334,9 +334,9 @@ for empty in 0 1; do
   unset HYPR_EXIT_FAIL
 done
 unset HYPR_EMPTY
-"$test_shell" "$controller" get >"$work/actual"
+"$test_shell" "$controller" get > "$work/actual"
 check cmp "$work/expected" "$work/actual"
-: >"$work/images/comma,.jpg"
+: > "$work/images/comma,.jpg"
 expect_status 1 "$test_shell" "$controller" set "$work/images/comma,.jpg"
 check test -s "$work/stderr"
 
@@ -345,8 +345,8 @@ alive() {
   alive_count=0
   for record in "$work"/pids/*; do
     [ -f "$record" ] || continue
-    read -r pid <"$record" || continue
-    if kill -0 "$pid" 2>/dev/null; then alive_count=$((alive_count + 1)); fi
+    read -r pid < "$record" || continue
+    if kill -0 "$pid" 2> /dev/null; then alive_count=$((alive_count + 1)); fi
   done
 }
 settle() { sleep 1; }
@@ -356,59 +356,59 @@ for posix in 0 1; do
   export VARIETYCTL_POSIX_ONLY=$posix
   for selected in dms hyprpaper swaybg; do
     export VARIETYCTL_BACKEND=$selected
-    : >"$work/backend-calls"
+    : > "$work/backend-calls"
     case "$selected" in
-    dms) export DMS_FAIL=1 ;;
-    hyprpaper) export HYPR_FAIL=1 ;;
-    swaybg) export SWAY_FAIL=1 ;;
+      dms) export DMS_FAIL=1 ;;
+      hyprpaper) export HYPR_FAIL=1 ;;
+      swaybg) export SWAY_FAIL=1 ;;
     esac
     expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
     case "$(cat "$work/stderr")" in
-    *"varietyctl: $selected:"*) : ;;
-    *)
-      printf '%s\n' 'FAIL: failure does not name backend' >&2
-      exit 1
-      ;;
+      *"varietyctl: $selected:"*) : ;;
+      *)
+        printf '%s\n' 'FAIL: failure does not name backend' >&2
+        exit 1
+        ;;
     esac
     while IFS= read -r call; do
       case "$selected:$call" in
-      dms:dms* | 'dms:hyprctl monitors'* | hyprpaper:hyprctl* | swaybg:swaybg*) : ;;
-      *)
-        printf 'FAIL: another backend invoked: %s\n' "$call" >&2
-        exit 1
-        ;;
+        dms:dms* | 'dms:hyprctl monitors'* | hyprpaper:hyprctl* | swaybg:swaybg*) : ;;
+        *)
+          printf 'FAIL: another backend invoked: %s\n' "$call" >&2
+          exit 1
+          ;;
       esac
-    done <"$work/backend-calls"
-    : >"$work/backend-calls"
+    done < "$work/backend-calls"
+    : > "$work/backend-calls"
     case "$selected" in
-    hyprpaper) export HYPR_LIST_FAIL=1 ;;
-    swaybg) export TEST_NO_SWAY=1 ;;
+      hyprpaper) export HYPR_LIST_FAIL=1 ;;
+      swaybg) export TEST_NO_SWAY=1 ;;
     esac
     expect_status 1 "$test_shell" "$controller" get
     while IFS= read -r call; do
       case "$selected:$call" in
-      dms:dms* | 'dms:hyprctl monitors'* | hyprpaper:hyprctl* | swaybg:swaybg*) : ;;
-      *)
-        printf 'FAIL: getter invoked another backend: %s\n' "$call" >&2
-        exit 1
-        ;;
+        dms:dms* | 'dms:hyprctl monitors'* | hyprpaper:hyprctl* | swaybg:swaybg*) : ;;
+        *)
+          printf 'FAIL: getter invoked another backend: %s\n' "$call" >&2
+          exit 1
+          ;;
       esac
-    done <"$work/backend-calls"
+    done < "$work/backend-calls"
     unset DMS_FAIL HYPR_FAIL SWAY_FAIL HYPR_LIST_FAIL TEST_NO_SWAY
   done
   # Auto commits to reachable DMS, even if its later setter fails.
   export VARIETYCTL_BACKEND=auto DMS_TEXT_FAIL=1
-  : >"$work/backend-calls"
+  : > "$work/backend-calls"
   expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
   while IFS= read -r call; do
     case "$call" in dms* | 'hyprctl monitors'*) : ;; *) exit 1 ;; esac
-  done <"$work/backend-calls"
+  done < "$work/backend-calls"
   unset DMS_TEXT_FAIL
-  : >"$work/backend-calls"
+  : > "$work/backend-calls"
   DMS_GET_TEXT_FAIL=1 expect_status 1 "$test_shell" "$controller" get
   while IFS= read -r call; do
     case "$call" in dms* | 'hyprctl monitors'*) : ;; *) exit 1 ;; esac
-  done <"$work/backend-calls"
+  done < "$work/backend-calls"
   # Auto selects hyprpaper only on Hyprland when DMS is unreachable.
   DMS_FAIL=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
   export DMS_FAIL=1 HYPR_FAIL=1
@@ -416,22 +416,22 @@ for posix in 0 1; do
   unset DMS_FAIL HYPR_FAIL
   # An absent daemon is not selected, including transport-success error text.
   for absent_status in 1 0; do
-    : >"$work/backend-calls"
+    : > "$work/backend-calls"
     DMS_FAIL=1 HYPR_ABSENT_STATUS=$absent_status "$test_shell" "$controller" set "$work/images/space name.jpg"
     case "$(cat "$work/backend-calls")" in *'swaybg '*) : ;; *) exit 1 ;; esac
     case "$(cat "$work/backend-calls")" in *'hyprctl hyprpaper wallpaper '*) exit 1 ;; esac
     check test -s "$work/backend-calls"
   done
   # Reachable hyprpaper with an empty active-image list remains selectable.
-  : >"$work/backend-calls"
+  : > "$work/backend-calls"
   DMS_FAIL=1 HYPR_EMPTY=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
   case "$(cat "$work/backend-calls")" in *'hyprctl hyprpaper wallpaper '*) : ;; *) exit 1 ;; esac
   # Other compositors select swaybg when DMS is unreachable, without hyprctl.
-  : >"$work/backend-calls"
+  : > "$work/backend-calls"
   XDG_CURRENT_DESKTOP=niri DMS_FAIL=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
   while IFS= read -r call; do
     case "$call" in dms* | swaybg*) : ;; *) exit 1 ;; esac
-  done <"$work/backend-calls"
+  done < "$work/backend-calls"
 done
 
 # Real /proc cmdline reads exercise NUL decoding, including empty arguments.
@@ -447,8 +447,8 @@ newline.jpg' 'trailing-newline
     export VARIETYCTL_POSIX_ONLY=$posix
     (cd "$work/images" && "$test_shell" "$controller" set "$name" manual original centered)
     settle
-    printf '%s\n' "$work/images/$name" >"$work/expected"
-    "$test_shell" "$controller" get >"$work/actual.$posix"
+    printf '%s\n' "$work/images/$name" > "$work/expected"
+    "$test_shell" "$controller" get > "$work/actual.$posix"
     check cmp "$work/expected" "$work/actual.$posix"
     check kill -0 "$foreign_pid"
   done
@@ -456,7 +456,7 @@ newline.jpg' 'trailing-newline
 done
 # Include an empty arg before --image and a trailing empty arg in /proc.
 for record in "$work"/pids/*; do
-  [ ! -f "$record" ] || kill "${record##*/}" 2>/dev/null || :
+  [ ! -f "$record" ] || kill "${record##*/}" 2> /dev/null || :
 done
 settle
 "$work/bin/swaybg" '' --image "$work/images/trailing-newline
@@ -464,7 +464,7 @@ settle
 manual_pid=$!
 sleep 1
 for posix in 0 1; do
-  VARIETYCTL_POSIX_ONLY=$posix "$test_shell" "$controller" get >"$work/actual.$posix"
+  VARIETYCTL_POSIX_ONLY=$posix "$test_shell" "$controller" get > "$work/actual.$posix"
   check cmp "$work/expected" "$work/actual.$posix"
 done
 kill "$manual_pid"
@@ -515,30 +515,30 @@ VARIETYCTL_SWAYBG_SETTLE=invalid expect_status 1 "$test_shell" "$controller" set
 VARIETYCTL_SWAYBG_SETTLE=0 expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 
 # Lock-screen writes remain isolated stubs, including KDE 5 fallback.
-cat >"$work/bin/gsettings" <<'STUB'
+cat > "$work/bin/gsettings" << 'STUB'
 #!/bin/sh
 # Models gsettings set/get argv; stores calls without touching dconf.
 if [ "$1" = get ]; then printf '%s\n' "'zoom'"; else printf '%s\n' "$@" >> "$work/lock-arguments"; fi
 STUB
-cat >"$work/bin/kwriteconfig5" <<'STUB'
+cat > "$work/bin/kwriteconfig5" << 'STUB'
 #!/bin/sh
 # Models kwriteconfig key/value argv; no KDE config is written.
 printf '%s\n' "$@" >> "$work/lock-arguments"
 STUB
 chmod +x "$work/bin/gsettings" "$work/bin/kwriteconfig5"
-: >"$work/images/URI %?#'\"é
+: > "$work/images/URI %?#'\"é
 .jpg"
 for desktop in gNoMe KDE; do
-  : >"$work/lock-arguments"
+  : > "$work/lock-arguments"
   XDG_CURRENT_DESKTOP=$desktop "$test_shell" "$controller" set-lockscreen "$work/images/URI %?#'\"é
 .jpg" manual original scaled
   check test -s "$work/lock-arguments"
   case "$(cat "$work/lock-arguments")" in
-  *"file://$work/images/URI%20%25%3F%23%27%22%C3%A9%0A.jpg"*) : ;;
-  *)
-    printf '%s\n' 'FAIL: URI encoding' >&2
-    exit 1
-    ;;
+    *"file://$work/images/URI%20%25%3F%23%27%22%C3%A9%0A.jpg"*) : ;;
+    *)
+      printf '%s\n' 'FAIL: URI encoding' >&2
+      exit 1
+      ;;
   esac
 done
 cp "$work/bin/kwriteconfig5" "$work/bin/kwriteconfig6"
@@ -551,10 +551,10 @@ for desktop in hYpRlAnD NiRi other-wayland; do
     for name in 'space name.jpg' 'trailing-newline
 '; do
       XDG_STATE_HOME="$work/state" XDG_CURRENT_DESKTOP=$desktop \
-        "$test_shell" "$controller" set-lockscreen "$work/images/$name" >"$work/stdout"
+        "$test_shell" "$controller" set-lockscreen "$work/images/$name" > "$work/stdout"
       check test ! -s "$work/stdout"
-      readlink "$work/state/varietyctl/lockscreen" >"$work/actual"
-      printf '%s\n' "$work/images/$name" >"$work/expected"
+      readlink "$work/state/varietyctl/lockscreen" > "$work/actual"
+      printf '%s\n' "$work/images/$name" > "$work/expected"
       check cmp "$work/expected" "$work/actual"
     done
     XDG_CURRENT_DESKTOP=$desktop VARIETYCTL_LOCKSCREEN_LINK="$work/custom/link" \
@@ -567,7 +567,7 @@ for desktop in hYpRlAnD NiRi other-wayland; do
 done
 # Model Variety's processed-image cleanup; the original survives and the link follows it.
 for posix in 0 1; do
-  : >"$work/images/wallpaper-clock-generated.jpg"
+  : > "$work/images/wallpaper-clock-generated.jpg"
   VARIETYCTL_POSIX_ONLY=$posix XDG_CURRENT_DESKTOP=niri WAYLAND_DISPLAY='' \
     VARIETYCTL_LOCKSCREEN_LINK="$work/stable/link" "$test_shell" "$controller" \
     set-lockscreen "$work/images/wallpaper-clock-generated.jpg" refresh "$work/images/space name.jpg" zoom
@@ -579,22 +579,22 @@ for posix in 0 1; do
     set-lockscreen 'space name.jpg' manual 'utf8-é.jpg')
   check test "$(readlink "$work/stable/link")" = "$work/images/utf8-é.jpg"
 done
-VARIETYCTL_DEBUG=1 XDG_CURRENT_DESKTOP=GNOME "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg" 2>"$work/stderr"
+VARIETYCTL_DEBUG=1 XDG_CURRENT_DESKTOP=GNOME "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg" 2> "$work/stderr"
 case "$(cat "$work/stderr")" in
-*'compatibility write with no effect on stock GNOME Shell'*) : ;;
-*) exit 1 ;;
+  *'compatibility write with no effect on stock GNOME Shell'*) : ;;
+  *) exit 1 ;;
 esac
 
 # Check KDE mode mapping as well as URI encoding.
-: >"$work/lock-arguments"
+: > "$work/lock-arguments"
 XDG_CURRENT_DESKTOP=KDE "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg" manual original scaled
 case "$(cat "$work/lock-arguments")" in
-*'FillMode
+  *'FillMode
 1') : ;;
-*)
-  printf '%s\n' 'FAIL: KDE FillMode' >&2
-  exit 1
-  ;;
+  *)
+    printf '%s\n' 'FAIL: KDE FillMode' >&2
+    exit 1
+    ;;
 esac
 
 # Missing POSIX dependencies must produce a controller error, not exit 127.
@@ -603,11 +603,11 @@ for missing in ps od awk xargs sh; do
   mv "$work/bin/$missing" "$work/$missing.saved"
   expect_status 1 "$test_shell" "$controller" get
   case "$(cat "$work/stderr")" in
-  *"missing required tool: $missing"*) : ;;
-  *)
-    printf 'FAIL: missing %s diagnostic\n' "$missing" >&2
-    exit 1
-    ;;
+    *"missing required tool: $missing"*) : ;;
+    *)
+      printf 'FAIL: missing %s diagnostic\n' "$missing" >&2
+      exit 1
+      ;;
   esac
   mv "$work/$missing.saved" "$work/bin/$missing"
 done
@@ -615,11 +615,11 @@ mv "$work/bin/sed" "$work/saved/sed"
 export VARIETYCTL_BACKEND=dms DMS_PER_MONITOR=1
 expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 case "$(cat "$work/stderr")" in
-*'missing required tool: sed'*) : ;;
-*)
-  printf '%s\n' 'FAIL: missing sed diagnostic' >&2
-  exit 1
-  ;;
+  *'missing required tool: sed'*) : ;;
+  *)
+    printf '%s\n' 'FAIL: missing sed diagnostic' >&2
+    exit 1
+    ;;
 esac
 mv "$work/saved/sed" "$work/bin/sed"
 unset DMS_PER_MONITOR
@@ -631,8 +631,8 @@ mkdir "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d"
 sleep 1 &
 dead_owner=$!
 kill "$dead_owner"
-wait "$dead_owner" 2>/dev/null || :
-printf '%s\n' "$dead_owner" >"$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid"
+wait "$dead_owner" 2> /dev/null || :
+printf '%s\n' "$dead_owner" > "$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d/pid"
 jobs=
 burst=0
 while [ "$burst" -lt 10 ]; do
@@ -651,13 +651,13 @@ if [ -e "$work/saved/setsid" ]; then mv "$work/saved/setsid" "$work/bin/setsid";
 # Keep backing utility basenames: Nix's multicall coreutils dispatches on argv[0].
 mv "$work/bin/ln" "$work/saved/ln"
 mv "$work/bin/mv" "$work/saved/mv"
-cat >"$work/bin/ln" <<'STUB'
+cat > "$work/bin/ln" << 'STUB'
 #!/bin/sh
 # Models POSIX ln -s without GNU's -- extension.
 [ "${2:-}" != -- ] || exit 2
 exec "$work/saved/ln" "$@"
 STUB
-cat >"$work/bin/mv" <<'STUB'
+cat > "$work/bin/mv" << 'STUB'
 #!/bin/sh
 # Records the modern swap and models POSIX mv rejecting GNU's -T/-- options.
 printf '%s\n' "$*" >>"$work/mv-calls"
@@ -667,14 +667,14 @@ fi
 exec "$work/saved/mv" "$@"
 STUB
 chmod +x "$work/bin/ln" "$work/bin/mv"
-: >"$work/mv-calls"
+: > "$work/mv-calls"
 VARIETYCTL_LOCKSCREEN_LINK="$work/modern/link" XDG_CURRENT_DESKTOP=niri \
   "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg"
 check test "$(awk 'END {print NR}' "$work/mv-calls")" -eq 1
-IFS= read -r first_swap <"$work/mv-calls"
+IFS= read -r first_swap < "$work/mv-calls"
 case "$first_swap" in '-f -T '*) : ;; *) exit 1 ;; esac
 check test "$(readlink "$work/modern/link")" = "$work/images/space name.jpg"
-: >"$work/mv-calls"
+: > "$work/mv-calls"
 TEST_POSIX_MV=1 VARIETYCTL_LOCKSCREEN_LINK="$work/posix/link" XDG_CURRENT_DESKTOP=niri \
   "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg"
 check test "$(awk 'END {print NR}' "$work/mv-calls")" -eq 2
@@ -687,23 +687,23 @@ rm "$work/bin/ln" "$work/bin/mv"
 export VARIETYCTL_BACKEND=swaybg
 if [ -e "$work/bin/flock" ]; then mv "$work/bin/flock" "$work/saved/flock"; fi
 mv "$work/bin/mkdir" "$work/saved/mkdir"
-cat >"$work/bin/flock" <<'STUB'
+cat > "$work/bin/flock" << 'STUB'
 #!/bin/sh
 # Models util-linux's documented -E conflict status and option-error status.
 [ "$*" = '-E 200 -w 10 9' ] || exit 2
 exit "${FLOCK_STATUS:-2}"
 STUB
-cat >"$work/bin/mkdir" <<'STUB'
+cat > "$work/bin/mkdir" << 'STUB'
 #!/bin/sh
 # Passes real mkdir argv through and records whether fallback was attempted.
 printf '%s\n' "$*" >> "$work/mkdir-calls"
 exec "$work/saved/mkdir" "$@"
 STUB
 chmod +x "$work/bin/flock" "$work/bin/mkdir"
-: >"$work/mkdir-calls"
+: > "$work/mkdir-calls"
 FLOCK_STATUS=2 "$test_shell" "$controller" set "$work/images/space name.jpg"
 check test -s "$work/mkdir-calls"
-: >"$work/mkdir-calls"
+: > "$work/mkdir-calls"
 FLOCK_STATUS=200 expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 check test ! -s "$work/mkdir-calls"
 rm "$work/bin/flock" "$work/bin/mkdir"
@@ -711,7 +711,7 @@ mv "$work/saved/mkdir" "$work/bin/mkdir"
 
 # Empty-lock recovery waits to its bound; it must never reclaim a live owner.
 mv "$work/bin/sleep" "$work/saved/sleep"
-cat >"$work/bin/sleep" <<'STUB'
+cat > "$work/bin/sleep" << 'STUB'
 #!/bin/sh
 # A fake clock for directory-lock tests; 0.1 is supported by installed sleep.
 if [ "${TEST_FAST_SLEEP:-0}" = 1 ] && [ "$*" = 0.1 ]; then
@@ -723,12 +723,12 @@ STUB
 chmod +x "$work/bin/sleep"
 empty_lock=$XDG_RUNTIME_DIR/varietyctl-$test_uid.lock.d
 mkdir "$empty_lock"
-: >"$work/sleep-calls"
+: > "$work/sleep-calls"
 TEST_FAST_SLEEP=1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 check test ! -d "$empty_lock"
 check test "$(awk 'END {print NR}' "$work/sleep-calls")" -eq 104
 mkdir "$empty_lock"
-printf '%s\n' "$$" >"$empty_lock/pid"
+printf '%s\n' "$$" > "$empty_lock/pid"
 TEST_FAST_SLEEP=1 expect_status 1 "$test_shell" "$controller" set "$work/images/space name.jpg"
 check test "$(cat "$empty_lock/pid")" = "$$"
 rm "$empty_lock/pid"
@@ -746,21 +746,21 @@ private_root=/tmp/varietyctl-$private_uid
 for utility in id stat ls; do
   if [ -e "$work/bin/$utility" ]; then mv "$work/bin/$utility" "$work/saved/$utility"; fi
 done
-cat >"$work/bin/id" <<'STUB'
+cat > "$work/bin/id" << 'STUB'
 #!/bin/sh
 # Models POSIX id -u for a distinct simulated user.
 if [ -n "${TEST_PRIVATE_UID:-}" ] && [ "$*" = -u ]; then printf '%s\n' "$TEST_PRIVATE_UID"; else exec "$work/saved/id" "$@"; fi
 STUB
-cat >"$work/bin/stat" <<'STUB'
+cat > "$work/bin/stat" << 'STUB'
 #!/bin/sh
 # Models GNU stat -c '%u %a' -- PATH, including foreign-owner/bad-mode cases.
 [ "$1" = -c ] && [ "$2" = '%u %a' ] && [ "$3" = -- ] || exit 2
 printf '%s %s\n' "${TEST_PRIVATE_OWNER:-$TEST_PRIVATE_UID}" "${TEST_PRIVATE_MODE:-700}"
 STUB
-cat >"$work/bin/ls" <<'STUB'
+cat > "$work/bin/ls" << 'STUB'
 #!/bin/sh
-# Models POSIX ls -nd's numeric UID and permission columns for the same user.
-if [ -n "${TEST_PRIVATE_UID:-}" ] && [ "$1" = -nd ]; then
+# Models POSIX ls -and's numeric UID and permission columns for the same user.
+if [ -n "${TEST_PRIVATE_UID:-}" ] && [ "$1" = -and ]; then
   printf 'drwx------ 2 %s %s 4096 Jan 1 00:00 %s\n' "${TEST_PRIVATE_OWNER:-$TEST_PRIVATE_UID}" "$TEST_PRIVATE_UID" "$2"
 else
   exec "$work/saved/ls" "$@"
@@ -796,8 +796,8 @@ WALLPAPER_BACKEND=dms "$test_shell" "$controller" set "$work/images/space name.j
 if [ -n "${VARIETYCTL_TEST_WRAPPER:-}" ]; then
   for posix in 0 1; do
     VARIETYCTL_POSIX_ONLY=$posix VARIETYCTL_BACKEND=stale WALLPAPER_BACKEND=stale \
-      "$test_shell" "$VARIETYCTL_TEST_WRAPPER" get >"$work/actual"
-    printf '%s\n' "$work/images/space name.jpg" >"$work/expected"
+      "$test_shell" "$VARIETYCTL_TEST_WRAPPER" get > "$work/actual"
+    printf '%s\n' "$work/images/space name.jpg" > "$work/expected"
     check cmp "$work/expected" "$work/actual"
     actual=$(VARIETYCTL_BACKEND=stale VARIETYCTL_CAPTURE_BACKEND=1 \
       "$test_shell" "$VARIETYCTL_TEST_QUOTED_WRAPPER" next)
@@ -813,8 +813,8 @@ export VARIETYCTL_BACKEND=swaybg
 expect_status 0 env XDG_CURRENT_DESKTOP=unsupported WAYLAND_DISPLAY='' VARIETYCTL_DEBUG=1 "$test_shell" "$controller" set-lockscreen "$work/images/space name.jpg"
 case "$(cat "$work/stderr")" in *'unsupported session; skipping lock screen change'*) : ;; *) exit 1 ;; esac
 check test ! -s "$work/stdout"
-VARIETYCTL_DEBUG=1 "$test_shell" "$controller" get >"$work/actual" 2>"$work/stderr"
+VARIETYCTL_DEBUG=1 "$test_shell" "$controller" get > "$work/actual" 2> "$work/stderr"
 check test -s "$work/stderr"
-VARIETYCTL_DEBUG=0 "$test_shell" "$controller" get >"$work/actual" 2>"$work/stderr"
+VARIETYCTL_DEBUG=0 "$test_shell" "$controller" get > "$work/actual" 2> "$work/stderr"
 check test ! -s "$work/stderr"
 printf '%s\n' 'All varietyctl checks passed.'

@@ -1,4 +1,8 @@
-{config, lix, ...}: let
+{
+  config,
+  lix,
+  ...
+}: let
   inherit (lix.modules.construction) mkDefault;
 in {
   hyprlock = {

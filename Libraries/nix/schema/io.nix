@@ -518,64 +518,87 @@
     niri = {
       keyboard,
       actions,
-    }:
-      let
-        inherit (_.lists.aggregation) foldl';
-        inherit (_.lists.access) elemAt length;
-        inherit (_.attrsets.transformation) mapAttrsToList;
-        inherit (_.strings.construction) concatStringsSep splitString;
-        inherit (_.strings.transformation) replaceStrings;
-        toNiriModifier = modifier:
-          replaceStrings ["SUPER" "SHIFT" "CTRL" "CONTROL" "ALT"] ["Mod" "Shift" "Ctrl" "Ctrl" "Alt"] modifier;
-        toNiriKey = key:
-          if key == "RETURN" then "Return"
-          else if key == "SPACE" then "Space"
-          else if key == "SUPER_L" then "Super_L"
-          else if key == "ALT_L" then "Alt_L"
-          else if key == "ALT_R" then "Alt_R"
-          else if key == "TAB" then "Tab"
-          else if key == "PRINT" then "Print"
-          else if key == "grave" then "Grave"
-          else if key == "PAGE_DOWN" then "Page_Down"
-          else if key == "PAGE_UP" then "Page_Up"
-          else key;
-        render = group: binding:
-          let
-            modifiers = map toNiriModifier (splitString " " (binding.mod or ""));
-            chord = concatStringsSep "+" ((filter (modifier: modifier != "") modifiers) ++ [(toNiriKey binding.key)]);
-            kind = binding.kind or "exec";
-            action = binding.action or null;
-            actionParts = if action == null then [] else splitString " " action;
-            nativeAction =
-              if
-                kind == "exec"
-                && length actionParts == 4
-                && elemAt actionParts 0 == "niri"
-                && elemAt actionParts 1 == "msg"
-                && elemAt actionParts 2 == "action"
-              then elemAt actionParts 3
-              else null;
-            enabled =
-              (binding.enable or true)
-              && (binding.key or null) != null
-              && (binding.mod or null) != null
-              && action != null
-              && action != ""
-              && kind == "exec";
-          in
-            if !enabled then {} else {
-              ${chord} = {
-                action = if nativeAction == null then actions.spawn-sh action else actions.${nativeAction};
-                hotkey-overlay.title = binding.description or group;
-                repeat = binding.repeating or false;
-              } // (if (binding.locked or false) && nativeAction == null then {allow-when-locked = true;} else {});
-            };
+    }: let
+      inherit (_.lists.aggregation) foldl';
+      inherit (_.lists.access) elemAt length;
+      inherit (_.attrsets.transformation) mapAttrsToList;
+      inherit (_.strings.construction) concatStringsSep splitString;
+      inherit (_.strings.transformation) replaceStrings;
+      toNiriModifier = modifier:
+        replaceStrings ["SUPER" "SHIFT" "CTRL" "CONTROL" "ALT"] ["Mod" "Shift" "Ctrl" "Ctrl" "Alt"] modifier;
+      toNiriKey = key:
+        if key == "RETURN"
+        then "Return"
+        else if key == "SPACE"
+        then "Space"
+        else if key == "SUPER_L"
+        then "Super_L"
+        else if key == "ALT_L"
+        then "Alt_L"
+        else if key == "ALT_R"
+        then "Alt_R"
+        else if key == "TAB"
+        then "Tab"
+        else if key == "PRINT"
+        then "Print"
+        else if key == "grave"
+        then "Grave"
+        else if key == "PAGE_DOWN"
+        then "Page_Down"
+        else if key == "PAGE_UP"
+        then "Page_Up"
+        else key;
+      render = group: binding: let
+        modifiers = map toNiriModifier (splitString " " (binding.mod or ""));
+        chord = concatStringsSep "+" ((filter (modifier: modifier != "") modifiers) ++ [(toNiriKey binding.key)]);
+        kind = binding.kind or "exec";
+        action = binding.action or null;
+        actionParts =
+          if action == null
+          then []
+          else splitString " " action;
+        nativeAction =
+          if
+            kind
+            == "exec"
+            && length actionParts == 4
+            && elemAt actionParts 0 == "niri"
+            && elemAt actionParts 1 == "msg"
+            && elemAt actionParts 2 == "action"
+          then elemAt actionParts 3
+          else null;
+        enabled =
+          (binding.enable or true)
+          && (binding.key or null) != null
+          && (binding.mod or null) != null
+          && action != null
+          && action != ""
+          && kind == "exec";
       in
-        foldl' (result: binding: result // binding) {} (
-          mapAttrsToList
-            (group: bindings: foldl' (groupBinds: binding: groupBinds // render group binding) {} (toList bindings))
-            keyboard.bindings
-        );
+        if !enabled
+        then {}
+        else {
+          ${chord} =
+            {
+              action =
+                if nativeAction == null
+                then actions.spawn-sh action
+                else actions.${nativeAction};
+              hotkey-overlay.title = binding.description or group;
+              repeat = binding.repeating or false;
+            }
+            // (
+              if (binding.locked or false) && nativeAction == null
+              then {allow-when-locked = true;}
+              else {}
+            );
+        };
+    in
+      foldl' (result: binding: result // binding) {} (
+        mapAttrsToList
+        (group: bindings: foldl' (groupBinds: binding: groupBinds // render group binding) {} (toList bindings))
+        keyboard.bindings
+      );
   };
 in
   __exports.internal // {__rootAliases = __exports.external;}

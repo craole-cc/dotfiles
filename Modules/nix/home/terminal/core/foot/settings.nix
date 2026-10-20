@@ -17,6 +17,8 @@ in {
     selection-target = "both";
   };
 
+  csd.preferred = "none";
+
   bell = {
     system = "no";
     urgent = "yes";

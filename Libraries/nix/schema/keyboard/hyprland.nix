@@ -70,13 +70,13 @@ in {
     volume =
       scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%+")
       ++ scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%-")
-      ++ [ (media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") ];
+      ++ [(media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")];
     brightness =
       scale (step: "brightnessctl set +${toString step}%")
       ++ scale (step: "brightnessctl set ${toString step}%-");
     volumeUp = scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%+");
     volumeDown = scale (step: "wpctl set-volume -l '1.0' @DEFAULT_AUDIO_SINK@ ${toString step}%-");
-    volumeMute = [ (media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") ];
+    volumeMute = [(media "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")];
     brightnessUp = scale (step: "brightnessctl set +${toString step}%");
     brightnessDown = scale (step: "brightnessctl set ${toString step}%-");
   };

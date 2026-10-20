@@ -1,8 +1,7 @@
 {
   _,
   terminals ? [],
-}:
-let
+}: let
   inherit (_.lists.access) elemAt length;
   inherit (_.lists.construction) genList;
   command = action: {
@@ -22,7 +21,7 @@ in {
   legacy = {
     close = native "close-window";
     fullscreen = native "fullscreen-window";
-    maximise = native "maximize-column";
+    maximise = native "maximize-window-to-edges";
     float = native "toggle-window-floating";
     pin = native "toggle-window-floating";
     split = native "consume-or-expel-window-right";
@@ -39,7 +38,9 @@ in {
 
   ordered = {
     terminalOpen = genList (index: command (elemAt terminals index).command) (
-      if length terminals < 2 then length terminals else 2
+      if length terminals < 2
+      then length terminals
+      else 2
     );
     close = [
       (native "close-window")
@@ -48,6 +49,7 @@ in {
     ];
     window = [
       (native "fullscreen-window")
+      (native "maximize-window-to-edges")
       (native "toggle-window-floating")
     ];
     lock = [
