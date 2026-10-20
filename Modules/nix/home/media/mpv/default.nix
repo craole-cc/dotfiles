@@ -33,7 +33,7 @@ in
       programs.mpv = mkMerge [
         {
           inherit (cfg) enable;
-          scripts = import ./yazi.nix args;
+          scripts = [(import ./yazi.nix args)];
         }
         (import ./bindings.nix)
         (import ./settings.nix {inherit pkgs;})

@@ -17,7 +17,7 @@
       replaceStrings
       ["@terminalCommand@" "@terminalExecFlag@"]
       (with terminal; [command (wrap.execFlag or "-e")])
-      (readFile (mkPath ["Configuration" mod script.name]));
+      (readFile (mkPath ["Configuration" mod script.name]).store);
   };
   package =
     writeTextDir
