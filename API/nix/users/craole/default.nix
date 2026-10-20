@@ -673,7 +673,7 @@
             modifier = modifier ++ ["Ctrl"];
           })
           (mkBinding common {
-            description = "${description}: Maximize Column";
+            description = "${description}: Maximise Column";
             modifier = modifier ++ ["Alt"];
           })
         ];
