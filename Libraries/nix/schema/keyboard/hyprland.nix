@@ -8,6 +8,10 @@
     kind = "hyprland";
     inherit action;
   };
+  callback = action: {
+    kind = "hyprland-function";
+    inherit action;
+  };
   command = action: {
     kind = "exec";
     inherit action;
@@ -53,7 +57,20 @@ in {
       (native "window.close()")
       (native "exit()")
     ];
-    window = [fullscreen floating];
+    window = [
+      fullscreen
+      floating
+      {}
+      {}
+      {}
+      (callback ''
+        function()
+          hl.dispatch(hl.dsp.window.float({ action = "set" }))
+          hl.dispatch(hl.dsp.window.pin({ action = "toggle" }))
+          hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top" }))
+        end
+      '')
+    ];
     lock = [
       (command "loginctl lock-session")
       groupLock

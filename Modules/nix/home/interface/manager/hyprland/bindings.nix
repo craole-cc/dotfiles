@@ -24,6 +24,8 @@
     dispatch =
       if kind == "hyprland"
       then "hl.dsp.${action}"
+      else if kind == "hyprland-function"
+      then action
       else if kind == "global"
       then "hl.dsp.global(${toJSON action})"
       else "hl.dsp.exec_cmd(${toJSON action})";
