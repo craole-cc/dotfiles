@@ -9,6 +9,7 @@
 }: let
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkEnable;
+  inherit (lix.lists.access) head;
   inherit (lib.modules) mkMerge;
   inherit (lix.lists.predicates) isIn;
 
@@ -17,29 +18,22 @@
     dom = "media";
     mod = "mpv";
   };
-  isAllowed = isIn "video" (host.functionalities or []);
-  primaryTerminal = apps.legacy.terminal.primary or null;
-  yaziScripts =
-    if primaryTerminal == null
-    then []
-    else [
-      (import ./yazi.nix {
-        inherit lix pkgs;
-        terminal = primaryTerminal;
-      })
-    ];
+  inherit (context) cfg;
+
+  terminal = head apps.terminal;
+  args = context // {inherit lix pkgs terminal;};
 in
   mkConfig {
     inherit context;
     options.enable = mkEnable {
       inherit context;
-      condition = isAllowed;
+      condition = isIn "video" (host.functionalities or []);
     };
     outputs = {
       programs.mpv = mkMerge [
         {
-          enable = true;
-          scripts = yaziScripts;
+          inherit (cfg) enable;
+          scripts = import ./yazi.nix args;
         }
         (import ./bindings.nix)
         (import ./settings.nix {inherit pkgs;})
