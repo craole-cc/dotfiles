@@ -14,10 +14,11 @@
   inherit (bins) mkdir mv readlink;
   enabled = attrNames (filterAttrs (_: plugin: plugin.enable) config.programs.dank-material-shell.plugins);
   pluginPath = name: "DankMaterialShell/plugins/${name}";
+  managedPluginPath = name: "dms/plugins/${name}";
   # Permit the selected paths through collision checking; migrate them only
   # after the write boundary and before Home Manager installs its links.
   files = listToAttrs (map (name: {
-      name = pluginPath name;
+      name = managedPluginPath name;
       value.force = true;
     })
     enabled);
