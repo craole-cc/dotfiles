@@ -277,6 +277,10 @@
         ];
       };
 
+      niri = {
+        names = ["niri"];
+      };
+
       home-manager = {
         names = [
           "nixHomeManager"

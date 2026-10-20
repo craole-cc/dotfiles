@@ -105,8 +105,8 @@
             (input != {})
             [inputs'.${name}.module])
           names;
-        niriEnabled = ((enrichedInterface.windowManager or {}).name or null) == "niri";
         dmsNiriEnabled = enrichedInterface.panel == "dms-shell";
+        niriEnabled = (enrichedInterface.windowManager or null) == "niri";
       in {
         _module.args = {
           style = mkStyle {
@@ -159,7 +159,7 @@
             "plasma"
             "zen-browser"
           ]
-          ++ optionals niriEnabled [ (modules.niri.default or {}) ]
+          ++ [ (modules.niri.default or {}) ]
           ++ optionals (niriEnabled && dmsNiriEnabled) [ (modules.dms-shell.niri or {}) ]
           ++ [paths.store.mod.home]
           ++ (moduleUser.imports or []);
