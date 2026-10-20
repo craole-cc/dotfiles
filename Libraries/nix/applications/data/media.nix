@@ -9,6 +9,16 @@ _: {
     categories = ["media"];
   };
 
+  freetube = {
+    names = {
+      package = "freetube";
+      command = "freetube";
+      class = "FreeTube";
+    };
+    exec = "freetube";
+    categories = ["media"];
+  };
+
   vlc = {
     names = {
       package = "vlc";

@@ -619,6 +619,23 @@
           })
         ];
 
+        media = let
+          description = "Media";
+          category = "application";
+          key = "M";
+          common = {inherit category description modifier key;};
+        in [
+          (mkBinding common {description = description + ": MPV";})
+          (mkBinding common {
+            description = description + ": FreeTube";
+            modifier = modifier ++ ["Shift"];
+          })
+          (mkBinding common {
+            description = description + ": Shortwave";
+            modifier = modifier ++ ["Alt"];
+          })
+        ];
+
         #~@ System Control
         close = let
           description = "Exit";
