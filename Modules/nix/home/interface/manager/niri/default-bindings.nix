@@ -1,4 +1,7 @@
-{actions, lix}: let
+{
+  actions,
+  lix,
+}: let
   inherit (lix.attrsets.construction) listToAttrs;
   inherit (lix.lists.construction) genList;
   bind = title: action: {

@@ -27,12 +27,15 @@
   inherit (lix.types.predicates) isList;
   inherit (lix.lists.transformation) imap0;
   inherit (lib.modules) mkIf;
-  niriInterface = (lix.schema.ui.mkUI {
-    inherit host;
-    user = user // {
-      interface = (user.interface or {}) // {desktops = ["niri"];};
-    };
-  }).keyboard;
+  niriInterface =
+    (lix.schema.ui.mkUI {
+      inherit host;
+      user =
+        user
+        // {
+          interface = (user.interface or {}) // {desktops = ["niri"];};
+        };
+    }).keyboard;
   niriActions = import ../../../../../../Libraries/nix/schema/keyboard/niri.nix {
     _ = lix;
     terminals = apps.terminal or [];
@@ -43,7 +46,8 @@
       removeAttrs binding ["key" "mod" "modifier" "category" "description" "application"];
     actionAt = index:
       if
-        projected != null
+        projected
+        != null
         && isList projected
         && index < length projected
         && ((elemAt projected index).kind or "exec") == "exec"
@@ -55,28 +59,50 @@
       else fallback;
   in
     if isList base
-    then imap0 (index: binding:
-      binding
-      // (let selected = actionAt index; in if selected == null then {} else project selected)
-    ) base
+    then
+      imap0 (
+        index: binding:
+          binding
+          // (let
+            selected = actionAt index;
+          in
+            if selected == null
+            then {}
+            else project selected)
+      )
+      base
     else if !isList base
-    then let selected = actionAt 0; in base // (if selected == null then {} else project selected)
+    then let
+      selected = actionAt 0;
+    in
+      base
+      // (
+        if selected == null
+        then {}
+        else project selected
+      )
     else base;
   baseBindings = keyboard.bindings or {};
   projectedBindings = niriInterface.bindings or {};
-  niriBindings = mapAttrs (group: bindings:
-    if projectedBindings ? ${group} || actionBindings ? ${group}
-    then overlayActions bindings (projectedBindings.${group} or null) (actionBindings.${group} or null)
-    else bindings
-  ) baseBindings;
-  niriKeyboard = keyboard // niriInterface // {
-    bindings = niriBindings // removeAttrs projectedBindings (attrNames baseBindings);
-  };
+  niriBindings =
+    mapAttrs (
+      group: bindings:
+        if projectedBindings ? ${group} || actionBindings ? ${group}
+        then overlayActions bindings (projectedBindings.${group} or null) (actionBindings.${group} or null)
+        else bindings
+    )
+    baseBindings;
+  niriKeyboard =
+    keyboard
+    // niriInterface
+    // {
+      bindings = niriBindings // removeAttrs projectedBindings (attrNames baseBindings);
+    };
   niriPackage = config.programs.niri.package;
   niriFloatSticky = inputs."niri-float-sticky".packages.${pkgs.stdenv.hostPlatform.system}.default;
   scratchpads = import ./scratchpads.nix {
-    actions = actions;
-    apps = apps;
+    inherit actions;
+    inherit apps;
     keyboard = niriKeyboard;
     inherit lib niriPackage pkgs;
   };
