@@ -18,6 +18,11 @@
       inputs.nixpkgs.follows = "nixPackages";
     };
 
+    niriFloatSticky = {
+      url = "github:probeldev/niri-float-sticky/v0.0.9";
+      inputs.nixpkgs.follows = "nixPackages";
+    };
+
     nixDarwin = {
       repo = "nix-darwin";
       owner = "LnL7";

@@ -82,6 +82,7 @@
       attrs = "packages";
       names = [
         "age"
+        "niri-float-sticky"
         "caelestia"
         "catppuccin"
         "codex"

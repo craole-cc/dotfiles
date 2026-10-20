@@ -605,8 +605,20 @@ in {
           )
           (
             mkBinding common {
-              description = description + ": Maximize Column";
+              description = description + ": Maximise Column";
               modifier = modifier ++ ["Alt"];
+            }
+          )
+          (
+            mkBinding common {
+              description = description + ": Switch Floating/Tiling Focus";
+              modifier = modifier ++ ["Ctrl" "Shift"];
+            }
+          )
+          (
+            mkBinding common {
+              description = description + ": Pin to All Workspaces";
+              modifier = modifier ++ ["Ctrl" "Alt"];
             }
           )
         ];

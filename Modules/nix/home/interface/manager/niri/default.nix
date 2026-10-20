@@ -7,6 +7,7 @@
   pkgs,
   apps,
   user,
+  inputs,
   ...
 }: let
   context = mkContext {
@@ -72,6 +73,7 @@
     bindings = niriBindings // removeAttrs projectedBindings (attrNames baseBindings);
   };
   niriPackage = config.programs.niri.package;
+  niriFloatSticky = inputs."niri-float-sticky".packages.${pkgs.stdenv.hostPlatform.system}.default;
   scratchpads = import ./scratchpads.nix {
     actions = actions;
     apps = apps;
@@ -101,6 +103,19 @@ in
           inherit (scratchpads) window-rules;
         };
       };
-      home.packages = scratchpads.packages;
+      home.packages = scratchpads.packages ++ [niriFloatSticky];
+      systemd.user.services.niri-float-sticky = {
+        Unit = {
+          Description = "Niri floating-window pinning helper";
+          After = ["graphical-session.target"];
+          PartOf = ["graphical-session.target"];
+        };
+        Service = {
+          ExecStart = "${niriFloatSticky}/bin/niri-float-sticky --disable-auto-stick";
+          Restart = "on-failure";
+          RestartSec = 2;
+        };
+        Install.WantedBy = ["graphical-session.target"];
+      };
     };
   }

@@ -27,6 +27,7 @@
 
     home = [
       "age"
+      "niri-float-sticky"
       "caelestia"
       "catppuccin"
       "dank-material-shell"

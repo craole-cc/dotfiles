@@ -281,6 +281,10 @@
         names = ["niri"];
       };
 
+      niri-float-sticky = {
+        names = ["niriFloatSticky" "niri-float-sticky"];
+      };
+
       home-manager = {
         names = [
           "nixHomeManager"
