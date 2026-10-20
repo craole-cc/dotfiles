@@ -1,10 +1,11 @@
 {
   config,
+  host,
   lix,
   ...
 }: let
   context = mkContext {
-    inherit config;
+    inherit config host;
     dom = "interface";
     sub = "environments";
     mod = "cosmic";

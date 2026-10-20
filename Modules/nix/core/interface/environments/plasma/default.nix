@@ -1,11 +1,12 @@
 {
   config,
+  host,
   lix,
   pkgs,
   ...
 }: let
   context = mkContext {
-    inherit config;
+    inherit config host;
     dom = "interface";
     sub = "environments";
     mod = "plasma";

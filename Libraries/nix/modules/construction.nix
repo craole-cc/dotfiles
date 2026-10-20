@@ -363,6 +363,7 @@
 
   mkContext = {
     config,
+    host ? null,
     top ? _default.names.top,
     dom,
     sub ? null,
@@ -395,6 +396,11 @@
       panels = ice.panel or null;
       bar = panels;
 
+      desktops =
+        if host == null
+        then []
+        else host.interface.desktops or [];
+
       hasHyprland =
         (wm == "hyprland")
         || config.programs.hyprland.enable or false
@@ -403,12 +409,15 @@
       hasNiri = (wm == "niri") || config.programs.niri.enable or false;
 
       mkWants = name: value: {condition = value == name;};
-      wantsCosmic = mkWants "cosmic" desktopEnvironments;
+      mkWantsDesktop = name: value: {
+        condition = elem name desktops || value == name;
+      };
+      wantsCosmic = mkWantsDesktop "cosmic" desktopEnvironments;
       wantsDmsShell = mkWants "dms-shell" panels;
-      wantsGnome = mkWants "gnome" desktopEnvironments;
-      wantsHyprland = mkWants "hyprland" windowManagers;
-      wantsNiri = mkWants "niri" windowManagers;
-      wantsPlasma = mkWants "plasma" desktopEnvironments;
+      wantsGnome = mkWantsDesktop "gnome" desktopEnvironments;
+      wantsHyprland = mkWantsDesktop "hyprland" windowManagers;
+      wantsNiri = mkWantsDesktop "niri" windowManagers;
+      wantsPlasma = mkWantsDesktop "plasma" desktopEnvironments;
     };
 
     ctx = {

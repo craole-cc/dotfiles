@@ -5,7 +5,7 @@
   ...
 }: let
   context = mkContext {
-    inherit config;
+    inherit config host;
     dom = "interface";
     sub = "managers";
     mod = "hyprland";
