@@ -672,6 +672,10 @@
             description = "${description}: Floating";
             modifier = modifier ++ ["Ctrl"];
           })
+          (mkBinding common {
+            description = "${description}: Maximize Column";
+            modifier = modifier ++ ["Alt"];
+          })
         ];
 
         workspace = let

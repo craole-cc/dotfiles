@@ -23,7 +23,7 @@ in {
     fullscreen = native "fullscreen-window";
     maximise = native "maximize-window-to-edges";
     float = native "toggle-window-floating";
-    pin = native "toggle-window-floating";
+    pin = command "";
     split = native "consume-or-expel-window-right";
     pseudo = native "toggle-column-tabbed-display";
     groupToggle = native "toggle-column-tabbed-display";
@@ -51,6 +51,7 @@ in {
       (native "fullscreen-window")
       (native "maximize-window-to-edges")
       (native "toggle-window-floating")
+      (native "maximize-column")
     ];
     lock = [
       (command "dms ipc call lock lock")

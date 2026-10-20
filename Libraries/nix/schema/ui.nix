@@ -530,6 +530,7 @@
         fullscreen.action = "niri msg action fullscreen-window";
         maximise.action = "niri msg action maximize-window-to-edges";
         float.action = "niri msg action toggle-window-floating";
+        pin.action = "";
         workspacePrev.action = "niri msg action focus-workspace-previous";
         windowCycle.action = "niri msg action focus-window-previous";
         logout.action = "niri msg action quit";

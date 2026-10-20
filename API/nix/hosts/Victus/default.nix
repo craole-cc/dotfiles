@@ -603,6 +603,12 @@ in {
               modifier = modifier ++ ["Ctrl"];
             }
           )
+          (
+            mkBinding common {
+              description = description + ": Maximize Column";
+              modifier = modifier ++ ["Alt"];
+            }
+          )
         ];
 
         workspaceNext = let
