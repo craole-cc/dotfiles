@@ -1,74 +1,171 @@
+// keybindings.json
+// - Entries are evaluated top to bottom; the LAST matching binding wins.
+// - A leading "-" on a command removes that default binding.
 [
-	{
-		"key": "ctrl+alt+,",
-		"command": "workbench.action.openWorkspaceSettingsFile"
-	},
-	{
-		"key": "ctrl+shift+,",
-		"command": "-editor.action.inPlaceReplace.up",
-		"when": "editorTextFocus && !editorReadonly"
-	},
-	{
-		"key": "ctrl+shift+,",
-		"command": "workbench.action.openSettingsJson"
-	},
-	{
-		"key": "ctrl+shift+a",
-		"command": "extension.toggleFiles"
-	},
-	{
-		"key": "shift+escape",
-		"command": "workbench.action.terminal.kill"
-	},
-	{
-		"key": "ctrl+alt+`",
-		"command": "workbench.action.terminal.kill"
-	},
-	{
-		"key": "ctrl+0",
-		"command": "workbench.action.zoomReset",
-		"when": "editorTextFocus"
-	},
-	{
-		"key": "ctrl+alt+,",
-		"command": "workbench.action.openGlobalKeybindingsFile"
-	},
-	{
-		"key": "ctrl+shift+alt+,",
-		"command": "workbench.action.openRawDefaultSettings"
-	},
-	{
-		"key": "F3",
-		"command": "toggle",
-		"when": "editorTextFocus",
-		"args": {
-			"id": "minimap",
-			"value": [
-				{
-					"editor.minimap.enabled": true
-				},
-				{
-					"editor.minimap.enabled": false
-				}
-			]
-		}
-	},
-	{
-		"key": "F4",
-		"command": "toggle",
-		"when": "editorTextFocus",
-		"args": {
-			"id": "zen",
-			"value": [
-				{
-					"editor.minimap.enabled": true,
-					"workbench.statusBar.visible": true
-				},
-				{
-					"editor.minimap.enabled": false,
-					"workbench.statusBar.visible": false
-				}
-			]
-		}
-	}
+  //~@ ====================================================
+  //~@ TABLE OF CONTENTS                                  .
+  //~@ ====================================================
+  //TOC Pinned Defaults
+  //TOC Configuration
+  //TOC Editor
+  //TOC Terminal
+  //TOC UI
+  //TOC Extentions
+  //~@ ====================================================
+  //~@ PINNED DEFAULTS                                    .
+  //~@ ====================================================
+  //? These are identical to VS Code's built-ins. They only matter if an extension
+  //? or another binding tries to claim the same keys; otherwise they can be deleted.
+  {
+    "key": "alt+up",
+    "command": "editor.action.moveLinesUpAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+down",
+    "command": "editor.action.moveLinesDownAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+c",
+    "command": "editor.action.clipboardCopyAction",
+    "when": "textInputFocus"
+  },
+  //~@ ====================================================
+  //~@ CONFIGURATION                                       .
+  //~@ ====================================================
+  {
+    //> Free ctrl+shift+, (default: inPlaceReplace.up), then reuse it for settings.json.
+    //? The removal must come first and must match the default's "when" exactly.
+    "key": "ctrl+shift+,",
+    "command": "-editor.action.inPlaceReplace.up",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    //> Opens the user settings.json
+    "key": "ctrl+shift+,",
+    "command": "workbench.action.openSettingsJson"
+  },
+  {
+    //> Opens both default and user settings.json in a vertical split screen:
+    "key": "ctrl+shift+alt+,",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "workbench.action.openSettingsJson",
+        "workbench.action.openRawDefaultSettings",
+        "workbench.action.moveEditorToNextGroup"
+      ]
+    }
+  },
+  {
+    //> Opens the user keybindings.json
+    "key": "ctrl+alt+,",
+    "command": "workbench.action.openGlobalKeybindingsFile"
+  },
+  {
+    //> Opens both default and user keybindings in a vertical split screen:
+    "key": "shift+alt+,",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "workbench.action.openDefaultKeybindingsFile",
+        "workbench.action.openGlobalKeybindingsFile",
+        "workbench.action.moveEditorToNextGroup"
+      ]
+    }
+  },
+  //~@ ====================================================
+  //~@ EDITOR                                             .
+  //~@ ====================================================
+  {
+    "key": "ctrl+alt+9",
+    "command": "sortLines.sortLinesCaseInsensitive",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  //~@ ====================================================
+  //~@ TERMINAL                                           .
+  //~@ ====================================================
+  {
+    //> Disables default Ctrl+J panel toggle to prevent conflicts with ble.sh
+    "key": "ctrl+j",
+    "command": "-workbench.action.togglePanel"
+  },
+  {
+    "key": "ctrl+alt+`",
+    "command": "workbench.action.terminal.kill"
+  },
+  {
+    //? Scoped to the terminal: unscoped, this shadowed shift+escape in the editor // prettier-ignore
+    //? (closing the find widget, parameter hints, etc.) and killed the terminal from anywhere.
+    "key": "shift+escape",
+    "command": "workbench.action.terminal.kill",
+    "when": "terminalFocus"
+  },
+  //~@ ====================================================
+  //~@ VIEW, ZOOM & LAYOUT                                .
+  //~@ ====================================================
+  {
+    "key": "ctrl+t ctrl+m",
+    "command": "workbench.action.toggleMaximizedPanel"
+  },
+  {
+    //? editor.mouseWheelZoom changes the editor font zoom, which workbench.action.zoomReset
+    //? (window zoom) does not undo, so reset both.
+    "key": "ctrl+0",
+    "command": "runCommands",
+    "args": {
+      "commands": [
+        "editor.action.fontZoomReset",
+        "workbench.action.zoomReset"
+      ]
+    },
+    "when": "editorTextFocus"
+  },
+  {
+    //> Toggle distraction-free UI (needs the "rebornix.toggle" extension got `toggle` command).
+    //? First value = normal state and MUST mirror settings.json, otherwise the first press looks like a no-op.
+    //? Second value = distraction-free state.
+    "key": "ctrl+alt+z",
+    "command": "toggle",
+    "when": "editorTextFocus",
+    "args": {
+      "id": "zen",
+      "value": [
+        {
+          "breadcrumbs.enabled": true,
+          "editor.folding": true,
+          "editor.glyphMargin": true,
+          "editor.lineNumbers": "on",
+          "editor.minimap.enabled": true,
+          "editor.scrollbar.horizontal": "auto",
+          "editor.scrollbar.vertical": "auto",
+          "window.customTitleBarVisibility": "auto",
+          "workbench.activityBar.location": "default",
+          "workbench.editor.showTabs": "multiple",
+          "workbench.statusBar.visible": true
+        },
+        {
+          "breadcrumbs.enabled": false,
+          "editor.folding": false,
+          "editor.glyphMargin": false,
+          "editor.lineNumbers": "off",
+          "editor.minimap.enabled": false,
+          "editor.scrollbar.horizontal": "hidden",
+          "editor.scrollbar.vertical": "hidden",
+          "window.customTitleBarVisibility": "never",
+          "workbench.activityBar.location": "hidden",
+          "workbench.editor.showTabs": "none",
+          "workbench.statusBar.visible": false,
+        }
+      ]
+    }
+  },
+  //~@ ====================================================
+  //~@ EXTENSIONS                                         .
+  //~@ ====================================================
+  {
+    "key": "ctrl+alt+.",
+    "command": "extension.toggleFiles"
+  },
 ]

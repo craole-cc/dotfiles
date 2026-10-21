@@ -289,171 +289,151 @@
     };
 
     fonts = let
-      #~@ Packages
       packages = {
-        # fira = {
-        #   name = "Fira Code";
-        #   package = "fira-code";
-        # };
-        # fira-nf = {
-        #   name = "Fira Code Nerd Font";
-        #   package = "nerd-fonts.fira-code";
-        # };
-        ibm-mono = {
-          name = "IBM Plex Mono";
-          package = "ibm-plex";
+        fira = let
+          name = "Fira Code";
+          package = "fira-code";
+        in {
+          mono = {inherit name package;};
+          monoNF = {
+            name = "${name} Nerd Font";
+            package = "nerd-fonts.${package}";
+          };
         };
-        ibm-math = {
-          name = "IBM Plex Math";
-          package = "ibm-plex";
+
+        ibm = let
+          mk = variant: {
+            name = "IBM Plex ${variant}";
+            package = "ibm-plex";
+          };
+        in {
+          mono = mk "Mono";
+          math = mk "Math";
+          sansSerif = mk "Sans";
+          serif = mk "Serif";
         };
-        ibm-sans = {
-          name = "IBM Plex Sans";
-          package = "ibm-plex";
+
+        jetbrains = let
+          name = "JetBrains Mono";
+          package = "jetbrains-mono";
+        in {
+          mono = {inherit name package;};
+          monoNF = {
+            name = "${name} Nerd Font";
+            package = "nerd-fonts.${package}";
+          };
         };
-        ibm-serif = {
-          name = "IBM Plex Serif";
-          package = "ibm-plex";
-        };
-        # jetbrains = {
-        #   name = "JetBrains Mono";
-        #   package = "jetbrains-mono";
-        # };
-        # jetbrains-nf = {
-        #   name = "JetBrains Mono Nerd Font";
-        #   package = "nerd-fonts.jetbrains-mono";
-        # };
-        lilex = {
+
+        lilex = let
           name = "Lilex";
           package = "lilex";
+        in {
+          mono = {inherit name package;};
+          monoNF = {
+            name = "${name} Nerd Font";
+            package = "nerd-fonts.${package}";
+          };
         };
-        lilex-nf = {
-          name = "Lilex Nerd Font";
-          package = "nerd-fonts.lilex";
-        };
-        maple = {
+
+        maple = let
           name = "Maple Mono";
           package = "maple-mono";
+        in {
+          mono = {inherit name package;};
+          monoNF = {
+            name = "${name} NF";
+            package = "${package}.NF-unhinted";
+          };
         };
-        maple-nf = {
-          name = "Maple Mono NF";
-          package = "maple-mono.NF-unhinted";
+
+        material = let
+          mk = variant: {
+            name = "Material Symbols ${variant}";
+            package = "material-symbols";
+          };
+        in {
+          outlined = mk "Outlined";
+          rounded = mk "Rounded";
+          sharp = mk "Sharp";
         };
-        material-outlined = {
-          name = "Material Symbols Outlined";
-          package = "material-symbols";
+
+        monaspace = let
+          mk = variant: {
+            name = "Monaspace ${variant}";
+            package = "monaspace";
+          };
+        in {
+          sansSerif = mk "Neon"; # Classic neo-grotesque sans-serif
+          humanist = mk "Argon"; # Humanist sans-serif with a warm feel
+          serif = mk "Xenon"; # Wedge-serif / slab hybrid style
+          math = mk "Radon"; # Cursive, expressive script-like variant
+          square = mk "Krypton"; # Sharp, mechanical square-sans aesthetic
         };
-        material-rounded = {
-          name = "Material Symbols Rounded";
-          package = "material-symbols";
+
+        noto = let
+          mk = {
+            variant,
+            package ? "noto-fonts",
+          }: {
+            name = "Noto Color ${variant}";
+            inherit package;
+          };
+        in {
+          emoji = {
+            variant = "Emoji";
+            package = "noto-fonts-color-emoji";
+          };
+          math = mk {variant = "Math";};
+          mono = mk {variant = "Mono";};
+          sansSerif = mk {variant = "Sans";};
+          serif = mk {variant = "Serif";};
         };
-        material-sharp = {
-          name = "Material Symbols Sharp";
-          package = "material-symbols";
-        };
-        # monaspace-argon = {
-        #   name = "Monaspace Argon Frozen";
-        #   package = "monaspace";
-        # };
-        # monaspace-krypton = {
-        #   name = "Monaspace Krypton Frozen";
-        #   package = "monaspace";
-        # };
-        # monaspace-radon = {
-        #   name = "Monaspace Radon Frozen";
-        #   package = "monaspace";
-        # };
-        noto-emoji = {
-          name = "Noto Color Emoji";
-          package = "noto-fonts-color-emoji";
-        };
-        noto-serif = {
-          name = "Noto Serif";
-          package = "noto-fonts";
-        };
-        noto-sans = {
-          name = "Noto Sans";
-          package = "noto-fonts";
-        };
-        noto-math = {
-          name = "Noto Sans Math";
-          package = "noto-fonts";
-        };
-        noto-mono = {
-          name = "Noto Sans Mono";
-          package = "noto-fonts";
-        };
-        # overpass = {
-        #   name = "Overpass";
-        #   package = "overpass";
-        # };
+
         rubik = {
           name = "Rubik";
           package = "rubik";
         };
-        # source-code-pro = {
-        #   name = "Source Code Pro";
-        #   package = "source-code-pro";
-        # };
-        # source-code-pro-nf = {
-        #   name = "Source Code Pro Nerd Font";
-        #   package = "nerd-fonts.source-code-pro";
-        # };
-        # source-sans-pro = {
-        #   name = "Source Sans Pro";
-        #   package = "source-sans-pro";
-        # };
-        # source-serif-pro = {
-        #   name = "Source Serif Pro";
-        #   package = "source-serif-pro";
-        # };
+
+        sourcePro = let
+          mk = name: package: {inherit name package;};
+        in {
+          mono = mk "Source Code Pro" "source-code-pro";
+          monoNF = mk "Source Code Pro Nerd Font" "nerd-fonts.source-code-pro";
+          sansSerif = mk "Source Sans Pro" "source-sans-pro";
+          serif = mk "Source Serif Pro" "source-serif-pro";
+        };
       };
 
-      categories = with packages; rec {
+      categories = with packages; {
         math = [
-          ibm-math
-          noto-math
+          ibm.math
+          noto.math
           rubik
-          # monaspace-krypton
-          # source-code-pro
         ];
-        emoji = [noto-emoji] ++ material;
-        material = [
-          material-sharp
-          material-outlined
-          material-rounded
+        emoji = [noto.emoji] ++ categories.material;
+        material = with material; [
+          sharp
+          outlined
+          rounded
         ];
         monospace = [
-          lilex-nf
-          lilex
-          maple-nf
-          maple
-          ibm-mono
-          noto-mono
-          # jetbrains-nf
-          # jetbrains
-          # fira-nf
-          # fira
-          # source-code-pro-nf
-          # source-code-pro
+          lilex.monoNF
+          maple.monoNF
+          ibm.mono
+          noto.mono
         ];
         sans = [
-          ibm-sans
-          noto-sans
+          ibm.sans
+          noto.sans
           rubik
-          # monaspace-radon
-          # monaspace-argon
-          # source-sans-pro
-          # overpass
         ];
         serif = [
-          ibm-serif
-          noto-serif
-          # source-serif-pro
+          ibm.serif
+          noto.serif
         ];
       };
     in
-      packages // categories;
+      {inherit packages categories;} // categories;
 
     keyboard = {
       layout = "us";

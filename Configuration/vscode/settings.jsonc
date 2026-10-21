@@ -1,129 +1,268 @@
 {
-  "window.autoDetectHighContrast": false,
+  //~@ ====================================================
+  //~@ TABLE OF CONTENTS                                  .
+  //~@ ====================================================
+  //TOC Global & Application
+  //TOC Workbench & Layout
+  //TOC Theme Toggle
+  //TOC Typography
+  //TOC Editor
+  //TOC Files & Explorer
+  //TOC Terminal
+  //TOC Git
+  //TOC Languages (A-Z)
+  //TOC Linting
+  //TOC Markdown & Docs
+  //TOC AI Assistants
+  //TOC Spelling & Prose
+  //TOC Debugging
+  //TOC Environment, Remote & Sync
+  //TOC Privacy & Telemetry
+  //TOC Misc Extensions
+  //TOC Keybindings
+  //TOC Visual Aids (comments, whitespace, rulers)
+  //TOC Colours Overrides
+  //TOC Icon Theme (Material)
+  //~@ ====================================================
+  //~@ GLOBAL & APPLICATION                               .
+  //~@ ====================================================
+  //|-> Global Defaults (apply to every file and language)
+  "files.eol": "\n",
+  //|-> Identity & Updates
+  "license.author": "Craig 'Craole' Cole",
+  "license.default": "mit",
+  "update.mode": "manual",
+  //|-> Window
+  "security.workspace.trust.untrustedFiles": "open",
+  "window.customMenuBarAltFocus": true,
+  "window.customTitleBarVisibility": "auto",
+  "window.menuBarVisibility": "toggle",
+  "window.restoreFullscreen": true,
+  "window.titleBarStyle": "native",
+  "window.zoomPerWindow": true,
+  //~@ ====================================================
+  //~@ WORKBENCH & LAYOUT                                 .
+  //~@ ====================================================
+  //|-> Layout
+  "workbench.activityBar.location": "default",
+  "workbench.panel.defaultLocation": "bottom",
+  "workbench.sideBar.location": "right",
+  "workbench.statusBar.visible": true,
+  "breadcrumbs.enabled": true,
+  //|-> Startup & Editor Tabs
+  "workbench.editor.empty.hint": "hidden",
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.showTabs": "multiple",
+  "workbench.startupEditor": "none",
+  //|-> Palette & Quick Open
+  "workbench.commandPalette.preserveInput": true,
+  "workbench.quickOpen.preserveInput": true,
+  //|-> Misc
+  "workbench.experimental.share.enabled": true,
+  "workbench.tree.enableStickyScroll": false,
+  "extensions.ignoreRecommendations": true,
+  "workbench.editor.useModal": "off",
+  //~@ ====================================================
+  //~@ THEME TOGGLE                                       .
+  //~@ ====================================================
+  //|-> Themes
   "window.autoDetectColorScheme": false,
+  "window.autoDetectHighContrast": false,
   "workbench.colorTheme": "Dynamic Base16 DankShell",
-  "json.schemaDownload.enable": false,
   "workbench.preferredDarkColorTheme": "Catppuccin Frappé",
   "workbench.preferredLightColorTheme": "Catppuccin Latte",
-  "workbench.productIconTheme": "el-vsc-v1-icons",
   "workbench.iconTheme": "material-icon-theme",
-  "workbench.sideBar.location": "right",
-  //> ====================================================
-  //> TYPOGRAPHY
-  //> ====================================================
-  "editor.fontFamily": "'Lilex Nerd Font',monospace",
+  "workbench.productIconTheme": "el-vsc-v1-icons",
+  //|-> Semantic Highlighting (switch only; colour rules live in section 20)
+  "editor.semanticHighlighting.enabled": true,
+  //~@ ====================================================
+  //~@ TYPOGRAPHY                                         .
+  //~@ ====================================================
+  //|-> Editor
+  "editor.fontFamily": "monospace",
   "editor.fontLigatures": true,
   "editor.fontSize": 18,
   "editor.fontWeight": 500,
   "editor.letterSpacing": 0,
   "editor.lineHeight": 2,
-  "editor.tabSize": 2,
-  "editor.wordWrap": "bounded",
-  "editor.wordWrapColumn": 120,
-  "terminal.integrated.fontFamily": "'Maple Mono NF',monospace",
+  //|-> Terminal
+  "terminal.integrated.fontFamily": "'Maple Mono NF','Lilex Nerd Font',monospace",
   "terminal.integrated.fontLigatures.enabled": true,
   "terminal.integrated.fontSize": 18,
   "terminal.integrated.fontWeight": 500,
   "terminal.integrated.letterSpacing": 0,
   "terminal.integrated.lineHeight": 1.2,
-  //> ====================================================
-  //> GLOBAL FEATURES
-  //> ====================================================
-  "license.author": "Craig 'Craole' Cole",
-  "license.default": "mit",
-  "extensions.ignoreRecommendations": true,
-  "update.mode": "manual",
-  "window.zoomPerWindow": true,
-  "workbench.editor.empty.hint": "hidden",
-  "workbench.editor.revealIfOpen": true,
-  "workbench.experimental.share.enabled": true,
-  "workbench.quickOpen.preserveInput": true,
-  "workbench.settings.openDefaultKeybindings": true,
-  "workbench.startupEditor": "none",
-  //> ====================================================
-  //> EDITOR FEATURES
-  //> ====================================================
-  "editor.accessibilitySupport": "off",
-  "editor.cursorBlinking": "expand",
-  "editor.cursorSmoothCaretAnimation": "on",
+  //~@ ====================================================
+  //~@ EDITOR                                             .
+  //~@ ====================================================
+  //|-> Indentation & Wrapping
   "editor.detectIndentation": false,
-  "editor.formatOnSave": true,
-  "files.autoSave": "onFocusChange",
-  "editor.formatOnSaveMode": "file",
-  "editor.guides.bracketPairs": "active",
-  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
-  "editor.inlineSuggest.suppressSuggestions": true,
-  "editor.inlayHints.enabled": "offUnlessPressed",
   "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 120,
+  //|-> Formatting
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "diffEditor.ignoreTrimWhitespace": false,
+  //|-> Display
+  "editor.folding": true,
+  "editor.glyphMargin": true,
   "editor.lineNumbers": "on",
-  "editor.linkedEditing": true,
-  "editor.matchBrackets": false,
-  "editor.mouseWheelZoom": true,
-  "editor.occurrencesHighlight": "off",
-  "editor.quickSuggestions": {
-    "strings": "on"
-  },
+  "editor.renderControlCharacters": false,
   "editor.renderLineHighlight": "gutter",
   "editor.renderWhitespace": "all",
+  "editor.scrollbar.horizontal": "auto",
+  "editor.scrollbar.vertical": "auto",
+  "editor.unicodeHighlight.ambiguousCharacters": false,
+  "diffEditor.codeLens": true,
+  //|-> Minimap
+  "editor.minimap.enabled": true,
+  "editor.minimap.size": "fill",
+  //|-> Brackets & Guides
+  "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.matchBrackets": "never",
+  //|-> Highlighting
+  "editor.occurrencesHighlight": "off",
   "editor.selectionHighlight": false,
-  "editor.semanticHighlighting.enabled": true,
-  "editor.semanticTokenColorCustomizations": {
-    "rules": {
-      "interface": {
-        "italic": true
-      },
-      "selfParameter": {
-        "italic": true
-      },
-      "keyword": {
-        "italic": true
-      },
-      "*.static": {
-        "italic": true
-      }
-    }
-  },
-  "editor.renderControlCharacters": false,
+  //|-> Cursor & Scrolling
+  "editor.cursorBlinking": "expand",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.mouseWheelZoom": true,
   "editor.smoothScrolling": true,
+  //|-> Sticky Scroll
   "editor.stickyScroll.defaultModel": "indentationModel",
   "editor.stickyScroll.enabled": false,
   "editor.stickyScroll.scrollWithEditor": false,
+  //|-> Suggestions & Hints
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  "editor.inlineSuggest.suppressSuggestions": true,
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
   "editor.suggestSelection": "recentlyUsedByPrefix",
-  "editor.unicodeHighlight.ambiguousCharacters": false,
+  //|-> Misc
+  "editor.accessibilitySupport": "off",
+  "editor.linkedEditing": true,
+  //~@ ====================================================
+  //~@ FILES & EXPLORER                                   .
+  //~@ ====================================================
+  //|-> Saving & Line Endings
+  "files.autoSave": "onFocusChange",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  //|-> Explorer
   "explorer.compactFolders": false,
-  "window.menuBarVisibility": "toggle",
-  "window.titleBarStyle": "native",
-  "workbench.commandPalette.preserveInput": true,
-  "workbench.panel.defaultLocation": "bottom",
-  "workbench.tree.enableStickyScroll": false,
+  "explorer.excludeGitIgnore": false,
+  //|-> Visibility
+  // Only the built-in defaults are listed; every other `false` entry was a no-op and was removed.
+  "files.exclude": {
+    "**/.DS_Store": false,
+    "**/.git": false,
+    "**/.hg": false,
+    "**/.svn": false,
+    "**/Thumbs.db": false
+  },
+  //|-> File Watcher
+  // FIXME: these globs contain stray spaces ("/* *", "* cache") and likely don't match anything.
+  "files.watcherExclude": {
+    "**/.local/* *": true,
+    "**/.vscode-server-insiders/* *": true,
+    "**/* cache/* *": true,
+    "**/.trunk/*actions/": true,
+    "**/.trunk/*logs/": true,
+    "**/.trunk/*notifications/": true,
+    "**/.trunk/*out/": true,
+    "**/.trunk/*plugins/": true
+  },
+  //|-> Language Associations
+  "files.associations": {
+    //|-> Config & dotfiles
+    ".bash*": "shellscript",
+    ".dotsrc": "coffeescript",
+    ".editorconfig": "ini",
+    ".env": "env",
+    ".env*": "dotenv",
+    ".sqruff": "properties",
+    "**/*.conf": "ini",
+    "**/conf*/{fuzzel,ghostty,mpv,hyprland}/*": "ini",
+    "**/conf*/{raffi}/*": "yaml",
+    "*.Xresources": "xdefaults",
+    "*envrc": "shellscript",
+    "*gitignore": "ignore",
+    "*ignore": "ignore",
+    "*shellcheckrc": "shellscript",
+    "editorconfig": "ini",
+    "flake.lock": "json",
+    "i3/*.conf": "i3",
+    "i3/config": "i3",
+    "lesskey": "lesskey",
+    "mise.lock": "toml",
+    "polybar/*.conf": "ini",
+    "polybar/config": "ini",
+    //|-> Languages
+    "*.bash": "shellscript",
+    "*.css": "css",
+    "*.erb": "ruby",
+    "*.ft": "rust",
+    "*.gs": "javascript",
+    "*.init": "shellscript",
+    "*.nix": "nix",
+    "*.nu": "nushell",
+    "*.rs": "rust",
+    "*.sh": "shellscript",
+    "*.typ": "typst",
+    "Gemfile": "ruby",
+    //|-> Templates & data
+    "*.bbmodel": "json",
+    "*.ejs": "html",
+    "*.emu": "html",
+    "*.hbs": "html",
+    "*.layout": "json",
+    "*.log": "log",
+    "*.rasi": "css",
+    "*.sublime-snippet": "xml",
+    //|-> Docs
+    "LICENSE": "txt",
+    "LICENSE-MIT": "txt",
+    "README": "markdown"
+  },
+  //|-> Custom Editors (file type -> viewer)
   "workbench.editorAssociations": {
     "*.copilotmd": "vscode.markdown.preview.editor",
     "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc": "default",
     "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.ui": "default",
-    "*.pdf": "pdf.view",
     "*.db": "default",
+    "*.pdf": "pdf.view",
     "*.qrc": "qt-core.qrcEditor",
-    "*.xlsx": "csvViewer.csvEditor",
-    "*.tsv": "csvViewer.csvEditor"
+    "*.tsv": "csvViewer.csvEditor",
+    "*.xlsx": "csvViewer.csvEditor"
   },
-  "workbench.statusBar.visible": true,
-  "window.customTitleBarVisibility": "never",
-  "window.customMenuBarAltFocus": true,
-  //> ====================================================
-  //> TERMINAL FEATURES
-  //> ====================================================
+  //~@ ====================================================
+  //~@ TERMINAL                                           .
+  //~@ ====================================================
+  //|-> Behaviour
   "terminal.integrated.allowMnemonics": true,
   "terminal.integrated.commandsToSkipShell": [
     "workbench.action.terminal.copySelection"
   ],
   "terminal.integrated.confirmOnExit": "never",
   "terminal.integrated.copyOnSelection": true,
-  "terminal.integrated.cursorBlinking": true,
-  "terminal.integrated.cursorStyle": "block",
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.enableImages": true,
   "terminal.integrated.enableMultiLinePasteWarning": "never",
   "terminal.integrated.hideOnStartup": "whenEmpty",
+  "terminal.integrated.mouseWheelZoom": false,
+  "terminal.integrated.rightClickBehavior": "copyPaste",
+  //|-> Appearance
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "block",
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.stickyScroll.enabled": false,
+  "terminal.integrated.tabs.location": "right",
+  //|-> Profiles (Windows)
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "NixOS (WSL)": {
       "path": "${env:windir}\\System32\\wsl.exe",
@@ -166,192 +305,73 @@
       "icon": "terminal-cmd"
     }
   },
-  "terminal.integrated.mouseWheelZoom": false,
-  "terminal.integrated.rightClickBehavior": "copyPaste",
-  "terminal.integrated.smoothScrolling": true,
-  "terminal.integrated.stickyScroll.enabled": false,
-  "terminal.integrated.tabs.location": "right",
-  //> ====================================================
-  //> FILE HANDLING
-  //> ====================================================
-  "files.associations": {
-    "*.rasi": "css",
-    "*.bbmodel": "json",
-    "*.sublime-snippet": "xml",
-    "*.hbs": "html",
-    "*.ejs": "html",
-    "*.emu": "html",
-    "lesskey": "lesskey",
-    "*.Xresources": "xdefaults",
-    "i3/config": "i3",
-    "i3/*.conf": "i3",
-    "polybar/config": "ini",
-    "polybar/*.conf": "ini",
-    "flake.lock": "json",
-    ".bash*": "shellscript",
-    ".dotsrc": "coffeescript",
-    ".editorconfig": "ini",
-    ".env": "env",
-    ".env*": "dotenv",
-    ".sqruff": "properties",
-    "*.bash": "shellscript",
-    "*.css": "css",
-    "*.erb": "ruby",
-    "*.gs": "javascript",
-    "*.init": "shellscript",
-    "*.layout": "json",
-    "*.log": "log",
-    "*.nix": "nix",
-    "*.nu": "nushell",
-    "*.rs": "rust",
-    "*.sh": "shellscript",
-    "*.typ": "typst",
-    "**/*.conf": "ini",
-    "**/conf*/{fuzzel,ghostty,mpv,hyprland}/*": "ini",
-    "**/conf*/{raffi}/*": "yaml",
-    "*envrc": "shellscript",
-    "*gitignore": "ignore",
-    "*ignore": "ignore",
-    "*shellcheckrc": "shellscript",
-    "editorconfig": "ini",
-    "Gemfile": "ruby",
-    "LICENSE-MIT": "txt",
-    "LICENSE": "txt",
-    "mise.lock": "toml",
-    "README": "markdown",
-    "*.ft": "rust"
-  },
-  "files.eol": "\n",
-  "files.exclude": {
-    "**/$RECYCLE.BIN": false,
-    "**/*.lock": false,
-    "**/.DS_Store": false,
-    "**/.admin": false,
-    "**/.bin": false,
-    "**/.codex": false,
-    "**/.direnv": false,
-    "**/.editorconfig": false,
-    "**/.env*": false,
-    "**/.git": false,
-    "**/.gitattributes": false,
-    "**/.gitmodules": false,
-    "**/mise.toml": false,
-    "**/.mise.toml": false,
-    "**/.github": false,
-    "**/.gitignore": false,
-    "**/.ignore": false,
-    "**/.helix": false,
-    "**/.hg": false,
-    "**/.jj": false,
-    "**/.justfile": false,
-    "**/.markdownlint.yaml": false,
-    "**/.pre-commit-config.yaml": false,
-    "**/.rust*": false,
-    "**/.shellcheckrc": false,
-    "**/.svn": false,
-    "**/askama.toml": false,
-    "**/.clippy.toml": false,
-    "**/clippy.toml": false,
-    "**/.treefmt.toml": false,
-    "**/.typos.toml": false,
-    "**/.vscode": false,
-    "**/CODE_OF_CONDUCT": false,
-    "**/CODE_OF_CONDUCT.md": false,
-    "**/CONTRIBUTING": false,
-    "**/CONTRIBUTING.md": false,
-    "**/LICENSE": false,
-    "**/LICENSE-*": false,
-    "**/Downloads": false,
-    "**/LICENSE.md": false,
-    "**/README": false,
-    "**/README.md": false,
-    "**/SECURITY": false,
-    "**/SECURITY.md": false,
-    "**/System Volume Information": false,
-    "**/Thumbs.db": false,
-    "**/archive": false,
-    "**/deno.json": false,
-    "**/deno.jsonc": false,
-    "**/justfile": false,
-    "**/review": false,
-    "**/Review": false,
-    "**/rust-analyzer.toml": false,
-    "**/rust-toolchain*": false,
-    "**/rust-toolchain.toml": false,
-    "**/rustfmt.toml": false,
-    "**/*.bac": false,
-    "**/target": false,
-    "**/treefmt.toml": false
-  },
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true,
-  "files.watcherExclude": {
-    "**/.local/* *": true,
-    "**/.vscode-server-insiders/* *": true,
-    "**/* cache/* *": true,
-    "**/.trunk/*actions/": true,
-    "**/.trunk/*logs/": true,
-    "**/.trunk/*notifications/": true,
-    "**/.trunk/*out/": true,
-    "**/.trunk/*plugins/": true
-  },
-  //> ====================================================
-  //> GIT CONFIGURATION
-  //> ====================================================
-  "explorer.excludeGitIgnore": false,
-  "git.allowForcePush": true,
-  "git.autofetch": true,
-  "git.confirmForcePush": false,
-  "git.confirmSync": false,
-  "git.enableSmartCommit": true,
+  //~@ ====================================================
+  //~@ 8. GIT                                             .
+  //~@ ====================================================
   "git.enabled": true,
-  "git.ignoreRebaseWarning": true,
+  "git.autofetch": true,
+  "git.autoStash": true,
+  "git.enableSmartCommit": true,
   "git.openRepositoryInParentFolders": "always",
   "git.rebaseWhenSync": true,
-  //> ====================================================
-  //> LANGUAGE-SPECIFIC SETTINGS
-  //> ====================================================
-  "settingsSync.ignoredExtensions": [
-    "constneo.vscode-nushell-format",
-    "jnoortheen.nix-ide",
-    "mkhl.direnv",
-    "ms-edgedevtools.vscode-edge-devtools",
-    "ms-vscode-remote.remote-wsl"
-  ],
+  //|-> Confirmations & Safety
+  "git.allowForcePush": true,
+  "git.confirmForcePush": false,
+  "git.confirmSync": false,
+  "git.ignoreRebaseWarning": true,
+  //~@ ====================================================
+  //~@ LANGUAGES (A-Z)                                    .
+  //~@ ====================================================
+  //|-> Cypher
   "[cypher]": {
     // "editor.defaultFormatter": "neo4j-extensions.neo4j-for-vscode",
     "editor.semanticHighlighting.enabled": true
   },
+  //|-> CSS / SCSS / Tailwind
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "[dockercompose]": {
-    // "editor.defaultFormatter": "bluebrown.yamlfmt"
+  "[scss]": {
+    "editor.defaultFormatter": "biomejs.biome"
   },
-  "[dockerfile]": {
-    // "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  "cssvar.files": [
+    "./node_modules/open-props/open-props.min.css",
+    "assets/styles/variables.css",
+    "style.css"
+  ],
+  "cssvar.ignore": [],
+  "cssvar.extensions": [
+    "css",
+    "postcss",
+    "jsx",
+    "tsx"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "html"
   },
+  //|-> Dotenv
   "[dotenv]": {
     "editor.defaultFormatter": "mkhl.shfmt"
   },
+  //|-> Docker
+  // "[dockercompose]": { "editor.defaultFormatter": "bluebrown.yamlfmt" },
+  // "[dockerfile]":    { "editor.defaultFormatter": "ms-azuretools.vscode-docker" },
+  //|-> GitHub Actions
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
-  "[gitignore]": {},
+  //|-> HTML / JavaScript
   "[html]": {
     "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[ignore]": {
-    // "editor.defaultFormatter": "lkrms.inifmt"
-  },
-  "[ini]": {
-    "editor.defaultFormatter": "lkrms.inifmt"
-    // "editor.defaultFormatter": "lkrms.inifmt"
   },
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
+  //|-> INI
+  "[ini]": {
+    "editor.defaultFormatter": "lkrms.inifmt"
+  },
+  //|-> JSON / JSONC
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features",
     "editor.codeActionsOnSave": {
@@ -366,13 +386,42 @@
     },
     "editor.formatOnSave": true
   },
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "**/*.json",
+        "**/*.jsonc"
+      ],
+      "schema": {
+        "allowTrailingCommas": true
+      }
+    }
+  ],
+  // NOTE: schema download is disabled, so the trusted-domains list below has no effect unless you re-enable it.
+  "json.schemaDownload.enable": false,
+  "json.schemaDownload.trustedDomains": {
+    "https://biomejs.dev": true,
+    "https://developer.microsoft.com/json-schemas/": true,
+    "https://dprint.dev": true,
+    "https://json-schema.org/": true,
+    "https://json.schemastore.org/": true,
+    "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/colorOverrides.schema.json": true,
+    "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/customUIColors.schema.json": true,
+    "https://raw.githubusercontent.com/DavidAnson/markdownlint/v0.40.0/schema/markdownlint-config-schema.json": true,
+    "https://raw.githubusercontent.com/devcontainers/spec/": true,
+    "https://raw.githubusercontent.com/microsoft/vscode/": true,
+    "https://schemastore.azurewebsites.net/": true,
+    "https://www.schemastore.org/": true
+  },
   //|-> Just
   // "vscode-just.useSingleTerminal": true,
   // "vscode-just.formatOnSave": true,
-  // "vscode-just.justPath": "C:\\\\Users\\\\Administrator\\\\scoop\\\\shims\\\\just.exe"
+  // "vscode-just.justPath": "C:\\\\Users\\\\Administrator\\\\scoop\\\\shims\\\\just.exe",
+  //|-> Markdown  (see also section 11)
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
+  //|-> Nix
   "[nix]": {
     "editor.defaultFormatter": "jnoortheen.nix-ide",
     "editor.formatOnSave": true
@@ -395,6 +444,87 @@
       }
     }
   },
+  //|-> PowerShell
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell",
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "editor.tabCompletion": "on",
+    "files.autoGuessEncoding": true,
+    "files.encoding": "utf8bom",
+    "files.trimTrailingWhitespace": true
+  },
+  "powershell.codeFormatting.autoCorrectAliases": true,
+  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.integratedConsole.focusConsoleOnExecute": false,
+  "powershell.integratedConsole.forceClearScrollbackBuffer": true,
+  "powershell.integratedConsole.showOnStartup": false,
+  "powershell.integratedConsole.suppressStartupBanner": true,
+  //|-> Properties (gitconfig / sqruff)
+  "[properties]": {
+    "editor.defaultFormatter": "yy0931.gitconfig-lsp"
+  },
+  //|-> Ruby
+  // "[ruby]": { "editor.defaultFormatter": "LoranKloeze.ruby-rubocop-revived" },
+  "rubyLsp.enableExperimentalFeatures": true,
+  // "rubyLsp.rubyExecutablePath": "c:\\Tools\\ruby33\\bin\\ruby.exe",
+  //|-> Rust
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.check.command": "clippy",
+  //|-> Shell
+  "[shellscript]": {
+    "editor.defaultFormatter": "mkhl.shfmt"
+  },
+  "bashIde.explainshellEndpoint": "http://localhost:5000",
+  //|-> SQL
+  "[sql]": {
+    "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
+    // "editor.defaultFormatter": "ms-mssql.mssql"
+  },
+  //|-> TOML
+  "[toml]": {
+    "editor.defaultFormatter": "tombi-toml.tombi"
+  },
+  //|-> TypeScript
+  // "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
+  // "typescript.inlayHints.parameterNames.enabled": "all",
+  //|-> Typst
+  "[typst]": {
+    // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+    "editor.defaultFormatter": "myriad-dreamin.tinymist"
+  },
+  "[typst-code]": {
+    // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
+    "editor.defaultFormatter": "myriad-dreamin.tinymist"
+  },
+  //|-> XML / SVG
+  // "[xml]": { "editor.defaultFormatter": "DotJoshJohnson.xml" },
+  // "[svg]": { "editor.defaultFormatter": "jock.svg" },
+  //|-> YAML
+  "[yaml]": {
+    "editor.defaultFormatter": "bluebrown.yamlfmt"
+    // "editor.defaultFormatter": "denoland.vscode-deno"
+    // "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  //|-> Zig
+  "zig.zls.enabled": "on",
+  //~@ ====================================================
+  //~@ LINTING                                            .
+  //~@ ====================================================
   "lintRunner.tools": {
     "shellcheck": {
       "kind": "diagnostic",
@@ -483,178 +613,199 @@
       }
     }
   ],
-  //|-> Powershell
-  "powershell.codeFormatting.autoCorrectAliases": true,
-  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
-  "powershell.codeFormatting.useConstantStrings": true,
-  "powershell.codeFormatting.useCorrectCasing": true,
-  "powershell.codeFormatting.whitespaceBetweenParameters": true,
-  "powershell.integratedConsole.showOnStartup": false,
-  "powershell.integratedConsole.focusConsoleOnExecute": false,
-  "powershell.integratedConsole.suppressStartupBanner": true,
-  "powershell.integratedConsole.forceClearScrollbackBuffer": true,
-  "[powershell]": {
-    "editor.defaultFormatter": "ms-vscode.powershell",
-    "editor.renderControlCharacters": true,
-    "editor.renderWhitespace": "all",
-    "editor.tabCompletion": "on",
-    "files.autoGuessEncoding": true,
-    "files.encoding": "utf8bom",
-    "files.trimTrailingWhitespace": true
-  },
-  "[properties]": {
-    "editor.defaultFormatter": "yy0931.gitconfig-lsp"
-  },
-  "[ruby]": {
-    // "editor.defaultFormatter": "LoranKloeze.ruby-rubocop-revived",
-  },
-  "rubyLsp.enableExperimentalFeatures": true,
-  // "rubyLsp.rubyExecutablePath": "c:\\Tools\\ruby33\\bin\\ruby.exe",
-  "[rust]": {
-    "editor.defaultFormatter": "rust-lang.rust-analyzer"
-  },
-  "rust-analyzer.cargo.features": "all",
-  "rust-analyzer.check.command": "clippy",
-  "[shellscript]": {
-    "editor.defaultFormatter": "mkhl.shfmt"
-  },
-  "[scss]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[sql]": {
-    "editor.defaultFormatter": "adpyke.vscode-sql-formatter",
-    // "editor.defaultFormatter": "ms-mssql.mssql"
-  },
-  "[svg]": {
-    // "editor.defaultFormatter": "jock.svg"
-  },
-  "[toml]": {
-    "editor.defaultFormatter": "tombi-toml.tombi"
-  },
-  "[typescript]": {
-    // "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  // "typescript.inlayHints.parameterNames.enabled": "all",
-  "tailwindCSS.includeLanguages": {
-    "plaintext": "html"
-  },
-  "[typst]": {
-    // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
-    "editor.defaultFormatter": "myriad-dreamin.tinymist"
-  },
-  "[typst-code]": {
-    // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
-    "editor.defaultFormatter": "myriad-dreamin.tinymist"
-  },
-  "[xml]": {
-    // "editor.defaultFormatter": "DotJoshJohnson.xml"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "bluebrown.yamlfmt"
-    // "editor.defaultFormatter": "denoland.vscode-deno"
-    // "editor.defaultFormatter": "redhat.vscode-yaml"
-  },
-  "yaml.disableSchemaDetection": [
-    "**/.github/workflows/*.yml",
-    "**/.github/workflows/*.yaml",
-    "**/.gitea/workflows/*.yml",
-    "**/.gitea/workflows/*.yaml",
-    "**/.forgejo/workflows/*.yml",
-    "**/.forgejo/workflows/*.yaml"
-  ],
-  "zig.zls.enabled": "on",
-  "harper.dialect": "British",
-  "harper.excludePatterns": [
-    // "*.nix"
-  ],
-  "harper.linters.NumericRangeEnDash": false,
-  "harper.linters.Dashes": false,
-  "harper.linters.OxfordComma": false,
-  "harper.workspaceDictPath": ".harper-dictionary.txt",
-  "spreadjs.ribbonMode": "toolbar",
-  //> ====================================================
-  //> CSS CONFIGURATION
-  //> ====================================================
-  "cssvar.files": [
-    "./node_modules/open-props/open-props.min.css",
-    "assets/styles/variables.css",
-    "style.css"
-  ],
-  "cssvar.ignore": [],
-  "cssvar.extensions": [
-    "css",
-    "postcss",
-    "jsx",
-    "tsx"
-  ],
-  //> ====================================================
-  //> INTELLISENSE & CODE ASSISTANCE
-  //> ====================================================
-  "chat.tools.terminal.autoApprove": {
-    "nix": true,
-    "zig": true,
-    "command": true,
-    "printf": true,
-    "cksum": true,
-    "awk": true
-  },
-  "chat.viewSessions.orientation": "stacked",
-  "chat.experimental.stickyScroll.enabled": false,
-  "codeium.disableSupercomplete": true,
-  "codeium.enableConfig": {
-    "*": true,
-    "nix": true,
-    "jsonc": true,
-    "just": true,
-    "markdown": true,
-    "typst": true,
-    "cypher": true
-  },
-  "codeium.enableSearch": true,
-  "continue.disableQuickFix": true,
-  "continue.enableTabAutocomplete": true,
-  "continue.showInlineTip": false,
-  "continue.telemetryEnabled": false,
-  "diffEditor.codeLens": true,
-  "diffEditor.ignoreTrimWhitespace": false,
-  "geminicodeassist.inlineSuggestions.enableAuto": true,
-  "geminicodeassist.updateChannel": "Insiders",
-  "geminicodeassist.chat.defaultCodeBlockDisplay": "Expanded",
-  "github.copilot.enable": {
-    "*": true,
-    "plaintext": false,
-    "markdown": false,
-    "scminput": false,
-    "nix": true,
-    "shellscript": true,
-    "rust": false,
-    "powershell": false
-  },
-  "github.copilot.chat.codesearch.enabled": true,
-  "github.copilot.nextEditSuggestions.enabled": true,
-  "github.copilot.nextEditSuggestions.eagerness": "low",
-  "lldb.suppressUpdateNotifications": true,
-  "lldb.showDisassembly": "auto",
-  "lldb.dereferencePointers": true,
-  "lldb.consoleMode": "commands",
-  //> ====================================================
-  //> MARKDOWN & DOCUMENTATION
-  //> ====================================================
-  "markdown.marp.enableHtml": true,
-  "markdown.marp.pdf.noteAnnotations": true,
-  "markdown.marp.pdf.outlines": "both",
+  //~@ ====================================================
+  //~@ MARKDOWN & DOCS                                    .
+  //~@ ====================================================
+  "markdown.preview.typographer": true,
   "markdown.updateLinksOnFileMove.enabled": "always",
   "markdown.validate.enabled": true,
+  //|-> Marp
+  "markdown.marp.enableHtml": true,
+  "markdown.marp.exportType": "html",
+  "markdown.marp.pdf.noteAnnotations": true,
+  "markdown.marp.pdf.outlines": "both",
+  "markdown.marp.strictPathResolutionDuringExport": true,
+  //|-> Markdown PDF
   "markdown-pdf.breaks": true,
   "markdown-pdf.displayHeaderFooter": false,
   "markdown-pdf.format": "Letter",
-  "markdown.marp.exportType": "html",
-  "markdown.marp.strictPathResolutionDuringExport": true,
-  "markdown.preview.typographer": true,
-  //> ====================================================
-  //> COMMENTS
-  //> ====================================================
+  //~@ ====================================================
+  //~@ AI ASSISTANCE                                      .
+  //~@ ====================================================
+  //|-> Copilot
+  "github.copilot.enable": {
+    "*": true,
+    "markdown": false,
+    "nix": true,
+    "plaintext": false,
+    "powershell": false,
+    "rust": false,
+    "scminput": false,
+    "shellscript": true
+  },
+  "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.nextEditSuggestions.eagerness": "low",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  //|-> Chat
+  // NOTE: auto-approving awk/nix/zig lets an agent run arbitrary code without a prompt.
+  "chat.experimental.stickyScroll.enabled": false,
+  "chat.tools.terminal.autoApprove": {
+    "awk": true,
+    "cksum": true,
+    "command": true,
+    "nix": true,
+    "printf": true,
+    "zig": true
+  },
+  "chat.viewSessions.orientation": "stacked",
+  //|-> Codeium
+  "codeium.disableSupercomplete": true,
+  "codeium.enableConfig": {
+    "*": true,
+    "cypher": true,
+    "jsonc": true,
+    "just": true,
+    "markdown": true,
+    "nix": true,
+    "typst": true
+  },
+  "codeium.enableSearch": true,
+  //|-> Continue
+  "continue.disableQuickFix": true,
+  "continue.enableTabAutocomplete": true,
+  "continue.showInlineTip": false,
+  //|-> Gemini Code Assisto
+  "geminicodeassist.chat.defaultCodeBlockDisplay": "Expanded",
+  "geminicodeassist.inlineSuggestions.enableAuto": true,
+  "geminicodeassist.updateChannel": "Insiders",
+  //~@ ====================================================
+  //~@ SPELLING & PROSE                                   .
+  //~@ ====================================================
+  "harper.dialect": "British",
+  "harper.workspaceDictPath": ".harper-dictionary.txt",
+  "harper.excludePatterns": [
+    // "*.nix"
+  ],
+  "harper.linters.Dashes": false,
+  "harper.linters.NumericRangeEnDash": false,
+  "harper.linters.OxfordComma": false,
+  "typos.diagnosticSeverity": "Hint",
+  //~@ ====================================================
+  //~@ DEBUGGING                                          .
+  //~@ ====================================================
+  "lldb.consoleMode": "commands",
+  "lldb.dereferencePointers": true,
+  "lldb.showDisassembly": "auto",
+  "lldb.suppressUpdateNotifications": true,
+  //~@ ====================================================
+  //~@ ENVIRONMENT, REMOTE & SYNC                         .
+  //~@ ====================================================
+  //|-> Environment
+  "direnv.restart.automatic": true,
+  "dotenv.enableAutocloaking": false,
+  //|-> Remote
+  "remote.autoForwardPortsSource": "hybrid",
+  "remote.SSH.remotePlatform": {
+    "dbook.deer-iguana.ts.net": "linux",
+    "delle.deer-iguana.ts.net": "linux"
+  },
+  //|-> Settings Sync
+  "settingsSync.ignoredExtensions": [
+    "constneo.vscode-nushell-format",
+    "jnoortheen.nix-ide",
+    "mkhl.direnv",
+    "ms-edgedevtools.vscode-edge-devtools",
+    "ms-vscode-remote.remote-wsl"
+  ],
+  //~@ ====================================================
+  //~@ PRIVACY & TELEMETRY                                .
+  //~@ ====================================================
+  "continue.telemetryEnabled": false,
+  "redhat.telemetry.enabled": false,
+  //~@ ====================================================
+  //~@ MISC EXTENSIONS                                    .
+  //~@ ====================================================
+  //|-> In-editor Browser
+  "vs-browser.favourites.list": {
+    "http://127.0.0.1:3000": "http://127.0.0.1:3000",
+    "http://localhost": "http://localhost"
+  },
+  "vs-browser.link.enabled": true,
+  "vs-browser.link.openWith": "ask",
+  "vs-browser.localProxyServer.cookieDomainRewrite": true,
+  "vs-browser.localProxyServer.enabled": true,
+  "vs-browser.localProxyServer.forceLocation": true,
+  "vs-browser.reload.autoReloadDurationEnabled": false,
+  "vs-browser.reload.autoReloadDurationTime": 15000,
+  "vs-browser.reload.onSave": false,
+  "vs-browser.url": "http://127.0.0.1:3000",
+  //|-> RSS
+  "rss.accounts": {
+    "fb0e47b0-9982-11ef-a698-3778cde2492f": {
+      "name": "Default",
+      "type": "local",
+      "feeds": []
+    }
+  },
+  //|-> SpreadJS
+  "spreadjs.ribbonMode": "toolbar",
+  //~@ ====================================================
+  //~@ KEYBINDINGS                                        .
+  //~@ ====================================================
+  "vscode-default-keybindings.windowsKeybindings": true,
+  //~@ ====================================================
+  //~@ VISUAL AIDS                                        .
+  //~@ ====================================================
+  //|-> Line-Width Indicators (LWI)
+  "LWI.breakpoints": [
+    {
+      "color": "rgb(0, 255, 0, 0.6)",
+      "column": 54
+    },
+    {
+      "color": "rgb(244, 180, 0,0.6)",
+      "column": 68
+    },
+    {
+      "color": "rgb(255, 0, 0, 0.6)",
+      "column": 79
+    }
+  ],
+  "LWI.style.fontStyle": "italic",
+  "LWI.style.fontWeight": "100",
+  //|-> Render Special Characters
+  "render-special-chars.border": "1px solid; border-radius: 2px;",
+  "render-special-chars.position": "before",
+  "render-special-chars.updateDelay": 500,
+  // "render-special-chars.backgroundColor": "",
+  // "render-special-chars.borderColor": "",
+  // "render-special-chars.color": "",
+  "render-special-chars.excludedSchemes": [
+    "output",
+    "debug",
+    "git"
+  ],
+  "render-special-chars.include": [
+    "0000-0008", // Control characters (NULL to BACKSPACE)
+    "000B", // Vertical Tab
+    "000C", // Form Feed
+    "000E-001F", // Control characters (SHIFT OUT to INFORMATION SEPARATOR ONE)
+    "007F-009F", // Control characters (DELETE to APPLICATION PROGRAM COMMAND)
+    "00A0-4DFF", // Latin-1 Supplement to Hangul Compatibility Jamo
+    "A000-10FFFF" // Yi Syllables to Plane 16 (Supplementary Private Use Area-B)
+  ],
+  "render-special-chars.except": [
+    "0009", // TAB
+    "000A", // LF
+    "000D", // CR
+    "0020-007E", // Printable BASIC ASCII
+    "3105-3129", // Bopomofo
+    "4E00-9FFF", // CJK Unified Ideographs
+    "：；，、。？！〜（）〈〉《》【】「」『』─" // Commonly used special characters
+  ],
+  //|-> Colourful Comments
   "colorful-comments-refreshed.tags": [
+    //|-> Core markers
     {
       "tag": "@",
       "italic": true,
@@ -667,12 +818,7 @@
       "backgroundColor": "#89a25722",
       "color": "#89a257"
     },
-    // {
-    //   "tag": "{",
-    //   "italic": true,
-    //   "backgroundColor": "#2aaaa222",
-    //   "color": "#2aaaa2"
-    // },
+    // { "tag": "{", "italic": true, "backgroundColor": "#2aaaa222", "color": "#2aaaa2" },
     {
       "tag": "!",
       "backgroundColor": "transparent",
@@ -701,6 +847,7 @@
       "backgroundColor": "#bd8af41a",
       "color": "#bd8af4"
     },
+    //|-> Keywords
     {
       "tag": "HELP",
       "italic": true,
@@ -715,6 +862,12 @@
     },
     {
       "tag": "DOC ",
+      "italic": true,
+      "backgroundColor": "transparent",
+      "color": "#08c3d4"
+    },
+    {
+      "tag": "TOC ",
       "italic": true,
       "backgroundColor": "transparent",
       "color": "#08c3d4"
@@ -761,15 +914,14 @@
       "backgroundColor": "transparent",
       "color": "hsla(43, 50%, 50%, 0.95)"
     },
+    //|-> Symbols
     {
       "tag": "=",
-      // "italic": true,
       "backgroundColor": "transparent",
       "color": "hsla(335, 80%, 38%, 0.75)"
     },
     {
       "tag": "+",
-      // "italic": true,
       "backgroundColor": "transparent",
       "color": "hsla(335, 80%, 38%, 0.75)"
     },
@@ -789,6 +941,7 @@
       "backgroundColor": "transparent",
       "color": "hsla(162, 70%, 30%, 0.5)"
     },
+    //|-> Box drawing
     {
       "tag": "╔",
       "italic": true,
@@ -814,541 +967,27 @@
       "color": "hsl(300,86%,47%)"
     }
   ],
-  "render-special-chars.include": [
-    "0000-0008", // Control characters (NULL to BACKSPACE)
-    "000B", // Vertical Tab
-    "000C", // Form Feed
-    "000E-001F", // Control characters (SHIFT OUT to INFORMATION SEPARATOR ONE)
-    "007F-009F", // Control characters (DELETE to APPLICATION PROGRAM COMMAND)
-    "00A0-4DFF", // Latin-1 Supplement to Hangul Compatibility Jamo
-    "A000-10FFFF" // Yi Syllables to Plane 16 (Supplementary Private Use Area-B)
-  ],
-  "render-special-chars.except": [
-    "0009", // TAB
-    "000A", // LF
-    "000D", // CR
-    "0020-007E", // Printable BASIC ASCII
-    "3105-3129", // Bopomofo (ㄅ~ㄦ)
-    "4E00-9FFF", // CJK Unified Ideographs
-    "：；，、。？！〜（）〈〉《》【】「」『』─" // Commonly used special characters
-  ],
-  "render-special-chars.position": "before",
-  "render-special-chars.border": "1px solid; border-radius: 2px;",
-  // "render-special-chars.borderColor": "",
-  // "render-special-chars.color": "",
-  // "render-special-chars.backgroundColor": "",
-  "render-special-chars.excludedSchemes": [
-    "output",
-    "debug",
-    "git"
-  ],
-  "render-special-chars.updateDelay": 500,
-  //> ====================================================
-  //> MINIMAP AND LINE INDICATORS
-  //> ====================================================
-  "editor.minimap.size": "fill",
-  "editor.minimap.enabled": true,
-  "LWI.breakpoints": [
-    {
-      "color": "rgb(0, 255, 0, 0.6)",
-      "column": 54
-    },
-    {
-      "color": "rgb(244, 180, 0,0.6)",
-      "column": 68
-    },
-    {
-      "color": "rgb(255, 0, 0, 0.6)",
-      "column": 79
-    }
-  ],
-  "LWI.style.fontStyle": "italic",
-  "LWI.style.fontWeight": "100",
-  //> ====================================================
-  //> MATERIAL ICON THEME
-  //> ====================================================
-  "material-icon-theme.activeIconPack": "react",
-  "material-icon-theme.files.associations": {
-    ".treefmt.toml": "taze",
-    "treefmt/config.toml": "taze",
-    "treefmt.toml": "taze",
-    "mise.toml": "jenkins",
-    ".mise.toml": "jenkins",
-    ".editorconfig": "editorconfig",
-    "editorconfig": "editorconfig",
-  },
-  "material-icon-theme.files.customClones": [
-    {
-      "name": "rust-entrypoint",
-      "base": "rstack",
-      "color": "orange-800",
-      "lightColor": "orange-800",
-      "fileNames": [
-        ".rust-analyzer.toml",
-        "rust-analyzer.toml",
-        "rust-toolchain",
-        "rust-toolchain.toml",
-        ".rustfmt.toml",
-        "rustfmt.toml",
-        ".cargo/config.toml",
-        "Cargo.toml",
-        "lib.rs",
-        "mod.rs",
-        "main.rs",
-      ]
-    },
-    {
-      "name": "nix-entrypoint",
-      "base": "nix",
-      "color": "cyan-300",
-      "lightColor": "cyan-600",
-      "fileNames": [
-        "default.nix",
-        "flake.nix",
-        "shell.nix",
-        "configuration.nix"
-      ]
-    },
-    {
-      "name": "dotenv",
-      "base": "key",
-      "color": "amber-300",
-      "lightColor": "amber-600",
-      "fileNames": [
-        "envrc",
-        ".envrc",
-        "env",
-        ".env"
-      ]
-    },
-    {
-      "name": "sublime-text",
-      "base": "sublime",
-      "color": "amber-300",
-      "lightColor": "amber-600",
-      "fileNames": [
-        "sublime-settings",
-        "Preferences.sublime-settings",
-        ".sublime",
-        "sublime",
-      ]
-    },
-    {
-      "name": "markdownlinter",
-      "base": "markdownlint",
-      "color": "blue-400",
-      "lightColor": "blue-500",
-      "fileNames": [
-        ".markdownlint-cli2.yaml",
-        "markdownlint-cli2.yaml",
-        "markdownlint.yaml",
-        ".markdownlint.yaml",
-      ]
-    },
-  ],
-  "material-icon-theme.files.color": "#e8ddd8",
-  "material-icon-theme.folders.associations": {
-    ".cargo": "config",
-    "Advent-of-Code": "Middleware",
-    "benches": "debug",
-    "challenges": "Cluster",
-    "crates": "Packages",
-    "day-*": "job",
-    "days": "job",
-    "desktops": "interfaces",
-    "dots": "Cluster",
-    "hosts": "client",
-    "media": "video",
-    "methods": "Config",
-    "options": "tasks",
-    "overlays": "plugin",
-    "polar": "plastic",
-    "rails": "Debug",
-    "systems": "client",
-    "traits": "Tools",
-    "trivial": "sandbox",
-    "ai": "robot",
-    "_": "base",
-    "types": "Enum",
-    "users": "admin",
-  },
-  "material-icon-theme.folders.color": "#81c8be",
-  "material-icon-theme.folders.customClones": [
-    {
-      "name": "users",
-      "base": "admin",
-      "color": "light-green-300",
-      "lightColor": "light-green-700",
-      "folderNames": [
-        "users",
-        "user",
-        "people",
-        "roles"
-      ]
-    },
-    {
-      "name": "desktops",
-      "base": "desktop",
-      "color": "purple-300",
-      "lightColor": "orange-700",
-      "folderNames": [
-        "desktops",
-        "desktop",
-        "control"
-      ]
-    },
-    {
-      "name": "editor",
-      "base": "skills",
-      "color": "blue-gray-600",
-      "lightColor": "blue-gray-700",
-      "folderNames": [
-        "nvim",
-        "neovim",
-        "helix",
-        "zed",
-        "editor",
-      ]
-    },
-    {
-      "name": "hosts",
-      "base": "client",
-      "color": "blue-gray-400",
-      "lightColor": "orange-700",
-      "folderNames": [
-        "hosts",
-        "host",
-        "machine",
-        "machines"
-      ]
-    },
-    {
-      "name": "programs",
-      "base": "app",
-      "color": "cyan-300",
-      "lightColor": "green-700",
-      "folderNames": [
-        "program",
-        "programs"
-      ]
-    },
-    {
-      "name": "macros",
-      "base": "middleware",
-      "color": "blue-400",
-      "lightColor": "blue-500",
-      "folderNames": [
-        "constructors",
-        "macros"
-      ]
-    },
-    {
-      "name": "shell",
-      "base": "scripts",
-      "color": "blue-gray-600",
-      "lightColor": "blue-gray-500",
-      "folderNames": [
-        "shellscript",
-        "bash",
-        "sh",
-        "posix",
-        "shells",
-        "shell"
-      ]
-    },
-    {
-      "name": "err",
-      "base": "error",
-      "color": "purple-400",
-      "lightColor": "red-500",
-      "folderNames": [
-        "erks",
-        "error",
-        "err"
-      ]
-    },
-    {
-      "name": "filesystem",
-      "base": "resource",
-      "color": "deep-purple-400",
-      "lightColor": "deep-purple-500",
-      "folderNames": [
-        "file",
-        "files",
-        "system",
-        "io",
-        "filesystem"
-      ]
-    },
-    {
-      "name": "folder",
-      "base": "archive",
-      "color": "deep-purple-300",
-      "lightColor": "deep-purple-400",
-      "folderNames": [
-        "folders",
-        "folder"
-      ]
-    },
-    {
-      "name": "compression",
-      "base": "archive",
-      "color": "pink-400",
-      "lightColor": "pink-600",
-      "folderNames": [
-        "extract",
-        "extractor",
-        "compress",
-        "compression"
-      ]
-    },
-    {
-      "name": "internal",
-      "base": "import",
-      "color": "green-300",
-      "lightColor": "green-400",
-      "folderNames": [
-        "local",
-        "importer",
-        "importers",
-        "internal"
-      ]
-    },
-    {
-      "name": "external",
-      "base": "packages",
-      "color": "green-400",
-      "lightColor": "green-700",
-      "folderNames": [
-        // "local",
-        "external"
-      ]
-    },
-    {
-      "name": "workspace",
-      "base": "project",
-      "color": "blue-400",
-      "lightColor": "blue-700",
-      "folderNames": [
-        // "local",
-        "workspace"
-      ]
-    },
-    {
-      "name": "nixos",
-      "base": "quasar",
-      "color": "cyan-800",
-      "lightColor": "cyan-700",
-      "folderNames": [
-        "nixos",
-        "flake",
-        "flakes",
-        ".nix",
-        "nix"
-      ]
-    },
-    {
-      "name": "movie",
-      "base": "video",
-      "color": "orange-800",
-      "lightColor": "orange-400",
-      "folderNames": [
-        "imdb",
-        "movie"
-      ]
-    },
-    {
-      "name": "string",
-      "base": "storybook",
-      "color": "light-blue-800",
-      "lightColor": "light-blue-400",
-      "folderNames": [
-        "strings",
-        "vocabulary",
-        "grammar",
-        "derive",
-        "terminology",
-        "terms",
-        "string"
-      ]
-    },
-    {
-      "name": "lists",
-      "base": "enum",
-      "color": "teal-600",
-      "lightColor": "teal-400",
-      "folderNames": [
-        "file",
-        "files",
-        "system",
-        "list",
-        "lists"
-      ]
-    },
-    {
-      "name": "sets",
-      "base": "less",
-      "color": "teal-600",
-      "lightColor": "teal-400",
-      "folderNames": [
-        "attr",
-        "attrsets",
-        "set",
-        "sets"
-      ]
-    },
-    {
-      "name": "hardware",
-      "base": "core",
-      "color": "blue-gray-400",
-      "lightColor": "blue-gray-700",
-      "folderNames": [
-        "memory",
-        "chip",
-        "hardware"
-      ]
-    },
-    {
-      "name": "format",
-      "base": "custom",
-      "color": "pink-800",
-      "lightColor": "pink-400",
-      "folderNames": [
-        "customize",
-        "art",
-        "fmt",
-        "format"
-      ]
-    },
-    {
-      "name": "time",
-      "base": "temp",
-      "color": "teal-800",
-      "lightColor": "teal-400",
-      "folderNames": [
-        "clock",
-        "date",
-        "ephemeral",
-        "time"
-      ]
-    },
-    {
-      "name": "registry",
-      "base": "scons",
-      "color": "purple-800",
-      "lightColor": "purple-400",
-      "folderNames": [
-        "register",
-        "registry"
-      ]
-    },
-    {
-      "name": "sqlx",
-      "base": "database",
-      "color": "orange-800",
-      "lightColor": "orange-400",
-      "folderNames": [
-        ".sqlx",
-        "sqlx"
-      ]
-    },
-    {
-      "name": "unit",
-      "base": "interceptor",
-      "color": "brown-800",
-      "lightColor": "brown-400",
-      "folderNames": [
-        "period",
-        "measure",
-        "persistent",
-        "distance",
-        "range",
-        "span"
-      ]
-    },
-    {
-      "name": "dots",
-      "base": "ionic",
-      "color": "teal-300",
-      "lightColor": "teal-600",
-      "fileNames": [
-        ".dots.json",
-        "dots.json",
-        ".dots.toml",
-        "dots.toml",
-        ".dots.txt",
-        ".dots.conf",
-        ".dotsrc",
-        ".dotsrc.fish",
-        ".dotsrc.nu",
-        ".dotsrc.ps1",
-        ".dotsrc.sh"
-      ]
-    }
-  ],
-  "material-icon-theme.languages.customClones": [
-    {
-      "name": "ahk-clone",
-      "base": "autohotkey",
-      "color": "blue-400",
-      "lightColor": "grey-600",
-      "ids": [
-        "ahk2"
-      ]
-    }
-  ],
-  "material-icon-theme.hidesExplorerArrows": true,
-  //> ====================================================
-  //> REMOTE & WORKSPACE
-  //> ====================================================
-  "direnv.restart.automatic": true,
-  "dotenv.enableAutocloaking": false,
-  "redhat.telemetry.enabled": false,
-  "remote.autoForwardPortsSource": "hybrid",
-  "remote.SSH.remotePlatform": {
-    "delle.deer-iguana.ts.net": "linux",
-    "dbook.deer-iguana.ts.net": "linux"
-  },
-  "rss.accounts": {
-    "fb0e47b0-9982-11ef-a698-3778cde2492f": {
-      "name": "Default",
-      "type": "local",
-      "feeds": []
+  //~@ ====================================================
+  //~@ COLOUR OVERRIDES                                   .
+  //~@ ====================================================
+  //|-> Semantic Token Rules
+  "editor.semanticTokenColorCustomizations": {
+    "rules": {
+      "*.static": {
+        "italic": true
+      },
+      "interface": {
+        "italic": true
+      },
+      "keyword": {
+        "italic": true
+      },
+      "selfParameter": {
+        "italic": true
+      }
     }
   },
-  "bashIde.explainshellEndpoint": "http://localhost:5000",
-  "json.schemaDownload.trustedDomains": {
-    "https://biomejs.dev": true,
-    "https://developer.microsoft.com/json-schemas/": true,
-    "https://dprint.dev": true,
-    "https://json-schema.org/": true,
-    "https://json.schemastore.org/": true,
-    "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/colorOverrides.schema.json": true,
-    "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/customUIColors.schema.json": true,
-    "https://raw.githubusercontent.com/DavidAnson/markdownlint/v0.40.0/schema/markdownlint-config-schema.json": true,
-    "https://raw.githubusercontent.com/devcontainers/spec/": true,
-    "https://raw.githubusercontent.com/microsoft/vscode/": true,
-    "https://schemastore.azurewebsites.net/": true,
-    "https://www.schemastore.org/": true
-  },
-  "security.workspace.trust.untrustedFiles": "open",
-  "vs-browser.favourites.list": {
-    "http://127.0.0.1:3000": "http://127.0.0.1:3000",
-    "http://localhost": "http://localhost"
-  },
-  "vs-browser.link.enabled": true,
-  "vs-browser.link.openWith": "ask",
-  "vs-browser.localProxyServer.cookieDomainRewrite": true,
-  "vs-browser.localProxyServer.enabled": true,
-  "vs-browser.localProxyServer.forceLocation": true,
-  "vs-browser.reload.autoReloadDurationEnabled": false,
-  "vs-browser.reload.autoReloadDurationTime": 15000,
-  "vs-browser.reload.onSave": false,
-  "vs-browser.url": "http://127.0.0.1:3000",
-  //> ====================================================
-  //> Animation & Color Tokenization
-  //> ====================================================
-  "workbench.colorCustomizations": {},
+  //|-> TextMate Token Overrides
   "editor.tokenColorCustomizations": {
     "[*Light*]": {
       "textMateRules": [
@@ -1475,13 +1114,443 @@
       }
     ]
   },
-  //> ====================================================
-  //> Keybindings
-  //> ====================================================
-  "vscode-default-keybindings.windowsKeybindings": true,
-  "git.autoStash": true,
-  "window.restoreFullscreen": true,
-  //> ====================================================
-  //> Undefined
-  //> ====================================================
+  //|-> UI Colour Overrides
+  "workbench.colorCustomizations": {},
+  //~@ ====================================================
+  //~@ ICON THEME                                         .
+  //~@ ====================================================
+  "material-icon-theme.activeIconPack": "react",
+  "material-icon-theme.hidesExplorerArrows": true,
+  "material-icon-theme.files.color": "#e8ddd8",
+  "material-icon-theme.folders.color": "#81c8be",
+  //|-> File associations
+  "material-icon-theme.files.associations": {
+    ".editorconfig": "editorconfig",
+    ".mise.toml": "jenkins",
+    ".treefmt.toml": "taze",
+    "editorconfig": "editorconfig",
+    "mise.toml": "jenkins",
+    "treefmt.toml": "taze",
+    "treefmt/config.toml": "taze"
+  },
+  //|-> Custom file icons
+  "material-icon-theme.files.customClones": [
+    {
+      "name": "rust-entrypoint",
+      "base": "rstack",
+      "color": "orange-800",
+      "lightColor": "orange-800",
+      "fileNames": [
+        ".cargo/config.toml",
+        ".rust-analyzer.toml",
+        ".rustfmt.toml",
+        "Cargo.toml",
+        "lib.rs",
+        "main.rs",
+        "mod.rs",
+        "rust-analyzer.toml",
+        "rust-toolchain",
+        "rust-toolchain.toml",
+        "rustfmt.toml"
+      ]
+    },
+    {
+      "name": "nix-entrypoint",
+      "base": "nix",
+      "color": "cyan-300",
+      "lightColor": "cyan-600",
+      "fileNames": [
+        "configuration.nix",
+        "default.nix",
+        "flake.nix",
+        "shell.nix"
+      ]
+    },
+    {
+      "name": "dotenv",
+      "base": "key",
+      "color": "amber-300",
+      "lightColor": "amber-600",
+      "fileNames": [
+        ".env",
+        ".envrc",
+        "env",
+        "envrc"
+      ]
+    },
+    {
+      "name": "sublime-text",
+      "base": "sublime",
+      "color": "amber-300",
+      "lightColor": "amber-600",
+      "fileNames": [
+        ".sublime",
+        "Preferences.sublime-settings",
+        "sublime",
+        "sublime-settings"
+      ]
+    },
+    {
+      "name": "markdownlinter",
+      "base": "markdownlint",
+      "color": "blue-400",
+      "lightColor": "blue-500",
+      "fileNames": [
+        ".markdownlint-cli2.yaml",
+        ".markdownlint.yaml",
+        "markdownlint-cli2.yaml",
+        "markdownlint.yaml"
+      ]
+    },
+    // MOVED from folders.customClones: it used `fileNames`, which only applies to file icons.
+    {
+      "name": "dots",
+      "base": "ionic",
+      "color": "teal-300",
+      "lightColor": "teal-600",
+      "fileNames": [
+        ".dots.conf",
+        ".dots.json",
+        ".dots.toml",
+        ".dots.txt",
+        ".dotsrc",
+        ".dotsrc.fish",
+        ".dotsrc.nu",
+        ".dotsrc.ps1",
+        ".dotsrc.sh",
+        "dots.json",
+        "dots.toml"
+      ]
+    }
+  ],
+  //|-> Custom language icons
+  "material-icon-theme.languages.customClones": [
+    {
+      "name": "ahk-clone",
+      "base": "autohotkey",
+      "color": "blue-400",
+      "lightColor": "grey-600",
+      "ids": [
+        "ahk2"
+      ]
+    }
+  ],
+  //|-> Folder associations
+  "material-icon-theme.folders.associations": {
+    "_": "base",
+    ".cargo": "config",
+    "Advent-of-Code": "Middleware",
+    "ai": "robot",
+    "benches": "debug",
+    "challenges": "Cluster",
+    "crates": "Packages",
+    "day-*": "job",
+    "days": "job",
+    "desktops": "interfaces",
+    "dots": "Cluster",
+    "hosts": "client",
+    "media": "video",
+    "methods": "Config",
+    "options": "tasks",
+    "overlays": "plugin",
+    "polar": "plastic",
+    "rails": "Debug",
+    "systems": "client",
+    "traits": "Tools",
+    "trivial": "sandbox",
+    "types": "Enum",
+    "users": "admin"
+  },
+  //|-> Custom folder icons
+  // NOTE: "file", "files" and "system" were listed in both `filesystem` and `lists`; removed from `lists`.
+  "material-icon-theme.folders.customClones": [
+    {
+      "name": "users",
+      "base": "admin",
+      "color": "light-green-300",
+      "lightColor": "light-green-700",
+      "folderNames": [
+        "people",
+        "roles",
+        "user",
+        "users"
+      ]
+    },
+    {
+      "name": "desktops",
+      "base": "desktop",
+      "color": "purple-300",
+      "lightColor": "orange-700",
+      "folderNames": [
+        "control",
+        "desktop",
+        "desktops"
+      ]
+    },
+    {
+      "name": "editor",
+      "base": "skills",
+      "color": "blue-gray-600",
+      "lightColor": "blue-gray-700",
+      "folderNames": [
+        "editor",
+        "helix",
+        "neovim",
+        "nvim",
+        "zed"
+      ]
+    },
+    {
+      "name": "hosts",
+      "base": "client",
+      "color": "blue-gray-400",
+      "lightColor": "orange-700",
+      "folderNames": [
+        "host",
+        "hosts",
+        "machine",
+        "machines"
+      ]
+    },
+    {
+      "name": "programs",
+      "base": "app",
+      "color": "cyan-300",
+      "lightColor": "green-700",
+      "folderNames": [
+        "program",
+        "programs"
+      ]
+    },
+    {
+      "name": "macros",
+      "base": "middleware",
+      "color": "blue-400",
+      "lightColor": "blue-500",
+      "folderNames": [
+        "constructors",
+        "macros"
+      ]
+    },
+    {
+      "name": "shell",
+      "base": "scripts",
+      "color": "blue-gray-600",
+      "lightColor": "blue-gray-500",
+      "folderNames": [
+        "bash",
+        "posix",
+        "sh",
+        "shell",
+        "shells",
+        "shellscript"
+      ]
+    },
+    {
+      "name": "err",
+      "base": "error",
+      "color": "purple-400",
+      "lightColor": "red-500",
+      "folderNames": [
+        "err",
+        "erks",
+        "error"
+      ]
+    },
+    {
+      "name": "filesystem",
+      "base": "resource",
+      "color": "deep-purple-400",
+      "lightColor": "deep-purple-500",
+      "folderNames": [
+        "file",
+        "files",
+        "filesystem",
+        "io",
+        "system"
+      ]
+    },
+    {
+      "name": "folder",
+      "base": "archive",
+      "color": "deep-purple-300",
+      "lightColor": "deep-purple-400",
+      "folderNames": [
+        "folder",
+        "folders"
+      ]
+    },
+    {
+      "name": "compression",
+      "base": "archive",
+      "color": "pink-400",
+      "lightColor": "pink-600",
+      "folderNames": [
+        "compress",
+        "compression",
+        "extract",
+        "extractor"
+      ]
+    },
+    {
+      "name": "internal",
+      "base": "import",
+      "color": "green-300",
+      "lightColor": "green-400",
+      "folderNames": [
+        "importer",
+        "importers",
+        "internal",
+        "local"
+      ]
+    },
+    {
+      "name": "external",
+      "base": "packages",
+      "color": "green-400",
+      "lightColor": "green-700",
+      "folderNames": [
+        "external"
+      ]
+    },
+    {
+      "name": "workspace",
+      "base": "project",
+      "color": "blue-400",
+      "lightColor": "blue-700",
+      "folderNames": [
+        "workspace"
+      ]
+    },
+    {
+      "name": "nixos",
+      "base": "quasar",
+      "color": "cyan-800",
+      "lightColor": "cyan-700",
+      "folderNames": [
+        ".nix",
+        "flake",
+        "flakes",
+        "nix",
+        "nixos"
+      ]
+    },
+    {
+      "name": "movie",
+      "base": "video",
+      "color": "orange-800",
+      "lightColor": "orange-400",
+      "folderNames": [
+        "imdb",
+        "movie"
+      ]
+    },
+    {
+      "name": "string",
+      "base": "storybook",
+      "color": "light-blue-800",
+      "lightColor": "light-blue-400",
+      "folderNames": [
+        "derive",
+        "grammar",
+        "string",
+        "strings",
+        "terminology",
+        "terms",
+        "vocabulary"
+      ]
+    },
+    {
+      "name": "lists",
+      "base": "enum",
+      "color": "teal-600",
+      "lightColor": "teal-400",
+      "folderNames": [
+        "list",
+        "lists"
+      ]
+    },
+    {
+      "name": "sets",
+      "base": "less",
+      "color": "teal-600",
+      "lightColor": "teal-400",
+      "folderNames": [
+        "attr",
+        "attrsets",
+        "set",
+        "sets"
+      ]
+    },
+    {
+      "name": "hardware",
+      "base": "core",
+      "color": "blue-gray-400",
+      "lightColor": "blue-gray-700",
+      "folderNames": [
+        "chip",
+        "hardware",
+        "memory"
+      ]
+    },
+    {
+      "name": "format",
+      "base": "custom",
+      "color": "pink-800",
+      "lightColor": "pink-400",
+      "folderNames": [
+        "art",
+        "customize",
+        "fmt",
+        "format"
+      ]
+    },
+    {
+      "name": "time",
+      "base": "temp",
+      "color": "teal-800",
+      "lightColor": "teal-400",
+      "folderNames": [
+        "clock",
+        "date",
+        "ephemeral",
+        "time"
+      ]
+    },
+    {
+      "name": "registry",
+      "base": "scons",
+      "color": "purple-800",
+      "lightColor": "purple-400",
+      "folderNames": [
+        "register",
+        "registry"
+      ]
+    },
+    {
+      "name": "sqlx",
+      "base": "database",
+      "color": "orange-800",
+      "lightColor": "orange-400",
+      "folderNames": [
+        ".sqlx",
+        "sqlx"
+      ]
+    },
+    {
+      "name": "unit",
+      "base": "interceptor",
+      "color": "brown-800",
+      "lightColor": "brown-400",
+      "folderNames": [
+        "distance",
+        "measure",
+        "period",
+        "persistent",
+        "range",
+        "span"
+      ]
+    }
+  ],
+  "chat.unifiedAgentsBar.enabled": true,
 }
