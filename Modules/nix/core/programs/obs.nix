@@ -28,7 +28,9 @@ in
     options = {
       enable = mkEnable {
         description = "OBS Studio";
-        condition = hw.hasVideoCam;
+        # TODO: Restore camera-based OBS enablement when OBS is needed again.
+        # condition = hw.hasVideoCam;
+        condition = false;
       };
       enableVirtualCamera = mkEnable {
         description = "OBS virtual camera";
