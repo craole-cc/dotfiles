@@ -60,9 +60,9 @@
         defined
       );
       fonts = {
-        clock = unique (
+        math = unique (
           concatMap
-          (user: user.interface.fonts.clock or [])
+          (user: user.interface.fonts.math or [])
           defined
         );
         emoji = unique (

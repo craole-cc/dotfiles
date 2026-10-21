@@ -156,7 +156,7 @@
       };
 
       categories = {
-        clock = [
+        math = [
           rubik
           monaspace-krypton
           source-code-pro

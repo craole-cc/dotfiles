@@ -30,12 +30,7 @@
     development = {
       languages.rust = {
         channel = "nightly";
-        components = [
-          "rust-src"
-          "rust-analyzer"
-          "rustfmt"
-          "clippy"
-        ];
+        components = ["rust-src" "rust-analyzer" "rustfmt" "clippy"];
       };
     };
     creation = {};
@@ -61,7 +56,7 @@
     browser = [
       "chromium"
       "zen-twilight"
-      "brave"
+      # "brave"
     ];
     editor = [
       "helix"
@@ -89,7 +84,7 @@
     extra = [
       "fastfetch"
       "imv"
-      "obs-studio"
+      # "obs-studio"
       "qimgv"
       "qbittorrent-enhanced"
     ];
@@ -115,7 +110,9 @@
       "warp-terminal"
       "kitty"
     ];
-    wallpaper = ["variety"];
+    wallpaper = [
+      "variety"
+    ];
   };
 
   paths = rec {
@@ -152,7 +149,7 @@
 
   interface = {
     desktops = [
-      "plasma"
+      # "plasma"
       "hyprland"
       "niri"
       # "mango"
@@ -293,30 +290,38 @@
     fonts = let
       #~@ Packages
       packages = {
-        fira-code = {
-          name = "Fira Code";
-          package = "fira-code";
+        # fira = {
+        #   name = "Fira Code";
+        #   package = "fira-code";
+        # };
+        # fira-nf = {
+        #   name = "Fira Code Nerd Font";
+        #   package = "nerd-fonts.fira-code";
+        # };
+        ibm-mono = {
+          name = "IBM Plex Mono";
+          package = "ibm-plex";
         };
-        fira-code-nf = {
-          name = "Fira Code Nerd Font";
-          package = "nerd-fonts.fira-code";
+        ibm-math = {
+          name = "IBM Plex Math";
+          package = "ibm-plex";
         };
-        ibm-plex-sans = {
+        ibm-sans = {
           name = "IBM Plex Sans";
           package = "ibm-plex";
         };
-        ibm-plex-serif = {
+        ibm-serif = {
           name = "IBM Plex Serif";
           package = "ibm-plex";
         };
-        jetbrains-mono = {
-          name = "JetBrains Mono";
-          package = "jetbrains-mono";
-        };
-        jetbrains-mono-nf = {
-          name = "JetBrains Mono Nerd Font";
-          package = "nerd-fonts.jetbrains-mono";
-        };
+        # jetbrains = {
+        #   name = "JetBrains Mono";
+        #   package = "jetbrains-mono";
+        # };
+        # jetbrains-nf = {
+        #   name = "JetBrains Mono Nerd Font";
+        #   package = "nerd-fonts.jetbrains-mono";
+        # };
         lilex = {
           name = "Lilex";
           package = "lilex";
@@ -325,39 +330,39 @@
           name = "Lilex Nerd Font";
           package = "nerd-fonts.lilex";
         };
-        maple-mono = {
+        maple = {
           name = "Maple Mono";
           package = "maple-mono";
         };
-        maple-mono-nf = {
+        maple-nf = {
           name = "Maple Mono NF";
           package = "maple-mono.NF-unhinted";
         };
-        material-symbols-outlined = {
+        material-outlined = {
           name = "Material Symbols Outlined";
           package = "material-symbols";
         };
-        material-symbols-rounded = {
+        material-rounded = {
           name = "Material Symbols Rounded";
           package = "material-symbols";
         };
-        material-symbols-sharp = {
+        material-sharp = {
           name = "Material Symbols Sharp";
           package = "material-symbols";
         };
-        monaspace-argon = {
-          name = "Monaspace Argon Frozen";
-          package = "monaspace";
-        };
-        monaspace-krypton = {
-          name = "Monaspace Krypton Frozen";
-          package = "monaspace";
-        };
-        monaspace-radon = {
-          name = "Monaspace Radon Frozen";
-          package = "monaspace";
-        };
-        noto-color-emoji = {
+        # monaspace-argon = {
+        #   name = "Monaspace Argon Frozen";
+        #   package = "monaspace";
+        # };
+        # monaspace-krypton = {
+        #   name = "Monaspace Krypton Frozen";
+        #   package = "monaspace";
+        # };
+        # monaspace-radon = {
+        #   name = "Monaspace Radon Frozen";
+        #   package = "monaspace";
+        # };
+        noto-emoji = {
           name = "Noto Color Emoji";
           package = "noto-fonts-color-emoji";
         };
@@ -369,72 +374,85 @@
           name = "Noto Sans";
           package = "noto-fonts";
         };
-        overpass = {
-          name = "Overpass";
-          package = "overpass";
+        noto-math = {
+          name = "Noto Sans Math";
+          package = "noto-fonts";
         };
+        noto-mono = {
+          name = "Noto Sans Mono";
+          package = "noto-fonts";
+        };
+        # overpass = {
+        #   name = "Overpass";
+        #   package = "overpass";
+        # };
         rubik = {
           name = "Rubik";
           package = "rubik";
         };
-        source-code-pro = {
-          name = "Source Code Pro";
-          package = "source-code-pro";
-        };
-        source-code-pro-nf = {
-          name = "Source Code Pro Nerd Font";
-          package = "nerd-fonts.source-code-pro";
-        };
-        source-sans-pro = {
-          name = "Source Sans Pro";
-          package = "source-sans-pro";
-        };
-        source-serif-pro = {
-          name = "Source Serif Pro";
-          package = "source-serif-pro";
-        };
+        # source-code-pro = {
+        #   name = "Source Code Pro";
+        #   package = "source-code-pro";
+        # };
+        # source-code-pro-nf = {
+        #   name = "Source Code Pro Nerd Font";
+        #   package = "nerd-fonts.source-code-pro";
+        # };
+        # source-sans-pro = {
+        #   name = "Source Sans Pro";
+        #   package = "source-sans-pro";
+        # };
+        # source-serif-pro = {
+        #   name = "Source Serif Pro";
+        #   package = "source-serif-pro";
+        # };
       };
 
       categories = with packages; rec {
-        clock = [
+        math = [
+          ibm-math
+          noto-math
           rubik
-          monaspace-krypton
-          source-code-pro
+          # monaspace-krypton
+          # source-code-pro
         ];
-        emoji = [noto-color-emoji] ++ material;
+        emoji = [noto-emoji] ++ material;
         material = [
-          material-symbols-sharp
-          material-symbols-outlined
-          material-symbols-rounded
+          material-sharp
+          material-outlined
+          material-rounded
         ];
         monospace = [
           lilex-nf
           lilex
-          maple-mono-nf
-          maple-mono
-          jetbrains-mono-nf
-          jetbrains-mono
-          fira-code-nf
-          fira-code
-          source-code-pro-nf
-          source-code-pro
+          maple-nf
+          maple
+          ibm-mono
+          noto-mono
+          # jetbrains-nf
+          # jetbrains
+          # fira-nf
+          # fira
+          # source-code-pro-nf
+          # source-code-pro
         ];
         sans = [
-          monaspace-radon
-          monaspace-argon
-          ibm-plex-sans
-          source-sans-pro
-          overpass
+          ibm-sans
           noto-sans
+          rubik
+          # monaspace-radon
+          # monaspace-argon
+          # source-sans-pro
+          # overpass
         ];
         serif = [
-          ibm-plex-serif
+          ibm-serif
           noto-serif
-          source-serif-pro
+          # source-serif-pro
         ];
       };
     in
-      categories;
+      packages // categories;
 
     keyboard = {
       layout = "us";

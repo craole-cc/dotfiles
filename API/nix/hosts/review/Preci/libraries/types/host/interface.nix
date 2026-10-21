@@ -11,7 +11,7 @@
     };
     desktops = [];
     fonts = {
-      clock = [];
+      math = [];
       emoji = [];
       material = [];
       monospace = [];

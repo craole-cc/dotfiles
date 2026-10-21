@@ -44,7 +44,7 @@
 #       sans = null; #? Sans-serif font
 #       serif = null; #? Serif font
 #       material = null; #? Icon/symbol font
-#       clock = null; #? Clock widget font
+#       math = null; #? Mathematical font
 #     };
 #   };
 #   packages = {

@@ -73,8 +73,8 @@
     else null;
 
   resolved = {
-    clock = let
-      tag = "clock";
+    math = let
+      tag = "math";
       name = first tag;
       package = firstPackage tag;
       size = 11;

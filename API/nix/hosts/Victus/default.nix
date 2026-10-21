@@ -380,7 +380,7 @@ in {
     };
 
     fonts = {
-      clock = [
+      math = [
         {
           name = "IBM Plex Sans";
           package = "ibm-plex";

@@ -190,7 +190,7 @@
               sans = ["Monaspace Radon Frozen"];
               serif = ["Noto Serif"];
               material = ["Material Symbols Sharp"];
-              clock = ["Rubik"];
+              math = ["Rubik"];
             };
           };
 
