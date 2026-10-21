@@ -179,7 +179,7 @@ in
       '';
 
       home.sessionVariables = with resolved; {
-        inherit (clock) FONT_CLOCK;
+        inherit (math) FONT_CLOCK;
         inherit (emoji) FONT_EMOJI;
         inherit (material) FONT_MATERIAL;
         inherit (monospace) FONT_MONO FONT_MONOSPACE;
