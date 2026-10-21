@@ -71,7 +71,7 @@
     (normalizeFonts (definition.interface.fonts or {}));
 
   defaults = normalizeFonts {
-    clock = "Rubik";
+    math = "Rubik";
     emoji = "Noto Color Emoji";
     material = "Material Symbols Sharp";
     monospace = "Maple Mono NF";

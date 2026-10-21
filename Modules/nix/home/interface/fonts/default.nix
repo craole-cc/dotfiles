@@ -80,7 +80,7 @@
       size = 11;
     in {
       inherit name package size;
-      FONT_CLOCK = name;
+      FONT_MATH = name;
     };
 
     emoji = let
@@ -179,7 +179,7 @@ in
       '';
 
       home.sessionVariables = with resolved; {
-        inherit (math) FONT_CLOCK;
+        inherit (math) FONT_MATH;
         inherit (emoji) FONT_EMOJI;
         inherit (material) FONT_MATERIAL;
         inherit (monospace) FONT_MONO FONT_MONOSPACE;
