@@ -1,5 +1,6 @@
 {_, ...}: let
   inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.lists.aggregation) concatMap;
   inherit (_.lists.construction) toList;
@@ -14,53 +15,46 @@
     }: {inherit name package;};
   in {
     math = [
-      mk
-      {
+      (mk {
         name = "Noto Math";
         package = "noto-fonts";
-      }
+      })
     ];
     emoji = [
-      mk
-      {
+      (mk {
         name = "Noto Color Emoji";
         package = "noto-fonts-color-emoji";
-      }
+      })
     ];
     material = [
-      mk
-      {
+      (mk {
         name = "Material Symbols Sharp";
         package = "material-symbols";
-      }
+      })
     ];
     monospace = [
-      mk
-      {
+      (mk {
         name = "Noto Mono";
         package = "noto-fonts";
-      }
+      })
     ];
     music = [
-      mk
-      {
+      (mk {
         name = "Noto Music";
         package = "noto-fonts";
-      }
+      })
     ];
     sansSerif = [
-      mk
-      {
+      (mk {
         name = "Noto Sans";
         package = "noto-fonts";
-      }
+      })
     ];
     serif = [
-      mk
-      {
+      (mk {
         name = "Noto Serif";
         package = "noto-fonts";
-      }
+      })
     ];
   };
 
@@ -99,15 +93,15 @@
   in
     unique (map normalizeEntry (filter (entry: entry != null) entries));
 
-  normalizeFonts = fonts:
-    mapAttrs (_: normalizeSelection) (
-      recursiveUpdate defaults (
-        recursiveUpdate (
-          (fonts.categories or {})
-          {sansSerif = fonts.categories.sans or (fonts.categories.sansSerif or {});}
-        )
-      )
-    );
+  normalizeFonts = fonts: let
+    selections = (fonts.categories or {}) // (removeAttrs fonts ["categories" "packages"]);
+    canonical =
+      (removeAttrs selections ["sans"])
+      // optionalAttrs (selections ? sans || selections ? sansSerif) {
+        sansSerif = selections.sansSerif or selections.sans;
+      };
+  in
+    mapAttrs (_: normalizeSelection) canonical;
 
   # TODO: this should use a better merger
   getFonts = definition:
@@ -120,7 +114,9 @@
     host ? {},
     user ? {},
   }:
-    recursiveUpdate
-    (getFonts (host // {interface = host.defaults.interface or (host.interface or {});}))
-    (getFonts user);
+    recursiveUpdate defaults (
+      recursiveUpdate
+      (getFonts (host // {interface = host.defaults.interface or (host.interface or {});}))
+      (getFonts user)
+    );
 in {inherit defaults getFonts mkFonts normalizeFonts;}

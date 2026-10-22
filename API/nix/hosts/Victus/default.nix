@@ -43,12 +43,14 @@ in {
   # Podman 5.8.6 reproduces SQLite state-save failures even with a fresh,
   # Hindsight-only graphroot on Victus. Run Hindsight directly with pg0 and
   # keep the existing Podman state/volume untouched for later migration.
-  shells.ai = {
-    # Victus runs the persistent local 9Router and Headroom services. Keep
-    # OmniRoute available as an explicit diagnostic/compatibility preset, but
-    # make `nix develop .#Victus-ai` match the normal runtime path.
-    defaultPreset = "hermes-hindsight-headroom-9router";
-    hindsight.runtime = "native";
+  shells = {
+    ai = {
+      # Victus runs the persistent local 9Router and Headroom services. Keep
+      # OmniRoute available as an explicit diagnostic/compatibility preset, but
+      # make `nix develop .#Victus-ai` match the normal runtime path.
+      defaultPreset = "hermes-hindsight-headroom-9router";
+      hindsight.runtime = "native";
+    };
   };
 
   caches = {
@@ -245,7 +247,7 @@ in {
 
     desktops = [
       # "plasma"
-      "niri"
+      # "niri"
     ];
 
     theme = rec {
@@ -379,44 +381,7 @@ in {
       };
     };
 
-    fonts = {
-      math = [
-        {
-          name = "Noto Math";
-          package = "noto-fonts";
-        }
-      ];
-      emoji = [
-        {
-          name = "Noto Color Emoji";
-          package = "noto-fonts-color-emoji";
-        }
-      ];
-      material = [
-        {
-          name = "Material Symbols Sharp";
-          package = "material-symbols";
-        }
-      ];
-      monospace = [
-        {
-          name = "Noto Mono";
-          package = "noto-fonts";
-        }
-      ];
-      sans = [
-        {
-          name = "Noto Sans";
-          package = "noto-fonts";
-        }
-      ];
-      serif = [
-        {
-          name = "Noto Serif";
-          package = "noto-fonts";
-        }
-      ];
-    };
+    fonts = {};
 
     keyboard = {
       layout = "us";
@@ -758,7 +723,7 @@ in {
       name = admin;
       uid = 1000;
       enable = true;
-      autoLogin = false;
+      autoLogin = true;
       role = "administrator";
       sshKeys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINID8HtFjIBwVad7rhVzOAyouDQxotr+xsE/4PyhZEqR theoracle"

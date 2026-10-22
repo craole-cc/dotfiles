@@ -185,18 +185,18 @@ in
         defaultFonts = {inherit (cfg) monospace sansSerif serif emoji;};
       };
 
-      # xdg.configFile."fontconfig/conf.d/99-monospace-override.conf".text = ''
-      #   <?xml version="1.0"?>
-      #   <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-      #   <fontconfig>
-      #     <match target="pattern">
-      #       <test qual="any" name="family"><string>monospace</string></test>
-      #       <edit name="family" mode="prepend" binding="strong">
-      #         <string>${resolved.monospace.name}</string>
-      #       </edit>
-      #     </match>
-      #   </fontconfig>
-      # '';
+      xdg.configFile."fontconfig/conf.d/99-monospace-override.conf".text = ''
+        <?xml version="1.0"?>
+        <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+        <fontconfig>
+          <match target="pattern">
+            <test qual="any" name="family"><string>monospace</string></test>
+            <edit name="family" mode="prepend" binding="strong">
+              <string>${resolved.monospace.name}</string>
+            </edit>
+          </match>
+        </fontconfig>
+      '';
 
       home.sessionVariables = with resolved; {
         inherit (clock) FONT_CLOCK;

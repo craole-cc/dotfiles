@@ -29,7 +29,10 @@
   };
   inherit (context) cfg;
 
-  selected = mkFonts {inherit host;};
+  selected = mkFonts {
+    inherit host;
+    user = host.users.data.primary or {};
+  };
   names =
     mapAttrs
     (_: entries: unique (map (entry: entry.name) entries))
