@@ -4,7 +4,7 @@
   inherit (lix.types.combinators) enum listOf nullOr;
 in {
   change = {
-    onStart = mkTrue "Change when the application starts";
+    onStart = mkFalse "Change when the application starts";
     enable = mkTrue "Enable wallpaper changer";
     interval = mkOption {
       type = ints.between 5 31536000;

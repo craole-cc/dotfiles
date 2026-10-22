@@ -275,13 +275,27 @@
       };
 
       packages = {
-        fira = let
-          name = "Fira Code";
-          package = "fira-code";
-        in {
-          mono = {inherit name package;};
-          monoNF = mkNF {inherit name package;};
+        cinzel = {
+          regular = {
+            name = "Cinzel";
+            package = "cinzel";
+          };
+          display = {
+            name = "Cinzel Decorative";
+            package = "cinzel";
+          };
         };
+
+        fira = let
+          mk = variant: pkgSuffix: {
+            name = "Fira ${variant}";
+            package = "fira-${pkgSuffix}";
+          };
+          mono = mk "Code" "code";
+          math = mk "Math" "math";
+          sansSerif = mk "Sans" "sans";
+          monoNF = mkNF mono;
+        in {inherit math mono monoNF sansSerif;};
 
         ibm = let
           mk = variant: {
@@ -366,6 +380,11 @@
           serif = mk {variant = "Serif";};
         };
 
+        orbitron = {
+          name = "Orbitron";
+          package = "orbitron";
+        };
+
         rubik = {
           name = "Rubik";
           package = "rubik";
@@ -391,9 +410,14 @@
       };
 
       categories = with packages; {
-        math = [
-          ibm.math
-          noto.math
+        clock = [
+          cinzel.display
+          orbitron
+          rubik
+          # monaspace.square
+          # monaspace.math
+        ];
+        display = [
         ];
         emoji = [noto.emoji] ++ categories.material;
         material = with material; [
@@ -401,22 +425,30 @@
           outlined
           rounded
         ];
+        math = [
+          fira.math
+          # noto.math
+          # monaspace.math
+        ];
         monospace = [
           lilex.monoNF
           maple.monoNF
-          ibm.mono
-          noto.mono
         ];
         music = [
           noto.music
         ];
         sansSerif = [
-          ibm.sansSerif
-          noto.sansSerif
+          fira.sansSerif
+          rubik
+          # noto.sansSerif
+          # monaspace.sansSerif
         ];
         serif = [
-          ibm.serif
-          noto.serif
+          cinzel.serif
+          # ibm.serif
+          # noto.serif
+          # monaspace.serif
+          # monaspace.humanist
         ];
       };
     in

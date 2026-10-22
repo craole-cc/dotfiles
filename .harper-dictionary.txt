@@ -121,6 +121,7 @@ nixpkgs
 no
 noctalia
 non-standard
+noto
 nvf
 oklab
 oklch
@@ -140,6 +141,7 @@ revisit
 rs
 rustfmt
 s.
+sansSerif
 schedule
 serde
 shell

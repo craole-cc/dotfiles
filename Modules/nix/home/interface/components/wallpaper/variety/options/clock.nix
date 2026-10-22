@@ -13,7 +13,7 @@ in {
     };
     font = mkOption {
       type = str;
-      default = "${style.fonts.math} Heavy 70";
+      default = "${style.fonts.clock} Black 70";
     };
     dateFont = mkOption {
       type = str;
