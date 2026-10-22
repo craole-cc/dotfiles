@@ -9,51 +9,85 @@
   inherit (_.types.predicates) isAttrs isString;
 
   packages = let
-    noto = let
-      mk = {
-        variant,
-        package ? "noto-fonts",
-      }: {
-        name = "Noto ${variant}";
-        inherit package;
-      };
-    in {
+    mk = {
+      name,
+      package,
+    }: {inherit name package;};
+  in {
+    noto = {
       emoji = mk {
-        variant = "Color Emoji";
+        name = "Noto Color Emoji";
         package = "noto-fonts-color-emoji";
       };
-      math = mk {variant = "Math";};
-      mono = mk {variant = "Mono";};
-      music = mk {variant = "Music";};
-      sansSerif = mk {variant = "Sans";};
-      serif = mk {variant = "Serif";};
+      math = mk {
+        name = "Noto Math";
+        package = "noto-fonts";
+      };
+      mono = mk {
+        name = "Noto Mono";
+        package = "noto-fonts";
+      };
+      music = mk {
+        name = "Noto Music";
+        package = "noto-fonts";
+      };
+      sansSerif = mk {
+        name = "Noto Sans";
+        package = "noto-fonts";
+      };
+      serif = mk {
+        name = "Noto Serif";
+        package = "noto-fonts";
+      };
     };
-  in {
-    "Rubik" = "rubik";
-    "Noto Color Emoji" = "noto-fonts-color-emoji";
-    "Material Symbols Sharp" = "material-symbols";
-    "Material Icons" = "material-icons";
-    "Maple Mono NF" = "maple-mono.NF-unhinted";
-    "Victor Mono" = "victor-mono";
-    "Monaspace Radon Frozen" = "monaspace";
-    "Noto Serif" = "noto-fonts";
-    "Noto Sans CJK" = "noto-fonts-cjk-sans";
+    material = {
+      sharp = mk {
+        name = "Material Symbols Sharp";
+        package = "material-symbols";
+      };
+    };
   };
 
-  packageAliases = {
-    "maple-mono" = "maple-mono.truetype";
-    "nerd-fonts.source-code-pro" = "nerd-fonts.sauce-code-pro";
+  categories = with packages; {
+    math = [noto.math];
+    emoji = [noto.emoji];
+    material = [material.sharp];
+    monospace = [noto.mono];
+    sansSerif = [noto.sansSerif];
+    serif = [noto.serif];
+    music = [noto.music];
   };
 
   normalizeEntry = entry: let
+    names = {
+      "Rubik" = "rubik";
+      "Noto Color Emoji" = packages.noto.emoji.package;
+      "Noto Math" = packages.noto.math.package;
+      "Noto Mono" = packages.noto.mono.package;
+      "Noto Music" = packages.noto.music.package;
+      "Noto Sans" = packages.noto.sansSerif.package;
+      "Noto Serif" = packages.noto.serif.package;
+      "Material Symbols Sharp" = packages.material.sharp.package;
+      "Material Icons" = "material-icons";
+      "Maple Mono NF" = "maple-mono.NF-unhinted";
+      "Victor Mono" = "victor-mono";
+      "Monaspace Radon Frozen" = "monaspace";
+      "Noto Sans CJK" = "noto-fonts-cjk-sans";
+    };
+
+    aliases = {
+      "maple-mono" = "maple-mono.truetype";
+      "nerd-fonts.source-code-pro" = "nerd-fonts.sauce-code-pro";
+    };
+
     name =
       if isString entry
       then entry
       else entry.name or null;
     package =
       if isAttrs entry
-      then entry.package or (packages.${name} or null)
-      else packages.${name} or null;
+      then entry.package or (names.${name} or null)
+      else names.${name} or null;
   in
     if !isString name || name == ""
     then throw "A font must be a family name or a record with a non-empty name."
@@ -61,7 +95,7 @@
       inherit name;
       package =
         if isString package
-        then packageAliases.${package} or package
+        then aliases.${package} or package
         else package;
     };
 
@@ -94,16 +128,7 @@
     (normalizeFonts (definition.interface.style.fonts or {}))
     (normalizeFonts (definition.interface.fonts or {}));
 
-  defaults = normalizeFonts {
-    # math = "Rubik";
-    # emoji = "Noto Color Emoji";
-    # material = "Material Symbols Sharp";
-    # monospace = "Noto Mono";
-    # sans = "Noto Sans";
-    # serif = "Noto Serif";
-    # cjk = "Noto Sans CJK";
-    # music = "Noto  Music";
-  };
+  defaults = normalizeFonts categories;
 
   # Whole role lists replace lower-priority declarations without truncation.
   mkFonts = {
@@ -111,6 +136,9 @@
     user ? {},
   }:
     recursiveUpdate defaults (recursiveUpdate
-      (getFonts (host // {interface = host.defaults.interface or (host.interface or {});}))
+      (getFonts (host
+        // {
+          interface = host.defaults.interface or (host.interface or {});
+        }))
       (getFonts user));
 in {inherit defaults getFonts mkFonts normalizeFonts;}

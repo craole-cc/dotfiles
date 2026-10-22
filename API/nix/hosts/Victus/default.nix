@@ -382,8 +382,8 @@ in {
     fonts = {
       math = [
         {
-          name = "IBM Plex Sans";
-          package = "ibm-plex";
+          name = "Noto Math";
+          package = "noto-fonts";
         }
       ];
       emoji = [
@@ -400,8 +400,8 @@ in {
       ];
       monospace = [
         {
-          name = "Source Code Pro Nerd Font";
-          package = "nerd-fonts.source-code-pro";
+          name = "Noto Mono";
+          package = "noto-fonts";
         }
       ];
       sans = [

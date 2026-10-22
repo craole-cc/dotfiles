@@ -263,7 +263,7 @@
 
   resolveFonts = {
     pkgs,
-    clock ? {},
+    math ? {},
     emoji ? {},
     material ? {},
     monospace ? {},
@@ -275,9 +275,9 @@
     sets =
       recursiveUpdate
       {
-        clock = {
-          name = "Rubik";
-          package = pkgs.rubik;
+        math = {
+          name = "Noto Math";
+          package = pkgs.noto-fonts;
         };
         emoji = {
           name = "Noto Color Emoji";
@@ -288,12 +288,12 @@
           package = pkgs.material-symbols;
         };
         monospace = {
-          name = "Maple Mono NF";
-          package = pkgs.maple-mono.NF-unhinted;
+          name = "Noto Mono";
+          package = pkgs.noto-fonts;
         };
         sansSerif = {
-          name = "Monaspace Radon Frozen";
-          package = pkgs.monaspace;
+          name = "Noto Sans";
+          package = pkgs.noto-fonts;
         };
         serif = {
           name = "Noto Serif";
@@ -302,7 +302,7 @@
       }
       {
         inherit
-          clock
+          math
           emoji
           material
           monospace
@@ -315,13 +315,11 @@
     packages =
       packages
       ++ (with pkgs; [
-        corefonts
         noto-fonts
-        noto-fonts-cjk-sans
         noto-fonts-color-emoji
       ])
       ++ (with sets; [
-        clock.package
+        math.package
         emoji.package
         material.package
         monospace.package

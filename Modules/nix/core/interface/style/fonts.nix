@@ -63,7 +63,7 @@ in
         enable = mkTrue "fonts";
         packages = mkOption {
           description = "Font packages for every ordered selection of enabled users";
-          default = packages ++ [pkgs.corefonts];
+          default = packages;
           type = listOf package;
         };
       }
