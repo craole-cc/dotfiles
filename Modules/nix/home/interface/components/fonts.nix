@@ -1,4 +1,4 @@
-#TODO: This is almost identical to the home variant, we need to normalize in schema
+#TODO: This is almost identical to the core variant, we need to normalize in schema and maybe use mkFont, only difference here is that we have user
 {
   config,
   host,
@@ -24,7 +24,6 @@
   context = mkContext {
     inherit config top;
     dom = "interface";
-    sub = "style";
     mod = "fonts";
   };
   inherit (context) cfg;
@@ -178,7 +177,7 @@ in
       roles;
 
     outputs = {
-      home.packages = cfg.packages;
+      home = {inherit (cfg) packages;};
 
       fonts.fontconfig = {
         antialiasing = true;
