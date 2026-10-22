@@ -1,3 +1,4 @@
+#TODO: This is almost identical to the home variant, we need to normalize in schema
 {
   config,
   host,
@@ -33,7 +34,7 @@
     user = host.users.data.primary or {};
   };
   names = mapAttrs (_: entries: unique (map (entry: entry.name) entries)) selected;
-  roles = (removeAttrs names ["sans"]) // {sansSerif = names.sans;};
+  roles = (removeAttrs names ["sans"]) // {sansSerif = names.sansSerif or names.sans;};
 
   resolvePackage = entry:
     if entry.package == null
