@@ -267,7 +267,7 @@
 
     fonts = let
       mkFont = font: {
-        size ? 18,
+        size ? 11,
         style ? "Regular",
       }: (font // {inherit size style;});
 
@@ -311,12 +311,12 @@
         serif = mk "Serif";
       in {inherit math mono sans serif;};
 
-      jetbrains = let
-        name = "JetBrains Mono";
-        package = "jetbrains-mono";
-        mono = {inherit name package;};
-        monoNF = mkNF {inherit name package;};
-      in {inherit mono monoNF;};
+      # jetbrains = let
+      #   name = "JetBrains Mono";
+      #   package = "jetbrains-mono";
+      #   mono = {inherit name package;};
+      #   monoNF = mkNF {inherit name package;};
+      # in {inherit mono monoNF;};
 
       lilex = let
         name = "Lilex";
@@ -340,7 +340,7 @@
           mkFont {
             name = "Material Symbols ${variant}";
             package = "material-symbols";
-          } {size = 18;};
+          } {size = 12;};
       in {
         outlined = mk "Outlined";
         rounded = mk "Rounded";
@@ -393,7 +393,7 @@
           (mk lilex)
           (mk maple)
           (mk fira)
-          (mk jetbrains)
+          # (mk jetbrains)
         ];
         sans = let
           mk = font: mkFont font.sans {};
