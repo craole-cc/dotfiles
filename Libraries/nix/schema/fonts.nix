@@ -116,7 +116,7 @@
 
   normalizeFonts = fonts: let
     canonical =
-      removeAttrs fonts ["sans"]
+      removeAttrs fonts ["sans" "packages" "categories"]
       // optionalAttrs (fonts ? sans || fonts ? sansSerif) {
         sansSerif = fonts.sans or fonts.sansSerif;
       };
