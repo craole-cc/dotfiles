@@ -34,11 +34,9 @@
       else "latte";
     catppuccin = hasInfix "catppuccin" variant;
 
-    fonts = mapAttrs (_: names: optionalString (names != []) (head names)) (
-      mapAttrs (_: entries: map (entry: entry.name) entries) (
-        mkFonts {inherit host user;}
-      )
-    );
+    fonts = mapAttrs (_: entries:
+      optionalString (entries != []) (head entries).family)
+    (mkFonts {inherit host user;}).categories;
 
     icons = {
       dark =
