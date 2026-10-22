@@ -82,9 +82,12 @@ ffmpeg
 fixed
 fixupphase
 follows
+fontLigatures
+fontSize
 for
 fresh
 g.
+ghostty
 github
 h.
 handler
@@ -157,12 +160,15 @@ tailwindcss
 terminal
 the
 to
+toString
 toml
 tw
 type
 ui
 unstable
 upstream
+urxvt
+userSettings
 v0
 v4
 v5
@@ -175,6 +181,7 @@ webkit
 when
 which
 xdg
+xft
 xl
 xs
 yaml
