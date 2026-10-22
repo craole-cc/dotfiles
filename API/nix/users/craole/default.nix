@@ -266,6 +266,11 @@
     };
 
     fonts = let
+      mkFont = font: {
+        size ? 18,
+        style ? "Regular",
+      }: (font // {inherit size style;});
+
       mkNF = {
         name,
         package,
@@ -274,147 +279,141 @@
         package = "nerd-fonts.${package}";
       };
 
-      packages = {
-        cinzel = let
-          name = "Cinzel";
-          package = "cinzel";
-          serif = {inherit name package;};
-          display = {
-            name = "${name} Decorative";
-            inherit package;
-          };
-        in {inherit serif display;};
+      cinzel = let
+        name = "Cinzel";
+        package = "cinzel";
+        serif = {inherit name package;};
+        display = {
+          inherit package;
+          name = "${name} Decorative";
+        };
+      in {inherit serif display;};
 
-        fira = let
-          mk = variant: pkgSuffix: {
-            name = "Fira ${variant}";
-            package = "fira-${pkgSuffix}";
-          };
-          mono = mk "Code" "code";
-          math = mk "Math" "math";
-          sans = mk "Sans" "sans";
-          monoNF = mkNF mono;
-        in {inherit math mono monoNF sans;};
+      fira = let
+        mk = variant: pkgSuffix: {
+          name = "Fira ${variant}";
+          package = "fira-${pkgSuffix}";
+        };
+        mono = mk "Code" "code";
+        math = mk "Math" "math";
+        sans = mk "Sans" "sans";
+        monoNF = mkNF mono;
+      in {inherit math mono monoNF sans;};
 
-        ibm = let
-          mk = variant: {
-            name = "IBM Plex ${variant}";
-            package = "ibm-plex";
-          };
-          mono = mk "Mono";
-          math = mk "Math";
-          sans = mk "Sans";
-          serif = mk "Serif";
-        in {inherit math mono sans serif;};
+      ibm = let
+        mk = variant: {
+          name = "IBM Plex ${variant}";
+          package = "ibm-plex";
+        };
+        mono = mk "Mono";
+        math = mk "Math";
+        sans = mk "Sans";
+        serif = mk "Serif";
+      in {inherit math mono sans serif;};
 
-        jetbrains = let
-          name = "JetBrains Mono";
-          package = "jetbrains-mono";
-          mono = {inherit name package;};
-          monoNF = mkNF {inherit name package;};
-        in {inherit mono monoNF;};
+      jetbrains = let
+        name = "JetBrains Mono";
+        package = "jetbrains-mono";
+        mono = {inherit name package;};
+        monoNF = mkNF {inherit name package;};
+      in {inherit mono monoNF;};
 
-        lilex = let
-          name = "Lilex";
-          package = "lilex";
-          mono = {inherit name package;};
-          monoNF = mkNF {inherit name package;};
-        in {inherit mono monoNF;};
+      lilex = let
+        name = "Lilex";
+        package = "lilex";
+        mono = {inherit name package;};
+        monoNF = mkNF {inherit name package;};
+      in {inherit mono monoNF;};
 
-        maple = let
-          name = "Maple Mono";
-          package = "maple-mono";
-          mono = {inherit name package;};
-          monoNF = {
-            name = "${name} NF";
-            package = "${package}.NF-unhinted";
-          };
-        in {inherit mono monoNF;};
+      maple = let
+        name = "Maple Mono";
+        package = "maple-mono";
+        mono = {inherit name package;};
+        monoNF = {
+          name = "${name} NF";
+          package = "${package}.NF-unhinted";
+        };
+      in {inherit mono monoNF;};
 
-        material = let
-          mk = name: {
-            name = "Material Symbols ${name}";
+      material = let
+        mk = variant:
+          mkFont {
+            name = "Material Symbols ${variant}";
             package = "material-symbols";
-          };
-          outlined = mk "Outlined";
-          rounded = mk "Rounded";
-          sharp = mk "Sharp";
-        in {inherit outlined rounded sharp;};
-
-        monaspace = let
-          mk = name: {
-            name = "Monaspace ${name}";
-            package = "monaspace";
-          };
-          sans = mk "Neon"; # Classic neo-grotesque sans-serif
-          humanist = mk "Argon"; # Humanist sans-serif with a warm feel
-          serif = mk "Xenon"; # Wedge-serif / slab hybrid style
-          math = mk "Radon"; # Cursive, expressive script-like variant
-          square = mk "Krypton"; # Sharp, mechanical square-sans aesthetic
-        in {inherit humanist math sans serif square;};
-
-        noto = let
-          pkg = "noto-fonts";
-          mk = {
-            variant,
-            package ? pkg,
-          }: {
-            name = "Noto ${variant}";
-            inherit package;
-          };
-          mk' = variant: mk {inherit variant;};
-          emoji = mk {
-            variant = "Color Emoji";
-            package = "${pkg}-color-emoji";
-          };
-          math = mk' "Math";
-          mono = mk' "Mono";
-          music = mk' "Music";
-          sans = mk' "Sans";
-          serif = mk' "Serif";
-        in {inherit emoji math mono music sans serif;};
-
-        orbitron = let
-          name = "Orbitron";
-          package = "orbitron";
-          sans = {inherit name package;};
-          display = {inherit name package;};
-        in {inherit display sans;};
+          } {size = 18;};
+      in {
+        outlined = mk "Outlined";
+        rounded = mk "Rounded";
+        sharp = mk "Sharp";
       };
 
-      categories = with packages; {
-        display = [
-          orbitron.display
-          cinzel.display
+      # monaspace = let
+      #   mk = name: {
+      #     name = "Monaspace ${name}";
+      #     package = "monaspace";
+      #   };
+      #   sans = mk "Neon"; #? Classic neo-grotesque sans-serif
+      #   humanist = mk "Argon"; #? Humanist sans-serif with a warm feel
+      #   serif = mk "Xenon"; #? Wedge-serif / slab hybrid style
+      #   math = mk "Radon"; #? Cursive, expressive script-like variant
+      #   square = mk "Krypton"; #? Sharp, mechanical square-sans aesthetic
+      # in {inherit humanist math sans serif square;};
+
+      orbitron = let
+        name = "Orbitron";
+        package = "orbitron";
+        sans = {inherit name package;};
+        display = {inherit name package;};
+      in {inherit display sans;};
+
+      categories = {
+        display = let
+          mk = font:
+            mkFont font.display {
+              size = 72;
+              style = "Bold";
+            };
+        in [
+          (mk orbitron)
+          (mk cinzel)
         ];
-        emoji = [noto.emoji] ++ categories.material;
-        material = with material; [outlined];
-        math = [
-          fira.math
-          # noto.math
+        material = with material; [
+          outlined
+          rounded
+          sharp
         ];
-        monospace = [
-          lilex.monoNF
-          maple.monoNF
-          # jetbrains
-          # noto.mono
+        math = let
+          mk = font: mkFont font.math {};
+        in [
+          (mk fira)
         ];
-        # music = [noto.music];
-        sans = [
-          fira.sans
-          orbitron.sans
-          # noto.sans
+        monospace = let
+          mk = font: mkFont font.monoNF {};
+        in [
+          (mk lilex)
+          (mk maple)
+          (mk fira)
+          (mk jetbrains)
         ];
-        serif = [
-          cinzel.serif
-          # noto.serif
+        sans = let
+          mk = font: mkFont font.sans {};
+        in [
+          (mk ibm)
+          (mk fira)
+          (mk orbitron)
+        ];
+        serif = let
+          mk = font: mkFont font.serif {};
+        in [
+          (mk ibm)
+          (mk cinzel)
         ];
         square = [
-          cinzel.display
-          orbitron.display
+          (mkFont orbitron.display {})
         ];
       };
-    in {inherit packages categories;};
+    in
+      categories;
 
     keyboard = {
       layout = "us";

@@ -7,7 +7,14 @@
   inherit (_.lists.construction) concatLists genList toList;
   inherit (_.lists.access) elemAt length;
   inherit (_.lists.transformation) filter unique;
+  inherit (_.strings.access) substring;
+  inherit (_.strings.transformation) toUpper;
   inherit (_.types.predicates) isAttrs isFloat isInt isString;
+
+  ranks = rec {
+    canonical = ["primary" "secondary" "tertiary"];
+    variables = map (rank: toUpper (substring 0 3 rank)) canonical;
+  };
 
   defaults = let
     noto = let
@@ -16,12 +23,12 @@
         variant,
         package ? pkg,
       }: {
+        inherit package;
         family = "Noto ${variant}";
         name = "Noto ${variant}";
-        variant = null;
-        weight = null;
-        size = null;
-        inherit package;
+        style = "Regular";
+        # weight = 400;
+        size = 12;
       };
       mk' = variant: mk {inherit variant;};
       emoji = mk {
@@ -46,15 +53,17 @@
     sans = [];
     sansSerif = [];
     serif = [];
+    square = [];
   };
 
   # canonical = alias; both keys end up populated with the same list.
   aliases = {
     monospace = "mono";
     sansSerif = "sans";
+    square = "clock";
   };
 
-  # Variant -> numeric weight (fontconfig scale).
+  # Style -> numeric weight (fontconfig scale).
   weights = {
     Thin = 100;
     ExtraLight = 200;
@@ -80,17 +89,21 @@
       (canonical: raw ? ${canonical} || raw ? ${aliases.${canonical}})
       (attrNames aliases);
 
-    resolved = listToAttrs (map (canonical: {
+    resolved = listToAttrs (
+      map (canonical: {
         name = canonical;
         value = raw.${canonical} or raw.${aliases.${canonical}};
       })
-      declared);
+      declared
+    );
 
-    mirrored = listToAttrs (map (canonical: {
+    mirrored = listToAttrs (
+      map (canonical: {
         name = aliases.${canonical};
         value = resolved.${canonical};
       })
-      declared);
+      declared
+    );
 
     stripped =
       removeAttrs raw
@@ -98,31 +111,31 @@
 
     merged = recursiveUpdate stripped (resolved // mirrored);
 
-    # A family name or a record -> {family, name, variant, weight, size, package}.
+    # A family name or a record -> {family, name, style, weight, size, package}.
     mkEntry = entry: let
       record =
         if isAttrs entry
         then entry
         else {family = entry;};
       family = record.family or (record.name or null);
-      variant = record.variant or null;
+      style = record.style or null;
       size = record.size or null;
       package = record.package or null;
       weight =
         record.weight or (
-          if variant == null
-          then null
-          else weights.${variant} or null
+          if style != null
+          then (weights.${style} or null)
+          else null
         );
     in
       if !isString family || family == ""
       then throw "A font must be a family name or a record with a non-empty family."
-      else if variant != null && !isString variant
-      then throw "A font variant must be a string such as Regular, Bold or Heavy."
+      else if style != null && !isString style
+      then throw "A font style must be a string such as Regular, Bold or Heavy."
       else if size != null && !(isInt size || isFloat size)
       then throw "A font size must be a number."
       else {
-        inherit family variant weight size;
+        inherit family style weight size;
         name = family;
         package =
           if isString package
@@ -138,7 +151,7 @@
           (
             concatMap
             (rank: toList (value.${rank} or []))
-            ["primary" "secondary" "tertiary"]
+            ranks.canonical
           )
           ++ toList (value.ordered or (value.list or []))
         else toList value;
@@ -173,7 +186,6 @@
   variables = categories: let
     # Canonical keys only, so mirrored aliases don't emit duplicates.
     stems = {
-      clock = ["CLOCK"];
       display = ["DISPLAY"];
       emoji = ["EMOJI"];
       material = ["MATERIAL"];
@@ -182,9 +194,10 @@
       music = ["MUSIC"];
       sansSerif = ["SANS" "SANS_SERIF"];
       serif = ["SERIF"];
+      square = ["SQUARE"];
     };
 
-    ranks = ["PRI" "SEC" "TER"];
+    # ranks = ["PRI" "SEC" "TER"];
 
     # Null stays null so the pair is filtered out.
     show = value:
@@ -207,11 +220,11 @@
         }
       ]
       ++ genList (index: {
-        name = "FONT_${stem}_${elemAt ranks index}";
+        name = "FONT_${stem}_${elemAt ranks.variables index}";
         value = familyAt entries index;
-      }) (length ranks);
+      }) (length ranks.variables);
 
-    # Variant, weight and size of the primary entry only.
+    # Style, weight and size of the primary entry only.
     mkMeta = entries: stem: let
       first =
         if length entries > 0
@@ -219,8 +232,8 @@
         else {};
     in [
       {
-        name = "FONT_${stem}_VARIANT";
-        value = first.variant or null;
+        name = "FONT_${stem}_STYLE";
+        value = first.style or null;
       }
       {
         name = "FONT_${stem}_WEIGHT";
