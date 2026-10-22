@@ -123,29 +123,6 @@
       session = pics + "/avatar.jpg";
     };
     wallpapers = "home:Pictures/Wallpapers";
-    # wallpapers = let
-    #   all = [
-    #     "dots:Assets/Images/wallpapers"
-    #     (pics + "/Wallpapers")
-    #   ];
-    #   # primary = builtins.head all;
-    #   # dark = primary + "/dark.jpg";
-    #   # light = primary + "/light.jpg";
-    # in {
-    #   # inherit all primary dark light;
-    #   # Example: Override specific monitor with custom wallpaper
-    #   # monitors = {
-    #   # "HDMI-A-3" = {
-    #   #   dark = wallpapersDir + "/2560x1440/dark/ktc-special.jpg";
-    #   #   light = wallpapersDir + "/2560x1440/light.jpg";
-    #   # };
-    #   #
-    #   # Example: Use a directory for random selection
-    #   # "DP-3" = {
-    #   #   dark = wallpapersDir + "/1600x900/dark/";
-    #   #   light = wallpapersDir + "/1600x900/light/";
-    #   # };
-    # };
   };
 
   interface = {
@@ -289,16 +266,21 @@
     };
 
     fonts = let
+      mkNF = {
+        name,
+        package,
+      }: {
+        name = "${name} Nerd Font";
+        package = "nerd-fonts.${package}";
+      };
+
       packages = {
         fira = let
           name = "Fira Code";
           package = "fira-code";
         in {
           mono = {inherit name package;};
-          monoNF = {
-            name = "${name} Nerd Font";
-            package = "nerd-fonts.${package}";
-          };
+          monoNF = mkNF {inherit name package;};
         };
 
         ibm = let
@@ -318,10 +300,7 @@
           package = "jetbrains-mono";
         in {
           mono = {inherit name package;};
-          monoNF = {
-            name = "${name} Nerd Font";
-            package = "nerd-fonts.${package}";
-          };
+          monoNF = mkNF {inherit name package;};
         };
 
         lilex = let
@@ -329,10 +308,7 @@
           package = "lilex";
         in {
           mono = {inherit name package;};
-          monoNF = {
-            name = "${name} Nerd Font";
-            package = "nerd-fonts.${package}";
-          };
+          monoNF = mkNF {inherit name package;};
         };
 
         maple = let
@@ -347,8 +323,8 @@
         };
 
         material = let
-          mk = variant: {
-            name = "Material Symbols ${variant}";
+          mk = name: {
+            name = "Material Symbols ${name}";
             package = "material-symbols";
           };
         in {
@@ -358,8 +334,8 @@
         };
 
         monaspace = let
-          mk = variant: {
-            name = "Monaspace ${variant}";
+          mk = name: {
+            name = "Monaspace ${name}";
             package = "monaspace";
           };
         in {
@@ -375,16 +351,17 @@
             variant,
             package ? "noto-fonts",
           }: {
-            name = "Noto Color ${variant}";
+            name = "Noto ${variant}";
             inherit package;
           };
         in {
-          emoji = {
-            variant = "Emoji";
+          emoji = mk {
+            variant = "Color Emoji";
             package = "noto-fonts-color-emoji";
           };
           math = mk {variant = "Math";};
           mono = mk {variant = "Mono";};
+          music = mk {variant = "Music";};
           sansSerif = mk {variant = "Sans";};
           serif = mk {variant = "Serif";};
         };
@@ -395,12 +372,21 @@
         };
 
         sourcePro = let
-          mk = name: package: {inherit name package;};
+          mk = {
+            name ? "Source Code Pro",
+            package ? "source-code-pro",
+          }: {inherit name package;};
         in {
-          mono = mk "Source Code Pro" "source-code-pro";
-          monoNF = mk "Source Code Pro Nerd Font" "nerd-fonts.source-code-pro";
-          sansSerif = mk "Source Sans Pro" "source-sans-pro";
-          serif = mk "Source Serif Pro" "source-serif-pro";
+          mono = mk {};
+          monoNF = mkNF (mk {});
+          sansSerif = mk {
+            name = "Source Sans Pro";
+            package = "source-sans-pro";
+          };
+          serif = mk {
+            name = "Source Serif Pro";
+            package = "source-serif-pro";
+          };
         };
       };
 
@@ -408,7 +394,6 @@
         math = [
           ibm.math
           noto.math
-          rubik
         ];
         emoji = [noto.emoji] ++ categories.material;
         material = with material; [
@@ -422,10 +407,12 @@
           ibm.mono
           noto.mono
         ];
-        sans = [
-          ibm.sans
-          noto.sans
-          rubik
+        music = [
+          noto.music
+        ];
+        sansSerif = [
+          ibm.sansSerif
+          noto.sansSerif
         ];
         serif = [
           ibm.serif

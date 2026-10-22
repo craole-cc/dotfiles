@@ -8,7 +8,27 @@
   inherit (_.lists.transformation) unique;
   inherit (_.types.predicates) isAttrs isString;
 
-  packages = {
+  packages = let
+    noto = let
+      mk = {
+        variant,
+        package ? "noto-fonts",
+      }: {
+        name = "Noto ${variant}";
+        inherit package;
+      };
+    in {
+      emoji = mk {
+        variant = "Color Emoji";
+        package = "noto-fonts-color-emoji";
+      };
+      math = mk {variant = "Math";};
+      mono = mk {variant = "Mono";};
+      music = mk {variant = "Music";};
+      sansSerif = mk {variant = "Sans";};
+      serif = mk {variant = "Serif";};
+    };
+  in {
     "Rubik" = "rubik";
     "Noto Color Emoji" = "noto-fonts-color-emoji";
     "Material Symbols Sharp" = "material-symbols";
@@ -50,7 +70,11 @@
     entries =
       if isAttrs value && !(value ? name)
       then
-        concatMap (rank: toList (value.${rank} or [])) ["primary" "secondary" "tertiary"]
+        (
+          concatMap
+          (rank: toList (value.${rank} or []))
+          ["primary" "secondary" "tertiary"]
+        )
         ++ toList (value.ordered or value.list or [])
       else toList value;
   in
@@ -58,9 +82,9 @@
 
   normalizeFonts = fonts: let
     canonical =
-      removeAttrs fonts ["sansSerif"]
+      removeAttrs fonts ["sans"]
       // optionalAttrs (fonts ? sans || fonts ? sansSerif) {
-        sans = fonts.sans or fonts.sansSerif;
+        sansSerif = fonts.sans or fonts.sansSerif;
       };
   in
     mapAttrs (_: normalizeSelection) canonical;
@@ -71,13 +95,14 @@
     (normalizeFonts (definition.interface.fonts or {}));
 
   defaults = normalizeFonts {
-    math = "Rubik";
-    emoji = "Noto Color Emoji";
-    material = "Material Symbols Sharp";
-    monospace = "Maple Mono NF";
-    sans = "Monaspace Radon Frozen";
-    serif = "Noto Serif";
-    cjk = "Noto Sans CJK";
+    # math = "Rubik";
+    # emoji = "Noto Color Emoji";
+    # material = "Material Symbols Sharp";
+    # monospace = "Noto Mono";
+    # sans = "Noto Sans";
+    # serif = "Noto Serif";
+    # cjk = "Noto Sans CJK";
+    # music = "Noto  Music";
   };
 
   # Whole role lists replace lower-priority declarations without truncation.
@@ -88,6 +113,4 @@
     recursiveUpdate defaults (recursiveUpdate
       (getFonts (host // {interface = host.defaults.interface or (host.interface or {});}))
       (getFonts user));
-in {
-  inherit defaults getFonts mkFonts normalizeFonts;
-}
+in {inherit defaults getFonts mkFonts normalizeFonts;}
