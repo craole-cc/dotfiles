@@ -74,6 +74,16 @@
     else null;
 
   resolved = {
+    clock = let
+      tag = "clock";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_CLOCK = name;
+    };
+
     math = let
       tag = "math";
       name = first tag;
@@ -82,6 +92,16 @@
     in {
       inherit name package size;
       FONT_MATH = name;
+    };
+
+    music = let
+      tag = "music";
+      name = first tag;
+      package = firstPackage tag;
+      size = 11;
+    in {
+      inherit name package size;
+      FONT_MUSIC = name;
     };
 
     emoji = let
@@ -180,6 +200,7 @@ in
       '';
 
       home.sessionVariables = with resolved; {
+        inherit (clock) FONT_CLOCK;
         inherit (math) FONT_MATH;
         inherit (emoji) FONT_EMOJI;
         inherit (material) FONT_MATERIAL;

@@ -89,6 +89,7 @@ in
         };
       };
       environment.sessionVariables = {
+        FONT_CLOCK = first "clock";
         FONT_MATH = first "math";
         FONT_EMOJI = first "emoji";
         FONT_MATERIAL = first "material";
