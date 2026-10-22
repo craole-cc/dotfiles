@@ -276,7 +276,7 @@
 
       packages = {
         cinzel = {
-          regular = {
+          serif = {
             name = "Cinzel";
             package = "cinzel";
           };
