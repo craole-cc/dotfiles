@@ -11,12 +11,12 @@
   inherit (lix.attrsets.transformation) mapAttrs;
   inherit (lix.lists.access) findFirst head;
   inherit (lix.lists.aggregation) concatMap;
-  inherit (lix.lists.construction) toList;
+  inherit (lix.lists.construction) optional toList;
   inherit (lix.lists.transformation) unique;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkOption mkTrue;
   inherit (lix.schema.fonts) mkFonts;
-  inherit (lix.strings.construction) splitString;
+  inherit (lix.strings.construction) optionalString splitString;
   inherit (lix.types.combinators) either listOf;
   inherit (lix.types.predicates) isString;
   inherit (lix.types.primitives) package str;
@@ -37,26 +37,26 @@
   roles = (removeAttrs names ["sans"]) // {sansSerif = names.sansSerif or names.sans;};
 
   resolvePackage = entry:
-    if entry.package == null
-    then []
-    else [
-      (
-        if isString entry.package
-        then
-          attrByPath (splitString "." entry.package)
-          (throw "Unknown font package '${entry.package}' for '${entry.name}'.")
-          pkgs
-        else entry.package
-      )
-    ];
+    optional (entry.package != null)
+    (
+      if isString entry.package
+      then
+        attrByPath (splitString "." entry.package)
+        (throw "Unknown font package '${entry.package}' for '${entry.name}'.")
+        pkgs
+      else entry.package
+    );
+
   users = attrValues (host.users.data.enabled or {});
   selections = [selected] ++ map (user: mkFonts {inherit host user;}) users;
-  packages = unique (concatMap (fonts: concatMap resolvePackage (concatMap toList (attrValues fonts))) selections);
+  packages = unique (
+    concatMap
+    (fonts: concatMap resolvePackage (concatMap toList (attrValues fonts)))
+    selections
+  );
 
   first = role:
-    if cfg.${role} == []
-    then ""
-    else head cfg.${role};
+    optionalString (cfg.${role} != []) head cfg.${role};
 
   # Helper to resolve the matching package derivation for application options requiring it
   firstPackage = role: let
@@ -186,18 +186,18 @@ in
         defaultFonts = {inherit (cfg) monospace sansSerif serif emoji;};
       };
 
-      xdg.configFile."fontconfig/conf.d/99-monospace-override.conf".text = ''
-        <?xml version="1.0"?>
-        <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-        <fontconfig>
-          <match target="pattern">
-            <test qual="any" name="family"><string>monospace</string></test>
-            <edit name="family" mode="prepend" binding="strong">
-              <string>${resolved.monospace.name}</string>
-            </edit>
-          </match>
-        </fontconfig>
-      '';
+      # xdg.configFile."fontconfig/conf.d/99-monospace-override.conf".text = ''
+      #   <?xml version="1.0"?>
+      #   <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+      #   <fontconfig>
+      #     <match target="pattern">
+      #       <test qual="any" name="family"><string>monospace</string></test>
+      #       <edit name="family" mode="prepend" binding="strong">
+      #         <string>${resolved.monospace.name}</string>
+      #       </edit>
+      #     </match>
+      #   </fontconfig>
+      # '';
 
       home.sessionVariables = with resolved; {
         inherit (clock) FONT_CLOCK;
