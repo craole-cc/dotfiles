@@ -17,9 +17,9 @@
       or legacyTheme.mode
       or "dark"
     );
-    palette = user.theme.modes.${mode}.palette or host.theme.modes.${mode}.palette or {};
-    variant = toLower (palette.name or legacyTheme.${mode} or "Catppuccin Latte");
-    accent = toLower (palette.accent or legacyTheme.accent or "rosewater");
+    palette = user.theme.modes.${mode}.palette or (host.theme.modes.${mode}.palette or {});
+    variant = toLower (palette.name or (legacyTheme.${mode} or "Catppuccin Latte"));
+    accent = toLower (palette.accent or (legacyTheme.accent or "rosewater"));
     flavor =
       if hasInfix "frappe" variant || hasInfix "frappé" variant
       then "frappe"

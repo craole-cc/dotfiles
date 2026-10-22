@@ -13,11 +13,11 @@ in {
     };
     font = mkOption {
       type = str;
-      default = "${style.fonts.clock} Black 70";
+      default = "${style.fonts.categories.display} 70";
     };
     dateFont = mkOption {
       type = str;
-      default = "${style.fonts.clock} 30";
+      default = "${style.fonts.categories.display} 30";
     };
     filter = mkOption {
       type = str;

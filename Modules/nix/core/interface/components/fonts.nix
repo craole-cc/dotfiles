@@ -1,4 +1,3 @@
-#TODO: This is almost identical to the home variant, we need to normalize in schema
 {
   config,
   host,
@@ -9,16 +8,14 @@
 }: let
   inherit (lix.attrsets.access) attrByPath attrValues;
   inherit (lix.attrsets.transformation) mapAttrs;
-  inherit (lix.lists.access) head;
   inherit (lix.lists.aggregation) concatMap;
-  inherit (lix.lists.construction) optional toList;
+  inherit (lix.lists.construction) toList;
   inherit (lix.lists.transformation) unique;
   inherit (lix.modules.construction) mkConfig mkContext;
   inherit (lix.options.construction) mkOption mkTrue;
   inherit (lix.schema.fonts) mkFonts;
-  inherit (lix.strings.construction) optionalString splitString;
+  inherit (lix.strings.construction) splitString;
   inherit (lix.types.combinators) either listOf;
-  inherit (lix.types.predicates) isString;
   inherit (lix.types.primitives) package str;
 
   context = mkContext {
@@ -33,33 +30,24 @@
     inherit host;
     user = host.users.data.primary or {};
   };
-  names =
-    mapAttrs
-    (_: entries: unique (map (entry: entry.name) entries))
-    selected;
-  roles = (removeAttrs names ["sans"]) // {sansSerif = names.sansSerif or names.sans;};
 
-  # TODO: We should be using a resolver from attrsets here
-  resolvePackage = entry:
-    optional (entry.package != null) (
-      if isString entry.package
-      then
-        attrByPath (splitString "." entry.package)
-        (throw "Unknown font package '${entry.package}' for '${entry.name}'.")
-        pkgs
-      else entry.package
-    );
+  # Canonical roles only; sans and mono are mirrors of sansSerif and monospace.
+  roles =
+    removeAttrs
+    (mapAttrs (_: entries: unique (map (entry: entry.family) entries)) selected.categories)
+    ["sans" "mono"];
+
+  resolvePackage = name:
+    attrByPath (splitString "." name)
+    (throw "Unknown font package '${name}'.")
+    pkgs;
+
   users = attrValues (host.users.data.enabled or {});
   selections = [selected] ++ map (user: mkFonts {inherit host user;}) users;
   packages = unique (
-    concatMap (fonts:
-      concatMap resolvePackage (
-        concatMap toList (attrValues fonts)
-      ))
-    selections
+    concatMap (fonts: map resolvePackage fonts.packages) selections
   );
-
-  first = role: optionalString (cfg.${role} != []) (head cfg.${role});
+  # first = role: optionalString (cfg.${role} != []) (head cfg.${role});
 in
   mkConfig {
     inherit context;
@@ -92,15 +80,6 @@ in
           defaultFonts = {inherit (cfg) monospace sansSerif serif emoji;};
         };
       };
-      environment.sessionVariables = {
-        FONT_CLOCK = first "clock";
-        FONT_MATH = first "math";
-        FONT_EMOJI = first "emoji";
-        FONT_MATERIAL = first "material";
-        FONT_MONO = first "monospace";
-        FONT_MONOSPACE = first "monospace";
-        FONT_SANS = first "sansSerif";
-        FONT_SERIF = first "serif";
-      };
+      environment.sessionVariables = selected.variables;
     };
   }

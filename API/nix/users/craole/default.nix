@@ -275,16 +275,15 @@
       };
 
       packages = {
-        cinzel = {
-          serif = {
-            name = "Cinzel";
-            package = "cinzel";
-          };
+        cinzel = let
+          name = "Cinzel";
+          package = "cinzel";
+          serif = {inherit name package;};
           display = {
-            name = "Cinzel Decorative";
-            package = "cinzel";
+            name = "${name} Decorative";
+            inherit package;
           };
-        };
+        in {inherit serif display;};
 
         fira = let
           mk = variant: pkgSuffix: {
@@ -293,162 +292,126 @@
           };
           mono = mk "Code" "code";
           math = mk "Math" "math";
-          sansSerif = mk "Sans" "sans";
+          sans = mk "Sans" "sans";
           monoNF = mkNF mono;
-        in {inherit math mono monoNF sansSerif;};
+        in {inherit math mono monoNF sans;};
 
         ibm = let
           mk = variant: {
             name = "IBM Plex ${variant}";
             package = "ibm-plex";
           };
-        in {
           mono = mk "Mono";
           math = mk "Math";
-          sansSerif = mk "Sans";
+          sans = mk "Sans";
           serif = mk "Serif";
-        };
+        in {inherit math mono sans serif;};
 
         jetbrains = let
           name = "JetBrains Mono";
           package = "jetbrains-mono";
-        in {
           mono = {inherit name package;};
           monoNF = mkNF {inherit name package;};
-        };
+        in {inherit mono monoNF;};
 
         lilex = let
           name = "Lilex";
           package = "lilex";
-        in {
           mono = {inherit name package;};
           monoNF = mkNF {inherit name package;};
-        };
+        in {inherit mono monoNF;};
 
         maple = let
           name = "Maple Mono";
           package = "maple-mono";
-        in {
           mono = {inherit name package;};
           monoNF = {
             name = "${name} NF";
             package = "${package}.NF-unhinted";
           };
-        };
+        in {inherit mono monoNF;};
 
         material = let
           mk = name: {
             name = "Material Symbols ${name}";
             package = "material-symbols";
           };
-        in {
           outlined = mk "Outlined";
           rounded = mk "Rounded";
           sharp = mk "Sharp";
-        };
+        in {inherit outlined rounded sharp;};
 
         monaspace = let
           mk = name: {
             name = "Monaspace ${name}";
             package = "monaspace";
           };
-        in {
-          sansSerif = mk "Neon"; # Classic neo-grotesque sans-serif
+          sans = mk "Neon"; # Classic neo-grotesque sans-serif
           humanist = mk "Argon"; # Humanist sans-serif with a warm feel
           serif = mk "Xenon"; # Wedge-serif / slab hybrid style
           math = mk "Radon"; # Cursive, expressive script-like variant
           square = mk "Krypton"; # Sharp, mechanical square-sans aesthetic
-        };
+        in {inherit humanist math sans serif square;};
 
         noto = let
+          pkg = "noto-fonts";
           mk = {
             variant,
-            package ? "noto-fonts",
+            package ? pkg,
           }: {
             name = "Noto ${variant}";
             inherit package;
           };
-        in {
+          mk' = variant: mk {inherit variant;};
           emoji = mk {
             variant = "Color Emoji";
-            package = "noto-fonts-color-emoji";
+            package = "${pkg}-color-emoji";
           };
-          math = mk {variant = "Math";};
-          mono = mk {variant = "Mono";};
-          music = mk {variant = "Music";};
-          sansSerif = mk {variant = "Sans";};
-          serif = mk {variant = "Serif";};
-        };
+          math = mk' "Math";
+          mono = mk' "Mono";
+          music = mk' "Music";
+          sans = mk' "Sans";
+          serif = mk' "Serif";
+        in {inherit emoji math mono music sans serif;};
 
-        orbitron = {
+        orbitron = let
           name = "Orbitron";
           package = "orbitron";
-        };
-
-        rubik = {
-          name = "Rubik";
-          package = "rubik";
-        };
-
-        sourcePro = let
-          mk = {
-            name ? "Source Code Pro",
-            package ? "source-code-pro",
-          }: {inherit name package;};
-        in {
-          mono = mk {};
-          monoNF = mkNF (mk {});
-          sansSerif = mk {
-            name = "Source Sans Pro";
-            package = "source-sans-pro";
-          };
-          serif = mk {
-            name = "Source Serif Pro";
-            package = "source-serif-pro";
-          };
-        };
+          sans = {inherit name package;};
+          display = {inherit name package;};
+        in {inherit display sans;};
       };
 
       categories = with packages; {
-        clock = [
-          cinzel.display
-          orbitron
-          rubik
-          # monaspace.square
-          # monaspace.math
-        ];
         display = [
+          orbitron.display
+          cinzel.display
         ];
         emoji = [noto.emoji] ++ categories.material;
-        material = with material; [
-          sharp
-          outlined
-          rounded
-        ];
+        material = with material; [outlined];
         math = [
           fira.math
           # noto.math
-          # monaspace.math
         ];
         monospace = [
           lilex.monoNF
           maple.monoNF
+          # jetbrains
+          # noto.mono
         ];
-        music = [
-          noto.music
-        ];
-        sansSerif = [
-          fira.sansSerif
-          rubik
-          # noto.sansSerif
-          # monaspace.sansSerif
+        # music = [noto.music];
+        sans = [
+          fira.sans
+          orbitron.sans
+          # noto.sans
         ];
         serif = [
           cinzel.serif
-          # ibm.serif
           # noto.serif
-          # monaspace.serif
-          # monaspace.humanist
+        ];
+        square = [
+          cinzel.display
+          orbitron.display
         ];
       };
     in {inherit packages categories;};
