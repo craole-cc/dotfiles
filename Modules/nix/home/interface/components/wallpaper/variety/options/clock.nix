@@ -17,7 +17,7 @@ in {
     };
     dateFont = mkOption {
       type = str;
-      default = "${style.fonts.serif} 30";
+      default = "${style.fonts.clock} 30";
     };
     filter = mkOption {
       type = str;
