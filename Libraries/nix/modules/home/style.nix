@@ -2,6 +2,7 @@
   inherit (_.attrsets.transformation) mapAttrs;
   inherit (_.lists.access) head;
   inherit (_.schema.fonts) mkFonts;
+  inherit (_.strings.construction) optionalString;
   inherit (_.strings.predicates) hasInfix;
   inherit (_.strings.transformation) toLower;
 
@@ -32,12 +33,13 @@
       then "frappe"
       else "latte";
     catppuccin = hasInfix "catppuccin" variant;
-    fontLists = mapAttrs (_: entries: map (entry: entry.name) entries) (mkFonts {inherit host user;});
-    fonts = mapAttrs (_: names:
-      if names == []
-      then ""
-      else head names)
-    fontLists;
+
+    fonts = mapAttrs (_: names: optionalString (names != []) (head names)) (
+      mapAttrs (_: entries: map (entry: entry.name) entries) (
+        mkFonts {inherit host user;}
+      )
+    );
+
     icons = {
       dark =
         user.theme.modes.dark.icon
@@ -85,7 +87,6 @@
   in {
     inherit
       fonts
-      fontLists
       mode
       variant
       accent

@@ -451,8 +451,7 @@
           # monaspace.humanist
         ];
       };
-    in
-      {inherit packages categories;} // categories;
+    in {inherit packages categories;};
 
     keyboard = {
       layout = "us";
