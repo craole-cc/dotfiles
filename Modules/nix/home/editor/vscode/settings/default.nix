@@ -1,41 +1,65 @@
 {
   lix,
+  inputs,
+  pkgs,
   cfg,
   ...
 } @ args: let
-  inherit (lix.options.construction) mkTrue mkFalse;
+  inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
   inherit (lix.attrsets.construction) listToAttrs;
   inherit (lix.attrsets.transformation) mapAttrs;
   inherit (lix.filesystem.importers) importAllPaths;
   inherit (lix.filesystem.traversal) importJSON';
-  inherit (lix.modules.construction) mkOverride;
-  inherit (lix.modules.construction) mkMerge;
+  inherit (lix.lists.transformation) filter flatten sort;
+  inherit (lix.modules.construction) mkDefault mkMerge mkOverride;
   inherit (lix.modules.evaluation) evalModules;
-  inherit (lix.options.construction) mkOption;
+  inherit (lix.options.construction) mkFalse mkOption mkTrue;
+  inherit (lix.trivial.predicates) lessThan;
   inherit (lix.types.combinators) listOf;
-  inherit (lix.types.primitives) package;
-  inherit (lix.lists.transformation) filter;
   inherit (lix.types.predicates) isList;
-
-  baseline = 1500; #? mkDefault is 1000
-
-  learn = name: let
-    data = importJSON' {
-      root = args.paths.store.cfg.default;
-      stem = ["vscode" "${name}.json"];
-    };
-  in
-    if isList data
-    then mkOverride baseline data
-    else mapAttrs (_: mkOverride baseline) data;
+  inherit (lix.types.primitives) package;
 
   load = path:
     import path (
       args
       // {
-        inherit (lix.modules.construction) mkDefault mkMerge;
-        inherit (lix.lists.transformation) flatten;
-        inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
+        inherit mkDefault mkMerge flatten mkVSCodeFeature mkVSCodeSubFeature;
+
+        mkEntry = {
+          enable ? true,
+          extensions ? [],
+          userSettings ? {},
+        }:
+          mkVSCodeSubFeature {inherit enable extensions userSettings;};
+
+        mkGroup = {
+          name,
+          description,
+          default ? true,
+          features ? [],
+        }: {
+          inherit name description default;
+          feature = enable:
+            mkVSCodeFeature {
+              inherit enable pkgs inputs;
+              #? Stable ordering keeps the generated extension set independent of feature declaration order.
+              extensions = sort lessThan (
+                flatten (map
+                  (feature: feature.extensions)
+                  features)
+              );
+              userSettings = mkMerge (
+                map
+                (feature: feature.userSettings or {})
+                features
+              );
+              keybindings = flatten (
+                map
+                (feature: feature.keybindings or [])
+                features
+              );
+            };
+        };
       }
     );
 
@@ -68,6 +92,17 @@
   };
 
   profile = let
+    learn = name: let
+      baseline = 1500; #? mkDefault is 1000
+      data = importJSON' {
+        root = args.paths.store.cfg.default;
+        stem = ["vscode" "${name}.json"];
+      };
+    in
+      if isList data
+      then mkOverride baseline data
+      else mapAttrs (_: mkOverride baseline) data;
+
     options = {
       userSettings = mkOption {
         inherit (args.json) type;

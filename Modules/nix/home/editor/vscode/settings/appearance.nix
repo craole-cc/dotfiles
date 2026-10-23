@@ -1,14 +1,10 @@
 {
   fonts,
-  pkgs,
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
+  mkEntry,
+  mkGroup,
   ...
 }: let
-  themes = mkVSCodeSubFeature {
+  themes = mkEntry {
     enabled = false;
     extensions = [
       #? Catppuccin color theme
@@ -17,10 +13,6 @@
       # "uloco.theme-bluloco-dark"
       #? Bluloco light theme
       # "uloco.theme-bluloco-light"
-      #? Dracula color theme
-      # "dracula-theme.theme-dracula"
-      #? Rosé Pine color theme
-      # "mvllow.rose-pine"
     ];
     userSettings = {
       # "workbench.colorTheme" = "Dynamic Base16 DankShell";
@@ -29,7 +21,7 @@
     };
   };
 
-  icons = mkVSCodeSubFeature {
+  icons = mkEntry {
     enabled = true;
     extensions = [
       #? Material file/folder icons
@@ -472,7 +464,7 @@
     };
   };
 
-  animations = mkVSCodeSubFeature {
+  animations = mkEntry {
     enabled = false;
     extensions = [
       #? Smooth UI animations
@@ -489,7 +481,7 @@
     };
   };
 
-  customUI = mkVSCodeSubFeature {
+  customUI = mkEntry {
     enabled = false;
     extensions = [
       #? Custom CSS/JS UI injection
@@ -510,63 +502,51 @@
       "custom-ui-style.watch" = true;
     };
   };
-in {
-  name = "appearance";
-  description = "Themes, icons and UI chrome extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        themes.extensions
-        icons.extensions
-        animations.extensions
-        customUI.extensions
-      ];
-      userSettings = mkMerge [
-        (themes.userSettings or {})
-        (icons.userSettings or {})
-        (animations.userSettings or {})
-        (customUI.userSettings or {})
-        {
-          #~@ Window
-          "window.autoDetectColorScheme" = false;
-          "window.autoDetectHighContrast" = false;
-          "window.customMenuBarAltFocus" = true;
-          "window.customTitleBarVisibility" = "auto";
-          "window.menuBarVisibility" = "toggle";
-          "window.restoreFullscreen" = true;
-          "window.titleBarStyle" = "native";
-          "window.zoomPerWindow" = true;
 
-          #~@ Workbench
-          "workbench.activityBar.location" = "default";
-          "workbench.startupEditor" = "none";
-          "workbench.panel.defaultLocation" = "bottom";
-          "workbench.sideBar.location" = "right";
-          "workbench.statusBar.visible" = true;
-          "breadcrumbs.enabled" = true;
-          "workbench.editor.empty.hint" = "hidden";
-          "workbench.editor.revealIfOpen" = true;
-          "workbench.editor.showTabs" = "multiple";
-          "workbench.quickOpen.preserveInput" = true;
-          "workbench.commandPalette.preserveInput" = true;
-          "workbench.experimental.share.enabled" = true;
-          "workbench.tree.enableStickyScroll" = false;
-          "workbench.editor.useModal" = "off";
-          "workbench.editorAssociations" = {
-            "*.copilotmd" = "vscode.markdown.preview.editor";
-            "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc" = "default";
-            "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.ui" = "default";
-            "*.pdf" = "pdf.view";
-            "*.db" = "default";
-            "*.qrc" = "qt-core.qrcEditor";
-            "*.tsv" = "csvViewer.csvEditor";
-            "*.xlsx" = "csvViewer.csvEditor";
-          };
-          "workbench.colorCustomizations" = {};
-        }
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [themes icons animations customUI]);
+  ui = mkEntry {
+    enabled = true;
+    userSettings = {
+      #~@ Window
+      "window.autoDetectColorScheme" = false;
+      "window.autoDetectHighContrast" = false;
+      "window.customMenuBarAltFocus" = true;
+      "window.customTitleBarVisibility" = "auto";
+      "window.menuBarVisibility" = "toggle";
+      "window.restoreFullscreen" = true;
+      "window.titleBarStyle" = "native";
+      "window.zoomPerWindow" = true;
+
+      #~@ Workbench
+      "workbench.activityBar.location" = "default";
+      "workbench.startupEditor" = "none";
+      "workbench.panel.defaultLocation" = "bottom";
+      "workbench.sideBar.location" = "right";
+      "workbench.statusBar.visible" = true;
+      "breadcrumbs.enabled" = true;
+      "workbench.editor.empty.hint" = "hidden";
+      "workbench.editor.revealIfOpen" = true;
+      "workbench.editor.showTabs" = "multiple";
+      "workbench.quickOpen.preserveInput" = true;
+      "workbench.commandPalette.preserveInput" = true;
+      "workbench.experimental.share.enabled" = true;
+      "workbench.tree.enableStickyScroll" = false;
+      "workbench.editor.useModal" = "off";
+      "workbench.editorAssociations" = {
+        "*.copilotmd" = "vscode.markdown.preview.editor";
+        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc" = "default";
+        "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.ui" = "default";
+        "*.pdf" = "pdf.view";
+        "*.db" = "default";
+        "*.qrc" = "qt-core.qrcEditor";
+        "*.tsv" = "csvViewer.csvEditor";
+        "*.xlsx" = "csvViewer.csvEditor";
+      };
+      "workbench.colorCustomizations" = {};
     };
-}
+  };
+in
+  mkGroup {
+    name = "appearance";
+    description = "Themes, icons and UI chrome extensions";
+    features = [themes icons animations customUI ui];
+  }

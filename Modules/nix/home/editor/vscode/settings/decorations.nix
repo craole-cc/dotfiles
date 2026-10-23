@@ -429,7 +429,7 @@
       #? Highlight TODO/FIXME tokens
       "jgclark.vscode-todo-highlight"
       #? TODO tree sidebar panel
-      "gruntfuggly.todo-tree"
+      "FanaticPythoner.better-todo-tree"
     ];
   };
 in {
