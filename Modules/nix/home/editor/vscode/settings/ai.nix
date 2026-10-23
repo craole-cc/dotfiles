@@ -1,5 +1,4 @@
 {
-  lix,
   inputs,
   pkgs,
   mkMerge,
@@ -8,8 +7,6 @@
   mkVSCodeSubFeature,
   ...
 }: let
-  inherit (lix.lists.transformation) filter;
-
   features = [
     (mkVSCodeSubFeature {
       enable = false;
@@ -103,10 +100,9 @@ in {
   name = "ai";
   description = "AI assistance extensions";
   default = true;
-  feature = enabled:
+  feature = enable:
     mkVSCodeFeature {
-      inherit pkgs inputs;
-      enable = enabled;
+      inherit enable pkgs inputs;
       extensions = flatten (map (feature: feature.extensions) features);
       userSettings = mkMerge (map (feature: feature.userSettings or {}) features);
       keybindings = flatten (map (feature: feature.keybindings or []) features);

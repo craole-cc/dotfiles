@@ -10,14 +10,9 @@
   ...
 }: let
   inherit (lix.applications.generators) userApplicationConfig;
+  inherit (lix.attrsets.aggregation) mergeSafe;
   inherit (lix.attrsets.construction) genAttrs;
-  inherit
-    (lix.modules.construction)
-    mkConfig
-    mkContext
-    mkMerge
-    mkDefault
-    ;
+  inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
   inherit (lix.options.construction) mkEnable mkTrue;
   inherit (lix.lists.construction) optional;
   inherit (lix.schema.fonts) mkFonts;
@@ -42,18 +37,19 @@
         then "vscode-insiders"
         else null;
     };
-    # required = true;
+    required = true;
   };
 
   bins = let
-    mkCore = cmd: "${tools.coreutils.paths.binary}/${cmd}";
-    coreutils = genAttrs ["chmod" "cp" "dirname" "install" "mkdir" "rm"] mkCore;
+    coreutils =
+      genAttrs ["chmod" "cp" "dirname" "install" "mkdir" "rm"]
+      (command: "${tools.coreutils.paths.binary}/${command}");
   in
-    coreutils
-    // {
-      rmf = "${coreutils.rm} -rf";
-      jaq = tools.jaq.paths.executable;
-    };
+    mergeSafe [
+      coreutils
+      tools.binaries
+      {rmf = "${coreutils.rm} -rf";}
+    ];
 
   args = {
     inherit
@@ -74,10 +70,9 @@
     json = pkgs.formats.json {};
   };
 
-  overrides = import ./settings args;
-  build = import ./build (args // {inherit overrides;});
-
-  resolved = userApplicationConfig {
+  profile = import ./settings args;
+  build = import ./build (args // {profile = profile.output;});
+  app = userApplicationConfig {
     inherit context user pkgs;
     name = "vscode";
     category = "gui";
@@ -88,7 +83,6 @@
       "vscode-fhs"
       "vscode-insiders"
     ];
-    requiresWayland = true;
     #? Correct the resolved Insiders package metadata so desktop/icon/CLI
     #? identity is Insiders rather than stable `code`.
     extraPackages = optional cfg.insiders (
@@ -110,13 +104,13 @@ in
     options = {
       enable = mkEnable {
         inherit context;
-        condition = resolved.enable;
+        condition = app.enable;
       };
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
-      withExtensions = overrides.options;
+      features = profile.options;
     };
 
     outputs = {
-      home = resolved.home // build.activation;
+      home = app.home // build.activation;
     };
   }

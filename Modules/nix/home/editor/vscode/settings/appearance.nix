@@ -406,6 +406,7 @@
           "folderNames" = [
             "art"
             "customize"
+            "customise"
             "fmt"
             "format"
           ];

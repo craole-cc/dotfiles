@@ -1,7 +1,6 @@
-{overrides, ...} @ args: let
-  defaults = import ./imports.nix args;
+args: let
   dms = import ./dms.nix args;
-  profile = import ./profile.nix (args // {inherit defaults overrides;});
+  inherit (args) profile;
   app = import ./variant.nix (args // {inherit dms profile;});
   activation = import ./activation.nix (args // {inherit dms app profile;});
-in {inherit activation dms defaults app profile;}
+in {inherit activation dms app profile;}

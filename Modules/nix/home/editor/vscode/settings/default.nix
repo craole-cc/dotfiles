@@ -1,8 +1,33 @@
-{lix, ...} @ args: let
-  inherit (lix.attrsets.aggregation) mergeSafe;
+{
+  lix,
+  cfg,
+  ...
+} @ args: let
   inherit (lix.options.construction) mkTrue mkFalse;
-  inherit (lix.attrsets.construction) genAttrs listToAttrs;
-  inherit (lix.lists.transformation) flatten;
+  inherit (lix.attrsets.construction) listToAttrs;
+  inherit (lix.attrsets.transformation) mapAttrs;
+  inherit (lix.filesystem.importers) importAllPaths;
+  inherit (lix.filesystem.traversal) importJSON';
+  inherit (lix.modules.construction) mkOverride;
+  inherit (lix.modules.construction) mkMerge;
+  inherit (lix.modules.evaluation) evalModules;
+  inherit (lix.options.construction) mkOption;
+  inherit (lix.types.combinators) listOf;
+  inherit (lix.types.primitives) package;
+  inherit (lix.lists.transformation) filter;
+  inherit (lix.types.predicates) isList;
+
+  baseline = 1500; #? mkDefault is 1000
+
+  learn = name: let
+    data = importJSON' {
+      root = args.paths.store.cfg.default;
+      stem = ["vscode" "${name}.json"];
+    };
+  in
+    if isList data
+    then mkOverride baseline data
+    else mapAttrs (_: mkOverride baseline) data;
 
   load = path:
     import path (
@@ -14,48 +39,60 @@
       }
     );
 
-  settings = map load [
-    ./global.nix
-    ./editor.nix
-    ./files.nix
-    ./linting.nix
-    ./remote.nix
-    ./terminal.nix
-  ];
-  features = map load [
-    ./ai.nix
-    # ./appearance.nix
-    # ./decorations.nix
-    # ./infrastructure.nix
-    # ./markup.nix
-    # ./nix.nix
-    # ./productivity.nix
-    # ./scripting.nix
-    # ./systems.nix
-    # ./vcs.nix
-    # ./web.nix
-  ];
+  module = let
+    imports = map load (importAllPaths ./.);
+  in {
+    options = listToAttrs (
+      map (module: {
+        inherit (module) name;
+        value = with module;
+          if default
+          then mkTrue description
+          else mkFalse description;
+      })
+      (filter (module: module ? feature) imports)
+    );
 
-  collectedKeybindings = flatten (map (entry: entry.keybindings or []) settings);
-in
-  {
-    keybindings = collectedKeybindings;
-    userSettings = mergeSafe (map (entry: entry.userSettings) settings);
-  }
-  // genAttrs ["features" "options"] (
-    type:
-      listToAttrs (
-        map (entry: {
-          inherit (entry) name;
-          value =
-            if type == "features"
-            then entry.feature
-            else
-              (with entry;
-                if default
-                then mkTrue description
-                else mkFalse description);
-        })
-        features
-      )
-  )
+    output = map (setting:
+      {
+        extensions = [];
+        keybindings = [];
+        userSettings = {};
+      }
+      // (
+        if setting ? feature
+        then (with setting; feature cfg.features.${name})
+        else setting
+      ))
+    imports;
+  };
+
+  profile = let
+    options = {
+      userSettings = mkOption {
+        inherit (args.json) type;
+        default = {};
+      };
+      keybindings = mkOption {
+        type = listOf args.json.type;
+        default = [];
+      };
+      extensions = mkOption {
+        type = listOf package;
+        default = [];
+      };
+    };
+    config = mkMerge (module.output
+      ++ [
+        {
+          userSettings = learn "settings";
+          keybindings = learn "keybindings";
+        }
+      ]);
+    modules = evalModules {modules = [{inherit options config;}];};
+    output = modules.config;
+  in {inherit options config modules output;};
+in {
+  inherit (module) options;
+  inherit (profile) output;
+}
