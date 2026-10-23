@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  git = mkVSCodeSubFeature {
-    enabled = true;
+  git = mkEntry {
+    enable = true;
     extensions = [
       #? .gitignore language support
       "codezombiech.gitignore"
@@ -37,8 +33,8 @@
     };
   };
 
-  jujutsu = mkVSCodeSubFeature {
-    enabled = false;
+  jujutsu = mkEntry {
+    enable = false;
     extensions = [
       #? jujutsu VCS GUI
       "visualjj.visualjj"
@@ -46,21 +42,4 @@
       "jjk.jjk"
     ];
   };
-in {
-  name = "vcs";
-  description = "Git, jj and version control extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        git.extensions
-        jujutsu.extensions
-      ];
-      userSettings = mkMerge [
-        (git.userSettings or {})
-        (jujutsu.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [git jujutsu]);
-    };
-}
+in {entries = {inherit git jujutsu;};}

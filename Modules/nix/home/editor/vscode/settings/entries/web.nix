@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  tailwind = mkVSCodeSubFeature {
-    enabled = true;
+  tailwind = mkEntry {
+    enable = true;
     extensions = [
       #? Tailwind CSS intellisense
       "bradlc.vscode-tailwindcss"
@@ -30,8 +26,8 @@
     };
   };
 
-  deno = mkVSCodeSubFeature {
-    enabled = true;
+  deno = mkEntry {
+    enable = true;
     extensions = [
       #? Deno runtime and LSP
       "denoland.vscode-deno"
@@ -44,8 +40,8 @@
     };
   };
 
-  prettier = mkVSCodeSubFeature {
-    enabled = true;
+  prettier = mkEntry {
+    enable = true;
     extensions = [
       #? Prettier formatter
       "esbenp.prettier-vscode"
@@ -60,8 +56,8 @@
     };
   };
 
-  browser = mkVSCodeSubFeature {
-    enabled = true;
+  browser = mkEntry {
+    enable = true;
     extensions = ["phu1237.vs-browser"];
     userSettings = {
       "vs-browser.favourites.list" = {
@@ -79,25 +75,4 @@
       "vs-browser.url" = "http://127.0.0.1:3000";
     };
   };
-in {
-  name = "web";
-  description = "Web development extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        tailwind.extensions
-        deno.extensions
-        prettier.extensions
-        browser.extensions
-      ];
-      userSettings = mkMerge [
-        (tailwind.userSettings or {})
-        (deno.userSettings or {})
-        (prettier.userSettings or {})
-        (browser.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [tailwind deno prettier browser]);
-    };
-}
+in {entries = {inherit tailwind deno prettier browser;};}

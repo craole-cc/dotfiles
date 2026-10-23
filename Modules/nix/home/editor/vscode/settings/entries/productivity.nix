@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  files = mkVSCodeSubFeature {
-    enabled = true;
+  files = mkEntry {
+    enable = true;
     extensions = [
       #? Keyboard-driven file browser
       "bodil.file-browser"
@@ -21,8 +17,8 @@
     ];
   };
 
-  text = mkVSCodeSubFeature {
-    enabled = true;
+  text = mkEntry {
+    enable = true;
     extensions = [
       #? Text transformation utilities
       "dakara.transformer"
@@ -35,8 +31,8 @@
     ];
   };
 
-  env = mkVSCodeSubFeature {
-    enabled = true;
+  env = mkEntry {
+    enable = true;
     extensions = [
       #? .env file support
       "dotenv.dotenv-vscode"
@@ -50,8 +46,8 @@
     };
   };
 
-  license = mkVSCodeSubFeature {
-    enabled = true;
+  license = mkEntry {
+    enable = true;
     extensions = [
       #? License chooser and inserter
       "ultram4rine.vscode-choosealicense"
@@ -62,8 +58,8 @@
     };
   };
 
-  spelling = mkVSCodeSubFeature {
-    enabled = false;
+  spelling = mkEntry {
+    enable = false;
     extensions = [
       #? Typos spell checker (fast, Rust-based)
       "tekumara.typos-vscode"
@@ -86,8 +82,8 @@
     };
   };
 
-  runners = mkVSCodeSubFeature {
-    enabled = true;
+  runners = mkEntry {
+    enable = true;
     extensions = [
       #? Reload window command
       "natqe.reload"
@@ -102,8 +98,8 @@
     ];
   };
 
-  viewers = mkVSCodeSubFeature {
-    enabled = false;
+  viewers = mkEntry {
+    enable = false;
     extensions = [
       #? PlantUML diagram preview and export
       "jebbs.plantuml"
@@ -118,8 +114,8 @@
     ];
   };
 
-  keybindings = mkVSCodeSubFeature {
-    enabled = true;
+  keybindings = mkEntry {
+    enable = true;
     extensions = [
       #? Restore familiar Windows keybindings
       "smcpeak.default-keys-windows"
@@ -129,8 +125,8 @@
     };
   };
 
-  feeds = mkVSCodeSubFeature {
-    enabled = true;
+  feeds = mkEntry {
+    enable = true;
     extensions = [];
     userSettings = {
       "rss.accounts" = {
@@ -143,54 +139,19 @@
     };
   };
 
-  spreadsheets = mkVSCodeSubFeature {
-    enabled = true;
+  spreadsheets = mkEntry {
+    enable = true;
     extensions = ["mescius.spreadjs-xlsx-editor"];
     userSettings = {
       "spreadjs.ribbonMode" = "toolbar";
     };
   };
 
-  integrations = mkVSCodeSubFeature {
-    enabled = true;
+  integrations = mkEntry {
+    enable = true;
     extensions = [];
     userSettings = {
       "atlascode.jira.enabled" = false;
     };
   };
-in {
-  name = "productivity";
-  description = "Workflow, file management and utility extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        files.extensions
-        text.extensions
-        env.extensions
-        license.extensions
-        spelling.extensions
-        runners.extensions
-        viewers.extensions
-        keybindings.extensions
-        feeds.extensions
-        spreadsheets.extensions
-        integrations.extensions
-      ];
-      userSettings = mkMerge [
-        (files.userSettings or {})
-        (text.userSettings or {})
-        (env.userSettings or {})
-        (license.userSettings or {})
-        (spelling.userSettings or {})
-        (runners.userSettings or {})
-        (viewers.userSettings or {})
-        (keybindings.userSettings or {})
-        (feeds.userSettings or {})
-        (spreadsheets.userSettings or {})
-        (integrations.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [files text env license spelling runners viewers keybindings feeds spreadsheets integrations]);
-    };
-}
+in {entries = {inherit files text env license spelling runners viewers keybindings feeds spreadsheets integrations;};}

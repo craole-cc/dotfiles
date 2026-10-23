@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  rust = mkVSCodeSubFeature {
-    enabled = true;
+  rust = mkEntry {
+    enable = true;
     extensions = [
       #? Rust LSP
       "rust-lang.rust-analyzer"
@@ -28,8 +24,8 @@
     };
   };
 
-  shell = mkVSCodeSubFeature {
-    enabled = true;
+  shell = mkEntry {
+    enable = true;
     extensions = [
       #? shell script formatter
       "mkhl.shfmt"
@@ -54,21 +50,4 @@
       "zig.zls.enabled" = "on";
     };
   };
-in {
-  name = "systems";
-  description = "Rust, shell and systems programming extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        rust.extensions
-        shell.extensions
-      ];
-      userSettings = mkMerge [
-        (rust.userSettings or {})
-        (shell.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [rust shell]);
-    };
-}
+in {entries = {inherit rust shell;};}

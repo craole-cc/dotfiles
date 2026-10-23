@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  markdown = mkVSCodeSubFeature {
-    enabled = true;
+  markdown = mkEntry {
+    enable = true;
     extensions = [
       #? Markdown linter
       "davidanson.vscode-markdownlint"
@@ -39,8 +35,8 @@
     };
   };
 
-  dataFormats = mkVSCodeSubFeature {
-    enabled = true;
+  dataFormats = mkEntry {
+    enable = true;
     extensions = [
       #? YAML LSP and validation
       "redhat.vscode-yaml"
@@ -95,8 +91,8 @@
     };
   };
 
-  typst = mkVSCodeSubFeature {
-    enabled = true;
+  typst = mkEntry {
+    enable = true;
     extensions = [
       #? Typst LSP and preview
       "myriad-dreamin.tinymist"
@@ -107,8 +103,8 @@
     };
   };
 
-  tooling = mkVSCodeSubFeature {
-    enabled = false;
+  tooling = mkEntry {
+    enable = false;
     extensions = [
       #? Justfile syntax highlighting
       "nefrob.vscode-just-syntax"
@@ -118,25 +114,4 @@
       "emilast.logfilehighlighter"
     ];
   };
-in {
-  name = "markup";
-  description = "Markdown, TOML, YAML, config format extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        markdown.extensions
-        dataFormats.extensions
-        typst.extensions
-        tooling.extensions
-      ];
-      userSettings = mkMerge [
-        (markdown.userSettings or {})
-        (dataFormats.userSettings or {})
-        (typst.userSettings or {})
-        (tooling.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [markdown dataFormats typst tooling]);
-    };
-}
+in {entries = {inherit markdown dataFormats typst tooling;};}

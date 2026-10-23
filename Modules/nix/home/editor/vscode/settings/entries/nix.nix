@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  nixLsp = mkVSCodeSubFeature {
-    enabled = true;
+  nixLsp = mkEntry {
+    enable = true;
     extensions = [
       #? basic Nix syntax
       "bbenoist.nix"
@@ -30,8 +26,8 @@
     };
   };
 
-  direnv = mkVSCodeSubFeature {
-    enabled = true;
+  direnv = mkEntry {
+    enable = true;
     extensions = [
       #? direnv environment integration
       "mkhl.direnv"
@@ -40,21 +36,4 @@
       "direnv.restart.automatic" = true;
     };
   };
-in {
-  name = "nix";
-  description = "Nix language and tooling extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        nixLsp.extensions
-        direnv.extensions
-      ];
-      userSettings = mkMerge [
-        (nixLsp.userSettings or {})
-        (direnv.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [nixLsp direnv]);
-    };
-}
+in {entries = {inherit nixLsp direnv;};}

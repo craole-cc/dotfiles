@@ -1,14 +1,10 @@
 {
-  inputs,
-  mkMerge,
-  flatten,
-  mkVSCodeFeature,
-  mkVSCodeSubFeature,
-  pkgs,
+  mkGroup,
+  mkEntry,
   ...
 }: let
-  python = mkVSCodeSubFeature {
-    enabled = false;
+  python = mkEntry {
+    enable = false;
     extensions = [
       #? Python LSP and tooling
       "ms-python.python"
@@ -25,16 +21,16 @@
     };
   };
 
-  nushell = mkVSCodeSubFeature {
-    enabled = false;
+  nushell = mkEntry {
+    enable = false;
     extensions = [
       #? Nushell language support
       "thenuprojectcontributors.vscode-nushell-lang"
     ];
   };
 
-  powershell = mkVSCodeSubFeature {
-    enabled = true;
+  powershell = mkEntry {
+    enable = true;
     extensions = [
       #? PowerShell LSP and debugger
       "ms-vscode.powershell"
@@ -61,32 +57,11 @@
     };
   };
 
-  ruby = mkVSCodeSubFeature {
-    enabled = true;
+  ruby = mkEntry {
+    enable = true;
     extensions = [];
     userSettings = {
       "rubyLsp.enableExperimentalFeatures" = true;
     };
   };
-in {
-  name = "scripting";
-  description = "Python, Nushell, PowerShell extensions";
-  default = true;
-  feature = enabled:
-    mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten [
-        python.extensions
-        nushell.extensions
-        powershell.extensions
-        ruby.extensions
-      ];
-      userSettings = mkMerge [
-        (python.userSettings or {})
-        (nushell.userSettings or {})
-        (powershell.userSettings or {})
-        (ruby.userSettings or {})
-      ];
-      keybindings = flatten (map (feature: feature.keybindings or []) [python nushell powershell ruby]);
-    };
-}
+in {entries = {inherit python nushell powershell ruby;};}

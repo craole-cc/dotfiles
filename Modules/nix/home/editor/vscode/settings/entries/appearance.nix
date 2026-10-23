@@ -5,7 +5,7 @@
   ...
 }: let
   themes = mkEntry {
-    enabled = false;
+    enable = false;
     extensions = [
       #? Catppuccin color theme
       "catppuccin.catppuccin-vsc"
@@ -22,7 +22,7 @@
   };
 
   icons = mkEntry {
-    enabled = true;
+    enable = true;
     extensions = [
       #? Material file/folder icons
       "pkief.material-icon-theme"
@@ -465,7 +465,7 @@
   };
 
   animations = mkEntry {
-    enabled = false;
+    enable = false;
     extensions = [
       #? Smooth UI animations
       "brandonkirbyson.vscode-animations"
@@ -482,7 +482,7 @@
   };
 
   customUI = mkEntry {
-    enabled = false;
+    enable = false;
     extensions = [
       #? Custom CSS/JS UI injection
       "subframe7536.custom-ui-style"
@@ -504,7 +504,7 @@
   };
 
   ui = mkEntry {
-    enabled = true;
+    enable = true;
     userSettings = {
       #~@ Window
       "window.autoDetectColorScheme" = false;
@@ -544,9 +544,4 @@
       "workbench.colorCustomizations" = {};
     };
   };
-in
-  mkGroup {
-    name = "appearance";
-    description = "Themes, icons and UI chrome extensions";
-    features = [themes icons animations customUI ui];
-  }
+in {entries = {inherit themes icons animations customUI ui;};}
