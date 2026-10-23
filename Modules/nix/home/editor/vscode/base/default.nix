@@ -1,14 +1,29 @@
-{lix, ...}: let
-  inherit (lix.modules.construction) mkForce;
+{
+  lix,
+  paths,
+  ...
+}: let
+  inherit (lix.attrsets.transformation) mapAttrs;
+  inherit (lix.filesystem.access) readFile;
+  inherit (lix.filesystem.construction) concat;
+  inherit (lix.modules.construction) mkOverride;
+  inherit (lix.strings.construction) fromJSON;
+  inherit (lix.types.predicates) isList;
 
-  bindings = import ./bindings.nix {};
-  learnedSettings = builtins.fromJSON (builtins.readFile ./settings.json);
+  baseline = 1500; #? mkDefault is 1000
+
+  learn = name: let
+    captured = fromJSON (
+      readFile (concat {
+        root = paths.store.cfg.default;
+        stem = ["vscode" "${name}.jsonc"];
+      })
+    );
+  in
+    if isList captured
+    then captured
+    else mapAttrs (_: mkOverride baseline) captured;
 in {
-  # Stable VS Code is the mutable learning environment. The settings captured
-  # from it are the authoritative declarative baseline for Insiders; feature
-  # modules still select extensions, while DMS may overlay runtime-owned theme
-  # keys after this profile is evaluated.
-  userSettings = mkForce learnedSettings;
-
-  inherit (bindings) keybindings;
+  userSettings = learn "settings";
+  keybindings = learn "keybindings";
 }

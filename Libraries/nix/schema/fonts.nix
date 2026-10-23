@@ -3,11 +3,12 @@
   inherit (_.attrsets.aggregation) recursiveUpdate;
   inherit (_.attrsets.construction) listToAttrs;
   inherit (_.attrsets.transformation) mapAttrs;
-  inherit (_.lists.aggregation) concatMap;
-  inherit (_.lists.construction) concatLists genList toList;
   inherit (_.lists.access) elemAt length;
+  inherit (_.lists.aggregation) concatMap;
+  inherit (_.lists.construction) concatLists genList optional toList;
   inherit (_.lists.transformation) filter unique;
   inherit (_.strings.access) substring;
+  inherit (_.strings.construction) concat;
   inherit (_.strings.transformation) toUpper;
   inherit (_.types.predicates) isAttrs isFloat isInt isString;
 
@@ -166,7 +167,7 @@
     (normalise (definition.interface.style.fonts or {}))
     (normalise (definition.interface.fonts or {}));
 
-  # Whole role lists replace lower-priority declarations without truncation.
+  #? Whole role lists replace lower-priority declarations without truncation.
   categories = {
     host ? {},
     user ? {},
@@ -184,7 +185,7 @@
     );
 
   variables = categories: let
-    # Canonical keys only, so mirrored aliases don't emit duplicates.
+    #? Canonical keys only, so mirrored aliases don't emit duplicates.
     stems = {
       display = ["DISPLAY"];
       emoji = ["EMOJI"];
@@ -197,21 +198,19 @@
       square = ["SQUARE"];
     };
 
-    # ranks = ["PRI" "SEC" "TER"];
-
-    # Null stays null so the pair is filtered out.
+    #? Null stays null so the pair is filtered out.
     show = value:
       if value == null
       then null
       else toString value;
 
-    # Family of the entry at the given index, or null if the list is too short.
+    #? Family of the entry at the given index, or null if the list is too short.
     familyAt = entries: index:
       if length entries > index
       then (elemAt entries index).family
       else null;
 
-    # FONT_<STEM> plus FONT_<STEM>_PRI/_SEC/_TER for one category's entries.
+    #? FONT_<STEM> plus FONT_<STEM>_PRI/_SEC/_TER for one category's entries.
     mkStem = entries: stem:
       [
         {
@@ -224,7 +223,7 @@
         value = familyAt entries index;
       }) (length ranks.variables);
 
-    # Style, weight and size of the primary entry only.
+    #? Style, weight and size of the primary entry only.
     mkMeta = entries: stem: let
       first =
         if length entries > 0
@@ -265,10 +264,30 @@
   in
     unique (filter isString names);
 
+  families = categories: let
+    #? CSS generic appended to each role's list; roles without one get none.
+    generics = {
+      mono = "monospace";
+      monospace = "monospace";
+      sans = "sans-serif";
+      sansSerif = "sans-serif";
+      serif = "serif";
+    };
+
+    #? Quoted family names in preference order, then the generic fallback.
+    mk = category: entries: let
+      quoted = map (entry: "'${entry.family}'") entries;
+      generic = generics.${category} or null;
+    in
+      concat ", " (quoted ++ (optional (generic != null) generic));
+  in
+    mapAttrs mk categories;
+
   mkFonts = args: let
     resolved = categories args;
   in {
     categories = resolved;
+    families = families resolved;
     packages = packages resolved;
     variables = variables resolved;
   };

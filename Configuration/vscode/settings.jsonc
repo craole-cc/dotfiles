@@ -22,17 +22,17 @@
   //TOC Keybindings
   //TOC Visual Aids (comments, whitespace, rulers)
   //TOC Colours Overrides
-  //TOC Icon Theme (Material)
+  //TOC Icon Overrides
   //~@ ====================================================
   //~@ GLOBAL & APPLICATION                               .
   //~@ ====================================================
-  //|-> Global Defaults (apply to every file and language)
+  //|=> Global Defaults (apply to every file and language)
   "files.eol": "\n",
-  //|-> Identity & Updates
+  //|=> Identity & Updates
   "license.author": "Craig 'Craole' Cole",
   "license.default": "mit",
   "update.mode": "manual",
-  //|-> Window
+  //|=> Window
   "security.workspace.trust.untrustedFiles": "open",
   "window.customMenuBarAltFocus": true,
   "window.customTitleBarVisibility": "auto",
@@ -43,21 +43,21 @@
   //~@ ====================================================
   //~@ WORKBENCH & LAYOUT                                 .
   //~@ ====================================================
-  //|-> Layout
+  //|=> Layout
   "workbench.activityBar.location": "default",
   "workbench.panel.defaultLocation": "bottom",
   "workbench.sideBar.location": "right",
   "workbench.statusBar.visible": true,
   "breadcrumbs.enabled": true,
-  //|-> Startup & Editor Tabs
+  //|=> Startup & Editor Tabs
   "workbench.editor.empty.hint": "hidden",
   "workbench.editor.revealIfOpen": true,
   "workbench.editor.showTabs": "multiple",
   "workbench.startupEditor": "none",
-  //|-> Palette & Quick Open
+  //|=> Palette & Quick Open
   "workbench.commandPalette.preserveInput": true,
   "workbench.quickOpen.preserveInput": true,
-  //|-> Misc
+  //|=> Misc
   "workbench.experimental.share.enabled": true,
   "workbench.tree.enableStickyScroll": false,
   "extensions.ignoreRecommendations": true,
@@ -65,7 +65,7 @@
   //~@ ====================================================
   //~@ THEME TOGGLE                                       .
   //~@ ====================================================
-  //|-> Themes
+  //|=> Themes
   "window.autoDetectColorScheme": false,
   "window.autoDetectHighContrast": false,
   "workbench.colorTheme": "Dynamic Base16 DankShell",
@@ -73,20 +73,20 @@
   "workbench.preferredLightColorTheme": "Catppuccin Latte",
   "workbench.iconTheme": "material-icon-theme",
   "workbench.productIconTheme": "el-vsc-v1-icons",
-  //|-> Semantic Highlighting (switch only; colour rules live in section 20)
+  //|=> Semantic Highlighting (switch only; colour rules live in section 20)
   "editor.semanticHighlighting.enabled": true,
   //~@ ====================================================
   //~@ TYPOGRAPHY                                         .
   //~@ ====================================================
-  //|-> Editor
-  "editor.fontFamily": "monospace",
+  //|=> Editor
+  "editor.fontFamily": "'Lilex Nerd Font', 'Maple Mono NF', monospace",
   "editor.fontLigatures": true,
   "editor.fontSize": 18,
   "editor.fontWeight": 500,
   "editor.letterSpacing": 0,
   "editor.lineHeight": 2,
-  //|-> Terminal
-  "terminal.integrated.fontFamily": "'Maple Mono NF','Lilex Nerd Font',monospace",
+  //|=> Terminal
+  "terminal.integrated.fontFamily": "'Maple Mono NF', 'Lilex Nerd Font', monospace",
   "terminal.integrated.fontLigatures.enabled": true,
   "terminal.integrated.fontSize": 18,
   "terminal.integrated.fontWeight": 500,
@@ -95,17 +95,17 @@
   //~@ ====================================================
   //~@ EDITOR                                             .
   //~@ ====================================================
-  //|-> Indentation & Wrapping
+  //|=> Indentation & Wrapping
   "editor.detectIndentation": false,
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "editor.wordWrap": "bounded",
   "editor.wordWrapColumn": 120,
-  //|-> Formatting
+  //|=> Formatting
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "diffEditor.ignoreTrimWhitespace": false,
-  //|-> Display
+  //|=> Display
   "editor.folding": true,
   "editor.glyphMargin": true,
   "editor.lineNumbers": "on",
@@ -116,47 +116,47 @@
   "editor.scrollbar.vertical": "auto",
   "editor.unicodeHighlight.ambiguousCharacters": false,
   "diffEditor.codeLens": true,
-  //|-> Minimap
+  //|=> Minimap
   "editor.minimap.enabled": true,
   "editor.minimap.size": "fill",
-  //|-> Brackets & Guides
+  //|=> Brackets & Guides
   "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
   "editor.guides.bracketPairs": "active",
-  "editor.matchBrackets": "never",
-  //|-> Highlighting
+  "editor.matchBrackets": false,
+  //|=> Highlighting
   "editor.occurrencesHighlight": "off",
   "editor.selectionHighlight": false,
-  //|-> Cursor & Scrolling
+  //|=> Cursor & Scrolling
   "editor.cursorBlinking": "expand",
   "editor.cursorSmoothCaretAnimation": "on",
   "editor.mouseWheelZoom": true,
   "editor.smoothScrolling": true,
-  //|-> Sticky Scroll
+  //|=> Sticky Scroll
   "editor.stickyScroll.defaultModel": "indentationModel",
   "editor.stickyScroll.enabled": false,
   "editor.stickyScroll.scrollWithEditor": false,
-  //|-> Suggestions & Hints
+  //|=> Suggestions & Hints
   "editor.inlayHints.enabled": "offUnlessPressed",
   "editor.inlineSuggest.suppressSuggestions": true,
   "editor.quickSuggestions": {
     "strings": "on"
   },
   "editor.suggestSelection": "recentlyUsedByPrefix",
-  //|-> Misc
+  //|=> Misc
   "editor.accessibilitySupport": "off",
   "editor.linkedEditing": true,
   //~@ ====================================================
   //~@ FILES & EXPLORER                                   .
   //~@ ====================================================
-  //|-> Saving & Line Endings
+  //|=> Saving & Line Endings
   "files.autoSave": "onFocusChange",
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
-  //|-> Explorer
+  //|=> Explorer
   "explorer.compactFolders": false,
   "explorer.excludeGitIgnore": false,
-  //|-> Visibility
+  //|=> Visibility
   // Only the built-in defaults are listed; every other `false` entry was a no-op and was removed.
   "files.exclude": {
     "**/.DS_Store": false,
@@ -165,7 +165,7 @@
     "**/.svn": false,
     "**/Thumbs.db": false
   },
-  //|-> File Watcher
+  //|=> File Watcher
   // FIXME: these globs contain stray spaces ("/* *", "* cache") and likely don't match anything.
   "files.watcherExclude": {
     "**/.local/* *": true,
@@ -177,9 +177,9 @@
     "**/.trunk/*out/": true,
     "**/.trunk/*plugins/": true
   },
-  //|-> Language Associations
+  //|=> Language Associations
   "files.associations": {
-    //|-> Config & dotfiles
+    //|=> Config & dotfiles
     ".bash*": "shellscript",
     ".dotsrc": "coffeescript",
     ".editorconfig": "ini",
@@ -202,7 +202,7 @@
     "mise.lock": "toml",
     "polybar/*.conf": "ini",
     "polybar/config": "ini",
-    //|-> Languages
+    //|=> Languages
     "*.bash": "shellscript",
     "*.css": "css",
     "*.erb": "ruby",
@@ -215,7 +215,7 @@
     "*.sh": "shellscript",
     "*.typ": "typst",
     "Gemfile": "ruby",
-    //|-> Templates & data
+    //|=> Templates & data
     "*.bbmodel": "json",
     "*.ejs": "html",
     "*.emu": "html",
@@ -224,12 +224,12 @@
     "*.log": "log",
     "*.rasi": "css",
     "*.sublime-snippet": "xml",
-    //|-> Docs
+    //|=> Docs
     "LICENSE": "txt",
     "LICENSE-MIT": "txt",
     "README": "markdown"
   },
-  //|-> Custom Editors (file type -> viewer)
+  //|=> Custom Editors (file type -> viewer)
   "workbench.editorAssociations": {
     "*.copilotmd": "vscode.markdown.preview.editor",
     "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc": "default",
@@ -243,7 +243,7 @@
   //~@ ====================================================
   //~@ TERMINAL                                           .
   //~@ ====================================================
-  //|-> Behaviour
+  //|=> Behaviour
   "terminal.integrated.allowMnemonics": true,
   "terminal.integrated.commandsToSkipShell": [
     "workbench.action.terminal.copySelection"
@@ -255,13 +255,13 @@
   "terminal.integrated.hideOnStartup": "whenEmpty",
   "terminal.integrated.mouseWheelZoom": false,
   "terminal.integrated.rightClickBehavior": "copyPaste",
-  //|-> Appearance
+  //|=> Appearance
   "terminal.integrated.cursorBlinking": true,
   "terminal.integrated.cursorStyle": "block",
   "terminal.integrated.smoothScrolling": true,
   "terminal.integrated.stickyScroll.enabled": false,
   "terminal.integrated.tabs.location": "right",
-  //|-> Profiles (Windows)
+  //|=> Profiles (Windows)
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "NixOS (WSL)": {
@@ -314,7 +314,7 @@
   "git.enableSmartCommit": true,
   "git.openRepositoryInParentFolders": "always",
   "git.rebaseWhenSync": true,
-  //|-> Confirmations & Safety
+  //|=> Confirmations & Safety
   "git.allowForcePush": true,
   "git.confirmForcePush": false,
   "git.confirmSync": false,
@@ -322,12 +322,12 @@
   //~@ ====================================================
   //~@ LANGUAGES (A-Z)                                    .
   //~@ ====================================================
-  //|-> Cypher
+  //|=> Cypher
   "[cypher]": {
     // "editor.defaultFormatter": "neo4j-extensions.neo4j-for-vscode",
     "editor.semanticHighlighting.enabled": true
   },
-  //|-> CSS / SCSS / Tailwind
+  //|=> CSS / SCSS / Tailwind
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
@@ -349,29 +349,29 @@
   "tailwindCSS.includeLanguages": {
     "plaintext": "html"
   },
-  //|-> Dotenv
+  //|=> Dotenv
   "[dotenv]": {
     "editor.defaultFormatter": "mkhl.shfmt"
   },
-  //|-> Docker
+  //|=> Docker
   // "[dockercompose]": { "editor.defaultFormatter": "bluebrown.yamlfmt" },
   // "[dockerfile]":    { "editor.defaultFormatter": "ms-azuretools.vscode-docker" },
-  //|-> GitHub Actions
+  //|=> GitHub Actions
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
-  //|-> HTML / JavaScript
+  //|=> HTML / JavaScript
   "[html]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  //|-> INI
+  //|=> INI
   "[ini]": {
     "editor.defaultFormatter": "lkrms.inifmt"
   },
-  //|-> JSON / JSONC
+  //|=> JSON / JSONC
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features",
     "editor.codeActionsOnSave": {
@@ -413,15 +413,15 @@
     "https://schemastore.azurewebsites.net/": true,
     "https://www.schemastore.org/": true
   },
-  //|-> Just
+  //|=> Just
   // "vscode-just.useSingleTerminal": true,
   // "vscode-just.formatOnSave": true,
   // "vscode-just.justPath": "C:\\\\Users\\\\Administrator\\\\scoop\\\\shims\\\\just.exe",
-  //|-> Markdown  (see also section 11)
+  //|=> Markdown  (see also section 11)
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
-  //|-> Nix
+  //|=> Nix
   "[nix]": {
     "editor.defaultFormatter": "jnoortheen.nix-ide",
     "editor.formatOnSave": true
@@ -444,7 +444,7 @@
       }
     }
   },
-  //|-> PowerShell
+  //|=> PowerShell
   "[powershell]": {
     "editor.defaultFormatter": "ms-vscode.powershell",
     "editor.renderControlCharacters": true,
@@ -463,38 +463,38 @@
   "powershell.integratedConsole.forceClearScrollbackBuffer": true,
   "powershell.integratedConsole.showOnStartup": false,
   "powershell.integratedConsole.suppressStartupBanner": true,
-  //|-> Properties (gitconfig / sqruff)
+  //|=> Properties (gitconfig / sqruff)
   "[properties]": {
     "editor.defaultFormatter": "yy0931.gitconfig-lsp"
   },
-  //|-> Ruby
+  //|=> Ruby
   // "[ruby]": { "editor.defaultFormatter": "LoranKloeze.ruby-rubocop-revived" },
   "rubyLsp.enableExperimentalFeatures": true,
   // "rubyLsp.rubyExecutablePath": "c:\\Tools\\ruby33\\bin\\ruby.exe",
-  //|-> Rust
+  //|=> Rust
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
   "rust-analyzer.cargo.features": "all",
   "rust-analyzer.check.command": "clippy",
-  //|-> Shell
+  //|=> Shell
   "[shellscript]": {
     "editor.defaultFormatter": "mkhl.shfmt"
   },
   "bashIde.explainshellEndpoint": "http://localhost:5000",
-  //|-> SQL
+  //|=> SQL
   "[sql]": {
     "editor.defaultFormatter": "adpyke.vscode-sql-formatter"
     // "editor.defaultFormatter": "ms-mssql.mssql"
   },
-  //|-> TOML
+  //|=> TOML
   "[toml]": {
     "editor.defaultFormatter": "tombi-toml.tombi"
   },
-  //|-> TypeScript
+  //|=> TypeScript
   // "[typescript]": { "editor.defaultFormatter": "denoland.vscode-deno" },
   // "typescript.inlayHints.parameterNames.enabled": "all",
-  //|-> Typst
+  //|=> Typst
   "[typst]": {
     // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
     "editor.defaultFormatter": "myriad-dreamin.tinymist"
@@ -503,10 +503,10 @@
     // "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
     "editor.defaultFormatter": "myriad-dreamin.tinymist"
   },
-  //|-> XML / SVG
+  //|=> XML / SVG
   // "[xml]": { "editor.defaultFormatter": "DotJoshJohnson.xml" },
   // "[svg]": { "editor.defaultFormatter": "jock.svg" },
-  //|-> YAML
+  //|=> YAML
   "[yaml]": {
     "editor.defaultFormatter": "bluebrown.yamlfmt"
     // "editor.defaultFormatter": "denoland.vscode-deno"
@@ -520,7 +520,7 @@
     "**/.forgejo/workflows/*.yml",
     "**/.forgejo/workflows/*.yaml"
   ],
-  //|-> Zig
+  //|=> Zig
   "zig.zls.enabled": "on",
   //~@ ====================================================
   //~@ LINTING                                            .
@@ -619,20 +619,20 @@
   "markdown.preview.typographer": true,
   "markdown.updateLinksOnFileMove.enabled": "always",
   "markdown.validate.enabled": true,
-  //|-> Marp
+  //|=> Marp
   "markdown.marp.enableHtml": true,
   "markdown.marp.exportType": "html",
   "markdown.marp.pdf.noteAnnotations": true,
   "markdown.marp.pdf.outlines": "both",
   "markdown.marp.strictPathResolutionDuringExport": true,
-  //|-> Markdown PDF
+  //|=> Markdown PDF
   "markdown-pdf.breaks": true,
   "markdown-pdf.displayHeaderFooter": false,
   "markdown-pdf.format": "Letter",
   //~@ ====================================================
   //~@ AI ASSISTANCE                                      .
   //~@ ====================================================
-  //|-> Copilot
+  //|=> Copilot
   "github.copilot.enable": {
     "*": true,
     "markdown": false,
@@ -646,7 +646,7 @@
   "github.copilot.chat.codesearch.enabled": true,
   "github.copilot.nextEditSuggestions.eagerness": "low",
   "github.copilot.nextEditSuggestions.enabled": true,
-  //|-> Chat
+  //|=> Chat
   // NOTE: auto-approving awk/nix/zig lets an agent run arbitrary code without a prompt.
   "chat.experimental.stickyScroll.enabled": false,
   "chat.tools.terminal.autoApprove": {
@@ -658,7 +658,7 @@
     "zig": true
   },
   "chat.viewSessions.orientation": "stacked",
-  //|-> Codeium
+  //|=> Codeium
   "codeium.disableSupercomplete": true,
   "codeium.enableConfig": {
     "*": true,
@@ -670,11 +670,11 @@
     "typst": true
   },
   "codeium.enableSearch": true,
-  //|-> Continue
+  //|=> Continue
   "continue.disableQuickFix": true,
   "continue.enableTabAutocomplete": true,
   "continue.showInlineTip": false,
-  //|-> Gemini Code Assisto
+  //|=> Gemini Code Assisto
   "geminicodeassist.chat.defaultCodeBlockDisplay": "Expanded",
   "geminicodeassist.inlineSuggestions.enableAuto": true,
   "geminicodeassist.updateChannel": "Insiders",
@@ -683,12 +683,14 @@
   //~@ ====================================================
   "harper.dialect": "British",
   "harper.workspaceDictPath": ".harper-dictionary.txt",
+  // "harper.diagnosticSeverity": "hint",
   "harper.excludePatterns": [
     // "*.nix"
   ],
   "harper.linters.Dashes": false,
   "harper.linters.NumericRangeEnDash": false,
   "harper.linters.OxfordComma": false,
+  "harper.linters.SentenceCapitalization": false,
   "typos.diagnosticSeverity": "Hint",
   //~@ ====================================================
   //~@ DEBUGGING                                          .
@@ -700,16 +702,16 @@
   //~@ ====================================================
   //~@ ENVIRONMENT, REMOTE & SYNC                         .
   //~@ ====================================================
-  //|-> Environment
+  //|=> Environment
   "direnv.restart.automatic": true,
   "dotenv.enableAutocloaking": false,
-  //|-> Remote
+  //|=> Remote
   "remote.autoForwardPortsSource": "hybrid",
   "remote.SSH.remotePlatform": {
     "dbook.deer-iguana.ts.net": "linux",
     "delle.deer-iguana.ts.net": "linux"
   },
-  //|-> Settings Sync
+  //|=> Settings Sync
   "settingsSync.ignoredExtensions": [
     "constneo.vscode-nushell-format",
     "jnoortheen.nix-ide",
@@ -725,7 +727,7 @@
   //~@ ====================================================
   //~@ MISC EXTENSIONS                                    .
   //~@ ====================================================
-  //|-> In-editor Browser
+  //|=> In-editor Browser
   "vs-browser.favourites.list": {
     "http://127.0.0.1:3000": "http://127.0.0.1:3000",
     "http://localhost": "http://localhost"
@@ -739,7 +741,7 @@
   "vs-browser.reload.autoReloadDurationTime": 15000,
   "vs-browser.reload.onSave": false,
   "vs-browser.url": "http://127.0.0.1:3000",
-  //|-> RSS
+  //|=> RSS
   "rss.accounts": {
     "fb0e47b0-9982-11ef-a698-3778cde2492f": {
       "name": "Default",
@@ -747,7 +749,7 @@
       "feeds": []
     }
   },
-  //|-> SpreadJS
+  //|=> SpreadJS
   "spreadjs.ribbonMode": "toolbar",
   //~@ ====================================================
   //~@ KEYBINDINGS                                        .
@@ -756,7 +758,7 @@
   //~@ ====================================================
   //~@ VISUAL AIDS                                        .
   //~@ ====================================================
-  //|-> Line-Width Indicators (LWI)
+  //|=> Line-Width Indicators (LWI)
   "LWI.breakpoints": [
     {
       "color": "rgb(0, 255, 0, 0.6)",
@@ -773,7 +775,7 @@
   ],
   "LWI.style.fontStyle": "italic",
   "LWI.style.fontWeight": "100",
-  //|-> Render Special Characters
+  //|=> Render Special Characters
   "render-special-chars.border": "1px solid; border-radius: 2px;",
   "render-special-chars.position": "before",
   "render-special-chars.updateDelay": 500,
@@ -803,9 +805,9 @@
     "4E00-9FFF", // CJK Unified Ideographs
     "：；，、。？！〜（）〈〉《》【】「」『』─" // Commonly used special characters
   ],
-  //|-> Colourful Comments
+  //|=> Colourful Comments
   "colorful-comments-refreshed.tags": [
-    //|-> Core markers
+    //|=> Core markers
     {
       "tag": "@",
       "italic": true,
@@ -847,7 +849,7 @@
       "backgroundColor": "#bd8af41a",
       "color": "#bd8af4"
     },
-    //|-> Keywords
+    //|=> Keywords
     {
       "tag": "HELP",
       "italic": true,
@@ -914,7 +916,7 @@
       "backgroundColor": "transparent",
       "color": "hsla(43, 50%, 50%, 0.95)"
     },
-    //|-> Symbols
+    //|=> Symbols
     {
       "tag": "=",
       "backgroundColor": "transparent",
@@ -941,7 +943,7 @@
       "backgroundColor": "transparent",
       "color": "hsla(162, 70%, 30%, 0.5)"
     },
-    //|-> Box drawing
+    //|=> Box drawing
     {
       "tag": "╔",
       "italic": true,
@@ -970,7 +972,7 @@
   //~@ ====================================================
   //~@ COLOUR OVERRIDES                                   .
   //~@ ====================================================
-  //|-> Semantic Token Rules
+  //|=> Semantic Token Rules
   "editor.semanticTokenColorCustomizations": {
     "rules": {
       "*.static": {
@@ -987,7 +989,7 @@
       }
     }
   },
-  //|-> TextMate Token Overrides
+  //|=> TextMate Token Overrides
   "editor.tokenColorCustomizations": {
     "[*Light*]": {
       "textMateRules": [
@@ -1114,16 +1116,17 @@
       }
     ]
   },
-  //|-> UI Colour Overrides
+  //|=> UI Colour Overrides
   "workbench.colorCustomizations": {},
   //~@ ====================================================
-  //~@ ICON THEME                                         .
+  //~@ ICON OVERRIDES                                     .
   //~@ ====================================================
   "material-icon-theme.activeIconPack": "react",
+  // "material-icon-theme."
   "material-icon-theme.hidesExplorerArrows": true,
   "material-icon-theme.files.color": "#e8ddd8",
   "material-icon-theme.folders.color": "#81c8be",
-  //|-> File associations
+  //|=> File associations
   "material-icon-theme.files.associations": {
     ".editorconfig": "editorconfig",
     ".mise.toml": "jenkins",
@@ -1133,7 +1136,7 @@
     "treefmt.toml": "taze",
     "treefmt/config.toml": "taze"
   },
-  //|-> Custom file icons
+  //|=> Custom file icons
   "material-icon-theme.files.customClones": [
     {
       "name": "rust-entrypoint",
@@ -1223,7 +1226,7 @@
       ]
     }
   ],
-  //|-> Custom language icons
+  //|=> Custom language icons
   "material-icon-theme.languages.customClones": [
     {
       "name": "ahk-clone",
@@ -1235,7 +1238,7 @@
       ]
     }
   ],
-  //|-> Folder associations
+  //|=> Folder associations
   "material-icon-theme.folders.associations": {
     "_": "base",
     ".cargo": "config",
@@ -1261,7 +1264,7 @@
     "types": "Enum",
     "users": "admin"
   },
-  //|-> Custom folder icons
+  //|=> Custom folder icons
   // NOTE: "file", "files" and "system" were listed in both `filesystem` and `lists`; removed from `lists`.
   "material-icon-theme.folders.customClones": [
     {
@@ -1552,5 +1555,4 @@
       ]
     }
   ],
-  "chat.unifiedAgentsBar.enabled": true,
 }

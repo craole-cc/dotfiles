@@ -1,13 +1,14 @@
 {
   config,
-  lib,
   lix,
   inputs,
   pkgs,
+  host,
   user,
+  paths,
+  entryAfter,
   ...
 }: let
-  inherit (lib.hm.dag) entryAfter;
   inherit (lix.applications.generators) userApplicationConfig;
   inherit (lix.attrsets.access) attrNames;
   inherit (lix.attrsets.construction) optionalAttrs;
@@ -16,9 +17,10 @@
   inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
   inherit (lix.modules.evaluation) evalModules;
   inherit (lix.options.construction) mkEnable mkOption;
+  inherit (lix.schema.fonts) mkFonts;
+  inherit (lix.strings.transformation) escapeShellArg;
   inherit (lix.types.combinators) listOf;
   inherit (lix.types.primitives) package;
-  inherit (lix.strings.transformation) escapeShellArg;
   inherit (pkgs.stdenv.hostPlatform) system;
 
   context = mkContext {
@@ -40,8 +42,12 @@
     rm = mkCore "rm";
   };
 
-  base = import ./base/default.nix {inherit lix mkDefault;};
-  features = import ./features/default.nix {inherit lix inputs pkgs;};
+  args = {
+    inherit bins lix mkDefault pkgs paths;
+    fonts = mkFonts {inherit host user;};
+  };
+  base = import ./base args;
+  features = import ./features args;
 
   # Resolve the existing profile fragments through a small option module so
   # mkDefault/mkMerge semantics are preserved without making stable VS Code's
