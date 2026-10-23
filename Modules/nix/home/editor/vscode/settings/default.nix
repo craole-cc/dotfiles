@@ -30,6 +30,8 @@
     ./global.nix
     ./editor.nix
     ./files.nix
+    ./linting.nix
+    ./remote.nix
     ./terminal.nix
   ];
 

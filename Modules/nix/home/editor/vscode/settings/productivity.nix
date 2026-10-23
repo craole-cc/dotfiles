@@ -76,6 +76,13 @@
     ];
     userSettings = {
       "typos.diagnosticSeverity" = "Hint";
+      "harper.dialect" = "British";
+      "harper.workspaceDictPath" = ".harper-dictionary.txt";
+      "harper.excludePatterns" = [];
+      "harper.linters.Dashes" = false;
+      "harper.linters.NumericRangeEnDash" = false;
+      "harper.linters.OxfordComma" = false;
+      "harper.linters.SentenceCapitalization" = false;
     };
   };
 
@@ -115,6 +122,39 @@
       #? Restore familiar Windows keybindings
       "smcpeak.default-keys-windows"
     ];
+    userSettings = {
+      "vscode-default-keybindings.windowsKeybindings" = true;
+    };
+  };
+
+  feeds = mkVSCodeSubFeature {
+    enabled = true;
+    extensions = [];
+    userSettings = {
+      "rss.accounts" = {
+        "fb0e47b0-9982-11ef-a698-3778cde2492f" = {
+          name = "Default";
+          type = "local";
+          feeds = [];
+        };
+      };
+    };
+  };
+
+  spreadsheets = mkVSCodeSubFeature {
+    enabled = true;
+    extensions = [];
+    userSettings = {
+      "spreadjs.ribbonMode" = "toolbar";
+    };
+  };
+
+  integrations = mkVSCodeSubFeature {
+    enabled = true;
+    extensions = [];
+    userSettings = {
+      "atlascode.jira.enabled" = false;
+    };
   };
 in {
   name = "productivity";
@@ -132,6 +172,9 @@ in {
         runners.extensions
         viewers.extensions
         keybindings.extensions
+        feeds.extensions
+        spreadsheets.extensions
+        integrations.extensions
       ];
       userSettings = mkMerge [
         (files.userSettings or {})
@@ -142,6 +185,9 @@ in {
         (runners.userSettings or {})
         (viewers.userSettings or {})
         (keybindings.userSettings or {})
+        (feeds.userSettings or {})
+        (spreadsheets.userSettings or {})
+        (integrations.userSettings or {})
       ];
     };
 }

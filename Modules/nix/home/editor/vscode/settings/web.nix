@@ -57,6 +57,26 @@
       "[scss]"."editor.defaultFormatter" = "biomejs.biome";
     };
   };
+
+  browser = mkVSCodeSubFeature {
+    enabled = true;
+    extensions = [];
+    userSettings = {
+      "vs-browser.favourites.list" = {
+        "http://127.0.0.1:3000" = "http://127.0.0.1:3000";
+        "http://localhost" = "http://localhost";
+      };
+      "vs-browser.link.enabled" = true;
+      "vs-browser.link.openWith" = "ask";
+      "vs-browser.localProxyServer.cookieDomainRewrite" = true;
+      "vs-browser.localProxyServer.enabled" = true;
+      "vs-browser.localProxyServer.forceLocation" = true;
+      "vs-browser.reload.autoReloadDurationEnabled" = false;
+      "vs-browser.reload.autoReloadDurationTime" = 15000;
+      "vs-browser.reload.onSave" = false;
+      "vs-browser.url" = "http://127.0.0.1:3000";
+    };
+  };
 in {
   name = "web";
   description = "Web development extensions";
@@ -68,11 +88,13 @@ in {
         tailwind.extensions
         deno.extensions
         prettier.extensions
+        browser.extensions
       ];
       userSettings = mkMerge [
         (tailwind.userSettings or {})
         (deno.userSettings or {})
         (prettier.userSettings or {})
+        (browser.userSettings or {})
       ];
     };
 }

@@ -4,7 +4,6 @@
   inputs,
   mkMerge,
   flatten,
-  mkDefault,
   mkVSCodeFeature,
   mkVSCodeSubFeature,
   ...

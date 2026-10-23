@@ -60,6 +60,14 @@
       "powershell.integratedConsole.suppressStartupBanner" = true;
     };
   };
+
+  ruby = mkVSCodeSubFeature {
+    enabled = true;
+    extensions = [];
+    userSettings = {
+      "rubyLsp.enableExperimentalFeatures" = true;
+    };
+  };
 in {
   name = "scripting";
   description = "Python, Nushell, PowerShell extensions";
@@ -71,11 +79,13 @@ in {
         python.extensions
         nushell.extensions
         powershell.extensions
+        ruby.extensions
       ];
       userSettings = mkMerge [
         (python.userSettings or {})
         (nushell.userSettings or {})
         (powershell.userSettings or {})
+        (ruby.userSettings or {})
       ];
     };
 }

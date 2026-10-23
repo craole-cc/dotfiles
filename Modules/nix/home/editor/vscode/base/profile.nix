@@ -23,7 +23,7 @@
           options = {
             userSettings = mkOption {
               inherit (json) type;
-              default = {}; # TODO: Should this not come from imports/defaults
+              default = {}; # TODO: Should this not come from imports/defaults or even replace having to maintain imports.nix?
             };
             keybindings = mkOption {
               type = listOf json.type;
@@ -37,7 +37,11 @@
         }
         {
           config = mkMerge (
-            [defaults overrides.control overrides.settings.userSettings]
+            [
+              defaults
+              overrides.keybindings
+              {userSettings = overrides.settings.userSettings;}
+            ]
             ++ ( # TODO: This maybe might be correct now but can be refactored
               map
               (name: overrides.settings.features.${name} cfg.withExtensions.${name})

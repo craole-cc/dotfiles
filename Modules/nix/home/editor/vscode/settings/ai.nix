@@ -30,6 +30,16 @@
       "github.copilot.chat.editor.temporalContext.enabled" = true;
       "github.copilot.nextEditSuggestions.enabled" = true;
       "github.copilot.nextEditSuggestions.eagerness" = "low";
+      "chat.experimental.stickyScroll.enabled" = false;
+      "chat.tools.terminal.autoApprove" = {
+        awk = true;
+        cksum = true;
+        command = true;
+        nix = true;
+        printf = true;
+        zig = true;
+      };
+      "chat.viewSessions.orientation" = "stacked";
     };
   };
 
@@ -61,12 +71,21 @@
   gemini = mkVSCodeSubFeature {
     enabled = false;
     extensions = [];
-    userSettings = {};
+    userSettings = {
+      "geminicodeassist.chat.defaultCodeBlockDisplay" = "Expanded";
+      "geminicodeassist.inlineSuggestions.enableAuto" = true;
+      "geminicodeassist.updateChannel" = "Insiders";
+    };
   };
   continue = mkVSCodeSubFeature {
     enabled = false;
     extensions = [];
-    userSettings = {};
+    userSettings = {
+      "continue.telemetryEnabled" = false;
+      "continue.disableQuickFix" = true;
+      "continue.enableTabAutocomplete" = true;
+      "continue.showInlineTip" = false;
+    };
   };
 in {
   name = "ai";
