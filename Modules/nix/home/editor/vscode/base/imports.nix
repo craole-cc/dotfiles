@@ -4,16 +4,16 @@
   ...
 }: let
   inherit (lix.attrsets.transformation) mapAttrs;
-  inherit (lix.filesystem.access) readJSON;
+  inherit (lix.filesystem.traversal) importJSON';
   inherit (lix.modules.construction) mkOverride;
   inherit (lix.types.predicates) isList;
 
   baseline = 1500; #? mkDefault is 1000
 
   learn = name: let
-    data = readJSON {
+    data = importJSON' {
       root = paths.store.cfg.default;
-      stem = ["vscode" "${name}.jsonc"];
+      stem = ["vscode" "${name}.json"];
     };
   in
     if isList data

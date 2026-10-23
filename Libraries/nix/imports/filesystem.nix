@@ -8,7 +8,7 @@
     flattened = access // construction // transformation // predicates // traversal;
   };
 
-  inherit (lib) filesystem path strings;
+  inherit (lib) filesystem path strings trivial;
 
   access = {
     inherit (builtins) readFile;
@@ -52,6 +52,7 @@
       packagesFromDirectoryRecursive
       readDir
       ;
+    inherit (trivial) importJSON;
   };
 in
   if flatten

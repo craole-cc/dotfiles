@@ -11,7 +11,7 @@
   inherit (_.lists.construction) toList;
   inherit (_.filesystem.meta) listNixModules;
   inherit (_.filesystem.resolution) mkPath;
-  inherit (_.filesystem.traversal) readDir;
+  inherit (_.filesystem.traversal) importJSON readDir;
   inherit (_.lists.aggregation) foldl';
   inherit (_.lists.predicates) elem any;
   inherit (_.lists.selection) filter;
@@ -46,7 +46,9 @@
       importNixModules
       importTree
       importValues
+      readJSON
       ;
+    importJSON' = readJSON;
   };
 
   #> Name prefixes excluded by default from every `importTree`-based walk
@@ -660,5 +662,27 @@
       value = direct;
       paths = directPaths;
     };
+
+  readJSON = args: let
+    root =
+      if isAttrs args
+      then args.root or null
+      else null;
+    stem =
+      if isAttrs args
+      then args.stem or null
+      else null;
+    path =
+      if isAttrs args
+      then args.path or null
+      else args;
+    file =
+      if path != null
+      then path
+      else if root != null && stem != null
+      then mkPath {inherit root; stems = stem;}
+      else throw "readJSON: provide `path`, or provide both `root` and `stem`.";
+  in
+    importJSON file;
 in
   exports // {__rootAliases = exports;}

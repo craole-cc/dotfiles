@@ -7,7 +7,7 @@
   inherit (_.lists.construction) toList;
   inherit (_.filesystem.meta) listNixModules;
   inherit (_.filesystem.resolution) mkPath;
-  inherit (_.filesystem.traversal) foldersToExclude readDir;
+  inherit (_.filesystem.traversal) foldersToExclude importJSON readDir;
   inherit (_.lists.aggregation) foldl';
   inherit (_.lists.predicates) elem;
   inherit (_.lists.selection) filter;

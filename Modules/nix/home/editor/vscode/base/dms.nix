@@ -5,7 +5,7 @@
   ...
 }: let
   inherit (lix.attrsets.construction) optionalAttrs;
-  inherit (lix.filesystem.access) readJSON;
+  inherit (lix.filesystem.traversal) importJSON';
   inherit (lix.filesystem.construction) concat;
 
   enabled = context.wantsDmsShell.condition;
@@ -26,7 +26,7 @@
   meta =
     if source != null
     then
-      readJSON {
+      importJSON' {
         root = source;
         stem = "package.json";
       }
