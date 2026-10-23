@@ -46,7 +46,7 @@
     coreutils // {rmf = "${coreutils.rm} -rf";};
 
   args = {
-    inherit bins cfg context entryAfter inputs lix mkDefault pkgs paths tools mkMerge;
+    inherit bins cfg config context entryAfter inputs lix mkDefault pkgs paths tools mkMerge;
     fonts = mkFonts {inherit host user;};
     json = pkgs.formats.json {};
   };
@@ -89,7 +89,8 @@ in
         condition = resolved.enable;
       };
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
-      withExtensions = overrides.settings.features.options;
+      #TODO: what exactly is happening here?
+      withExtensions = overrides.settings.options;
     };
 
     outputs = {

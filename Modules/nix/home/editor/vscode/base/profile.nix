@@ -23,25 +23,25 @@
           options = {
             userSettings = mkOption {
               inherit (json) type;
-              default = {};
+              default = {}; # TODO: Should this not come from imports/defaults
             };
             keybindings = mkOption {
               type = listOf json.type;
-              default = [];
+              default = []; # TODO: Should this not come from imports/defaults
             };
             extensions = mkOption {
               type = listOf package;
-              default = [];
+              default = []; # TODO: Should this not come from imports/defaults
             };
           };
         }
         {
           config = mkMerge (
-            [defaults.static]
-            ++ ( # TODO: This is not yet correct
+            [defaults]
+            ++ ( # TODO: This maybe might be correct now but can be refactored
               map
-              (name: overrides.features.${name} cfg.overrides.features.${name})
-              (attrNames overrides.options)
+              (name: overrides.settings.features.${name} cfg.withExtensions.${name})
+              (attrNames overrides.settings.options)
             )
           );
         }

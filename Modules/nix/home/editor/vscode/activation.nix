@@ -31,7 +31,7 @@
     };
   };
 
-  profile = let
+  activation = let
     mk = stem:
       concat {
         inherit stem;
@@ -90,5 +90,5 @@
   };
 in {
   file = app.files.extension // extensions;
-  activation = profile // theme;
+  activation = activation // theme;
 }

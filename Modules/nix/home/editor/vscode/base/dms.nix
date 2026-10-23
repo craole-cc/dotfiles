@@ -43,4 +43,4 @@
     "window.autoDetectColorScheme" = false;
     "workbench.colorTheme" = "Dynamic Base16 DankShell";
   };
-in {inherit source meta home settings;}
+in {inherit enabled source meta home settings;}
