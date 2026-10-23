@@ -37,8 +37,7 @@
         }
         {
           config = let
-            inherit (overrides) keybindings settings;
-            inherit (settings) features options userSettings;
+            inherit (overrides) keybindings features options userSettings;
           in
             mkMerge (
               [defaults keybindings {inherit userSettings;}]

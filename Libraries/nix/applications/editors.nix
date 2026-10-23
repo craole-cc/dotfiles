@@ -16,14 +16,14 @@
   };
 
   mkVSCodeFeature = {
-    enabled,
+    enable,
     extensions,
     userSettings ? {},
     pkgs,
     inputs,
   }:
     {
-      extensions = optionals enabled (map (extension: let
+      extensions = optionals enable (map (extension: let
         identifier = parseVscodeExt extension;
       in
         vscodePackage {
@@ -33,27 +33,27 @@
         })
       extensions);
     }
-    // optionalAttrs enabled {inherit userSettings;};
+    // optionalAttrs enable {inherit userSettings;};
 
   mkVSCodeSubFeature = {
-    enabled,
+    enable,
     extensions ? [],
     userSettings ? {},
   }:
-    {extensions = optionals enabled extensions;} // optionalAttrs enabled {inherit userSettings;};
+    {extensions = optionals enable extensions;} // optionalAttrs enable {inherit userSettings;};
 
   mkHelixFeature = {
-    enabled,
+    enable,
     languages ? {},
     themes ? {},
   }:
-    optionalAttrs enabled {inherit languages themes;};
+    optionalAttrs enable {inherit languages themes;};
 
   mkNeovimFeature = {
-    enabled,
+    enable,
     plugins ? [],
     extraConfig ? "",
   }:
-    optionalAttrs enabled {inherit plugins extraConfig;};
+    optionalAttrs enable {inherit plugins extraConfig;};
 in
   __exports.internal // {__rootAliases = __exports.external;}

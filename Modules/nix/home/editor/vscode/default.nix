@@ -55,11 +55,11 @@
     json = pkgs.formats.json {};
   };
 
-  overrides = {
-    settings = import ./settings args;
-    keybindings = import ./control args;
-    extensions = import ./extensions args;
-  };
+  overrides = mkMerge [
+    (import ./settings args)
+    (import ./controller args)
+    (import ./extensions args)
+  ];
   app = import ./base (args // {inherit overrides;});
 
   resolved = userApplicationConfig {

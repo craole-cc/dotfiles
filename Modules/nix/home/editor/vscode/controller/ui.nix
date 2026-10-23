@@ -1,73 +1,8 @@
-# Global keybindings copied from the current VS Code user profile.
 _: {
   keybindings = [
     {
-      "key" = "alt+up";
-      "command" = "editor.action.moveLinesUpAction";
-      "when" = "editorTextFocus && !editorReadonly";
-    }
-    {
-      "key" = "alt+down";
-      "command" = "editor.action.moveLinesDownAction";
-      "when" = "editorTextFocus && !editorReadonly";
-    }
-    {
-      "key" = "ctrl+c";
-      "command" = "editor.action.clipboardCopyAction";
-      "when" = "textInputFocus";
-    }
-    {
-      "key" = "ctrl+shift+,";
-      "command" = "-editor.action.inPlaceReplace.up";
-      "when" = "editorTextFocus && !editorReadonly";
-    }
-    {
-      "key" = "ctrl+shift+,";
-      "command" = "workbench.action.openSettingsJson";
-    }
-    {
-      "key" = "ctrl+shift+alt+,";
-      "command" = "runCommands";
-      "args" = {
-        "commands" = [
-          "workbench.action.openSettingsJson"
-          "workbench.action.openRawDefaultSettings"
-          "workbench.action.moveEditorToNextGroup"
-        ];
-      };
-    }
-    {
-      "key" = "ctrl+alt+,";
-      "command" = "workbench.action.openGlobalKeybindingsFile";
-    }
-    {
-      "key" = "shift+alt+,";
-      "command" = "runCommands";
-      "args" = {
-        "commands" = [
-          "workbench.action.openDefaultKeybindingsFile"
-          "workbench.action.openGlobalKeybindingsFile"
-          "workbench.action.moveEditorToNextGroup"
-        ];
-      };
-    }
-    {
-      "key" = "ctrl+alt+9";
-      "command" = "sortLines.sortLinesCaseInsensitive";
-      "when" = "editorTextFocus && !editorReadonly";
-    }
-    {
       "key" = "ctrl+j";
       "command" = "-workbench.action.togglePanel";
-    }
-    {
-      "key" = "ctrl+alt+`";
-      "command" = "workbench.action.terminal.kill";
-    }
-    {
-      "key" = "shift+escape";
-      "command" = "workbench.action.terminal.kill";
-      "when" = "terminalFocus";
     }
     {
       "key" = "ctrl+t ctrl+m";
