@@ -1,21 +1,16 @@
-{
-  lix,
-  pkgs,
-  inputs,
-  ...
-}: let
+{lix, ...} @ args: let
   inherit (lix.options.construction) mkTrue mkFalse;
   inherit (lix.attrsets.construction) listToAttrs;
 
   load = path:
-    import path {
-      inherit lix pkgs inputs;
-      inherit (lix.modules.construction) mkDefault mkMerge;
-      inherit (lix.lists.transformation) flatten;
-      inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
-    };
+    import path (args
+      // {
+        inherit (lix.modules.construction) mkDefault mkMerge;
+        inherit (lix.lists.transformation) flatten;
+        inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
+      });
 
-  allFeatures = map load [
+  entries = map load [
     ./ai.nix
     ./appearance.nix
     ./decorations.nix
@@ -29,23 +24,24 @@
     ./web.nix
   ];
 
-  mkOption = f:
-    if f.default
-    then mkTrue f.description
-    else mkFalse f.description;
+  mkOption = entry:
+    with entry;
+      if default
+      then mkTrue description
+      else mkFalse description;
 in {
   features = listToAttrs (
-    map (f: {
-      inherit (f) name;
-      value = f.feature;
+    map (entry: {
+      inherit (entry) name;
+      value = entry.feature;
     })
-    allFeatures
+    entries
   );
   options = listToAttrs (
-    map (f: {
-      inherit (f) name;
-      value = mkOption f;
+    map (entry: {
+      inherit (entry) name;
+      value = mkOption entry;
     })
-    allFeatures
+    entries
   );
 }

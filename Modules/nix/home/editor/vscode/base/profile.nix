@@ -40,7 +40,7 @@
             [defaults.static]
             ++ ( # TODO: This is not yet correct
               map
-              (name: overrides.features.${name} cfg.withExtensions.${name})
+              (name: overrides.features.${name} cfg.overrides.features.${name})
               (attrNames overrides.options)
             )
           );
