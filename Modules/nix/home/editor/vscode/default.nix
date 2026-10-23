@@ -11,7 +11,13 @@
 }: let
   inherit (lix.applications.generators) userApplicationConfig;
   inherit (lix.attrsets.construction) genAttrs;
-  inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
+  inherit
+    (lix.modules.construction)
+    mkConfig
+    mkContext
+    mkMerge
+    mkDefault
+    ;
   inherit (lix.options.construction) mkEnable mkTrue;
   inherit (lix.lists.construction) optional;
   inherit (lix.schema.fonts) mkFonts;
@@ -50,24 +56,38 @@
     };
 
   args = {
-    inherit bins cfg config context entryAfter inputs lix mkDefault pkgs paths tools mkMerge;
+    inherit
+      bins
+      cfg
+      config
+      context
+      entryAfter
+      inputs
+      lix
+      mkDefault
+      pkgs
+      paths
+      tools
+      mkMerge
+      ;
     fonts = mkFonts {inherit host user;};
     json = pkgs.formats.json {};
   };
 
-  overrides = mkMerge [
-    (import ./settings args)
-    (import ./controller args)
-    (import ./extensions args)
-  ];
-  app = import ./base (args // {inherit overrides;});
+  overrides = import ./settings args;
+  build = import ./build (args // {inherit overrides;});
 
   resolved = userApplicationConfig {
     inherit context user pkgs;
     name = "vscode";
     category = "gui";
     customPackage = tools.vscode-fhs.package;
-    resolutionHints = ["code" "vscode" "vscode-fhs" "vscode-insiders"];
+    resolutionHints = [
+      "code"
+      "vscode"
+      "vscode-fhs"
+      "vscode-insiders"
+    ];
     requiresWayland = true;
     #? Correct the resolved Insiders package metadata so desktop/icon/CLI
     #? identity is Insiders rather than stable `code`.
@@ -93,10 +113,10 @@ in
         condition = resolved.enable;
       };
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
-      withExtensions = overrides.settings.options;
+      withExtensions = overrides.options;
     };
 
     outputs = {
-      home = resolved.home // (import ./activation.nix (args // app));
+      home = resolved.home // build.activation;
     };
   }

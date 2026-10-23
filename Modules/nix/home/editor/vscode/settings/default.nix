@@ -2,14 +2,17 @@
   inherit (lix.attrsets.aggregation) mergeSafe;
   inherit (lix.options.construction) mkTrue mkFalse;
   inherit (lix.attrsets.construction) genAttrs listToAttrs;
+  inherit (lix.lists.transformation) flatten;
 
   load = path:
-    import path (args
+    import path (
+      args
       // {
         inherit (lix.modules.construction) mkDefault mkMerge;
         inherit (lix.lists.transformation) flatten;
         inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature;
-      });
+      }
+    );
 
   settings = map load [
     ./global.nix
@@ -32,24 +35,27 @@
     # ./vcs.nix
     # ./web.nix
   ];
+
+  collectedKeybindings = flatten (map (entry: entry.keybindings or []) settings);
 in
   {
-    userSettings = mergeSafe (
-      map (entry: entry.userSettings) settings
-    );
+    keybindings = collectedKeybindings;
+    userSettings = mergeSafe (map (entry: entry.userSettings) settings);
   }
-  // genAttrs ["features" "options"] (type:
-    listToAttrs (
-      map (entry: {
-        inherit (entry) name;
-        value =
-          if type == "features"
-          then entry.feature
-          else
-            (with entry;
-              if default
-              then mkTrue description
-              else mkFalse description);
-      })
-      features
-    ))
+  // genAttrs ["features" "options"] (
+    type:
+      listToAttrs (
+        map (entry: {
+          inherit (entry) name;
+          value =
+            if type == "features"
+            then entry.feature
+            else
+              (with entry;
+                if default
+                then mkTrue description
+                else mkFalse description);
+        })
+        features
+      )
+  )

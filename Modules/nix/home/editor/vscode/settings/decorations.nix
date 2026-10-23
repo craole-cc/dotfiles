@@ -457,5 +457,6 @@ in {
         (comments.userSettings or {})
         (todos.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [errorLens indentation colorize output lineWidth comments todos]);
     };
 }

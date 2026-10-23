@@ -98,5 +98,6 @@ in {
         (prettier.userSettings or {})
         (browser.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [tailwind deno prettier browser]);
     };
 }

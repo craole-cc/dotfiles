@@ -61,5 +61,6 @@ in {
         (git.userSettings or {})
         (jujutsu.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [git jujutsu]);
     };
 }

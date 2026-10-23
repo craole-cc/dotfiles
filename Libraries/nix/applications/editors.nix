@@ -16,31 +16,46 @@
   };
 
   mkVSCodeFeature = {
-    enable,
     extensions,
     userSettings ? {},
+    keybindings ? [],
     pkgs,
     inputs,
-  }:
+    ...
+  } @ args: let
+    enable = args.enable or (args.enabled or false);
+  in
     {
-      extensions = optionals enable (map (extension: let
-        identifier = parseVscodeExt extension;
-      in
-        vscodePackage {
-          inherit pkgs inputs;
-          entry = extension;
-          default = throw "Required VS Code extension '${identifier.publisher}.${identifier.name}' was not found in the configured extension catalogues.";
-        })
-      extensions);
+      extensions = optionals enable (
+        map (
+          extension: let
+            identifier = parseVscodeExt extension;
+          in
+            vscodePackage {
+              inherit pkgs inputs;
+              entry = extension;
+              default = throw "Required VS Code extension '${identifier.publisher}.${identifier.name}' was not found in the configured extension catalogues.";
+            }
+        )
+        extensions
+      );
+      keybindings = optionals enable keybindings;
     }
     // optionalAttrs enable {inherit userSettings;};
 
   mkVSCodeSubFeature = {
-    enable,
     extensions ? [],
     userSettings ? {},
-  }:
-    {extensions = optionals enable extensions;} // optionalAttrs enable {inherit userSettings;};
+    keybindings ? [],
+    ...
+  } @ args: let
+    enable = args.enable or (args.enabled or false);
+  in
+    {
+      extensions = optionals enable extensions;
+      keybindings = optionals enable keybindings;
+    }
+    // optionalAttrs enable {inherit userSettings;};
 
   mkHelixFeature = {
     enable,

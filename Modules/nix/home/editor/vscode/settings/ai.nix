@@ -105,8 +105,10 @@ in {
   default = true;
   feature = enabled:
     mkVSCodeFeature {
-      inherit enabled pkgs inputs;
-      extensions = flatten (map (feature: feature.extensions) enabled);
-      userSettings = mkMerge (map (feature: feature.userSettings or {}) enabled);
+      inherit pkgs inputs;
+      enable = enabled;
+      extensions = flatten (map (feature: feature.extensions) features);
+      userSettings = mkMerge (map (feature: feature.userSettings or {}) features);
+      keybindings = flatten (map (feature: feature.keybindings or []) features);
     };
 }

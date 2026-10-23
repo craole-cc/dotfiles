@@ -55,5 +55,6 @@ in {
         (nixLsp.userSettings or {})
         (direnv.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [nixLsp direnv]);
     };
 }

@@ -87,5 +87,6 @@ in {
         (powershell.userSettings or {})
         (ruby.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [python nushell powershell ruby]);
     };
 }

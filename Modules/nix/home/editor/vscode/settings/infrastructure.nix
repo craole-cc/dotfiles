@@ -49,5 +49,6 @@ in {
         (sql.userSettings or {})
         (networking.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [docker sql networking]);
     };
 }

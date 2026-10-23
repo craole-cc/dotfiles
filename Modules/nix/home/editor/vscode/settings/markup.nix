@@ -137,5 +137,6 @@ in {
         (typst.userSettings or {})
         (tooling.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [markdown dataFormats typst tooling]);
     };
 }

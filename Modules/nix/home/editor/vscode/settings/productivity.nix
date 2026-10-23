@@ -191,5 +191,6 @@ in {
         (spreadsheets.userSettings or {})
         (integrations.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [files text env license spelling runners viewers keybindings feeds spreadsheets integrations]);
     };
 }

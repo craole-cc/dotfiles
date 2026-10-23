@@ -69,5 +69,6 @@ in {
         (rust.userSettings or {})
         (shell.userSettings or {})
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [rust shell]);
     };
 }

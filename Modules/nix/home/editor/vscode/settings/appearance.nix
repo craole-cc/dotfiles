@@ -566,5 +566,6 @@ in {
           "workbench.colorCustomizations" = {};
         }
       ];
+      keybindings = flatten (map (feature: feature.keybindings or []) [themes icons animations customUI]);
     };
 }
