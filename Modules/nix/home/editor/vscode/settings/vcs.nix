@@ -24,6 +24,7 @@
     userSettings = {
       "git.allowForcePush" = true;
       "git.autofetch" = true;
+      "git.autoStash" = true;
       "git.confirmForcePush" = false;
       "git.confirmSync" = false;
       "git.enableSmartCommit" = true;

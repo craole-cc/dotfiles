@@ -1,11 +1,7 @@
-{
-  mkDefault,
-  fonts,
-  ...
-}: {
+{fonts, mkDefault, ...}: {
   userSettings = {
     #~@ Basics
-    "editor.fontFamily" = mkDefault fonts.families.monospace;
+    "editor.fontFamily" = fonts.families.monospace;
     "editor.fontSize" = mkDefault 18.0;
     "editor.fontLigatures" = true;
     "editor.fontWeight" = 500;
@@ -15,6 +11,12 @@
     "editor.wordWrap" = "bounded";
     "editor.wordWrapColumn" = 120;
     "editor.renderControlCharacters" = false;
+    "editor.folding" = true;
+    "editor.glyphMargin" = true;
+    "editor.scrollbar.horizontal" = "auto";
+    "editor.scrollbar.vertical" = "auto";
+    "editor.stickyScroll.defaultModel" = "indentationModel";
+    "editor.stickyScroll.scrollWithEditor" = false;
 
     #~@ Behavior
     "editor.accessibilitySupport" = "off";
@@ -24,9 +26,9 @@
     "editor.formatOnSave" = true;
     "editor.formatOnSaveMode" = "file";
     "editor.insertSpaces" = true;
-    "editor.lineNumbers" = "relative";
+    "editor.lineNumbers" = "on";
     "editor.linkedEditing" = true;
-    "editor.matchBrackets" = "never";
+    "editor.matchBrackets" = false;
     "editor.mouseWheelZoom" = true;
     "editor.smoothScrolling" = true;
     "editor.renderLineHighlight" = "gutter";
@@ -47,10 +49,11 @@
     "editor.inlineSuggest.suppressSuggestions" = true;
     "editor.inlayHints.enabled" = "offUnlessPressed";
     "editor.quickSuggestions"."strings" = "on";
+    "[cypher]"."editor.semanticHighlighting.enabled" = true;
     "editor.suggestSelection" = "recentlyUsedByPrefix";
 
     #~@ Semantic tokens
-    "editor.semanticTokenColorCustomisations"."rules" = {
+    "editor.semanticTokenColorCustomizations"."rules" = {
       "interface"."italic" = true;
       "selfParameter"."italic" = true;
       "keyword"."italic" = true;
@@ -58,7 +61,7 @@
     };
 
     #~@ Token colors
-    "editor.tokenColorCustomisations" = {
+    "editor.tokenColorCustomizations" = {
       "[*Light*]"."textMateRules" = [
         {
           "scope" = "ref.matchtext";

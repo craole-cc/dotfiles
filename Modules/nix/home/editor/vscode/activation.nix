@@ -61,7 +61,8 @@
   theme = optionalAttrs dms.enabled {
     seedDmsVSCodeTheme = entryAfter ["linkGeneration"] ''
       source=${escapeShellArg dms.source}
-      theme_dir=${escapeShellArg dms.home}
+      theme_version=$(${bins.jaq} -er '.version | strings | select(length > 0)' "$source/package.json")
+      theme_dir="danklinux.dms-theme-$theme_version"
 
       seed_dms_theme() {
         root="$1"

@@ -17,7 +17,7 @@
     ];
     userSettings = {
       "github.copilot.enable" = {
-        "*" = false;
+        "*" = true;
         "plaintext" = false;
         "markdown" = false;
         "scminput" = false;
@@ -29,6 +29,7 @@
       "github.copilot.chat.codesearch.enabled" = true;
       "github.copilot.chat.editor.temporalContext.enabled" = true;
       "github.copilot.nextEditSuggestions.enabled" = true;
+      "github.copilot.nextEditSuggestions.eagerness" = "low";
     };
   };
 

@@ -24,7 +24,7 @@
       "nix.enableLanguageServer" = true;
       "nix.serverPath" = "nixd";
       "nix.serverSettings"."nixd" = {
-        "formatting"."command" = ["alejandra"];
+        "formatting"."command" = ["alejandra" "-q" "-"];
         "diagnostic"."suppress" = ["sema-primop-overridden"];
       };
     };

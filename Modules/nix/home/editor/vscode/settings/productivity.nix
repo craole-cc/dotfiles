@@ -74,6 +74,9 @@
       #? Highlight invisible/problematic chars
       "nhoizey.gremlins"
     ];
+    userSettings = {
+      "typos.diagnosticSeverity" = "Hint";
+    };
   };
 
   runners = mkVSCodeSubFeature {

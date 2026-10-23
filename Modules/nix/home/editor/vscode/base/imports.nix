@@ -17,7 +17,7 @@
     };
   in
     if isList data
-    then data
+    then mkOverride baseline data
     else mapAttrs (_: mkOverride baseline) data;
 in {
   userSettings = learn "settings";

@@ -43,11 +43,19 @@
       "[powershell]" = {
         "editor.defaultFormatter" = "ms-vscode.powershell";
         "editor.renderControlCharacters" = true;
+        "editor.renderWhitespace" = "all";
         "editor.tabCompletion" = "on";
+        "files.autoGuessEncoding" = true;
         "files.encoding" = "utf8bom";
+        "files.trimTrailingWhitespace" = true;
       };
       "powershell.codeFormatting.autoCorrectAliases" = true;
+      "powershell.codeFormatting.trimWhitespaceAroundPipe" = true;
+      "powershell.codeFormatting.useConstantStrings" = true;
       "powershell.codeFormatting.useCorrectCasing" = true;
+      "powershell.codeFormatting.whitespaceBetweenParameters" = true;
+      "powershell.integratedConsole.focusConsoleOnExecute" = false;
+      "powershell.integratedConsole.forceClearScrollbackBuffer" = true;
       "powershell.integratedConsole.showOnStartup" = false;
       "powershell.integratedConsole.suppressStartupBanner" = true;
     };

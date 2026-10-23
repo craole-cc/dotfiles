@@ -37,9 +37,9 @@
       "denoland.vscode-deno"
     ];
     userSettings = {
-      "[javascript]"."editor.defaultFormatter" = "denoland.vscode-deno";
+      "[javascript]"."editor.defaultFormatter" = "biomejs.biome";
       "[typescript]"."editor.defaultFormatter" = "denoland.vscode-deno";
-      "[html]"."editor.defaultFormatter" = "denoland.vscode-deno";
+      "[html]"."editor.defaultFormatter" = "biomejs.biome";
       "typescript.inlayHints.parameterNames.enabled" = "all";
     };
   };
@@ -51,9 +51,10 @@
       "esbenp.prettier-vscode"
     ];
     userSettings = {
+      "[css]"."editor.defaultFormatter" = "biomejs.biome";
       "[json]"."editor.defaultFormatter" = "vscode.json-language-features";
       "[jsonc]"."editor.defaultFormatter" = "vscode.json-language-features";
-      "[scss]"."editor.defaultFormatter" = "esbenp.prettier-vscode";
+      "[scss]"."editor.defaultFormatter" = "biomejs.biome";
     };
   };
 in {

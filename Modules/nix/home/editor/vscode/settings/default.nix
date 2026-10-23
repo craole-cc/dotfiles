@@ -1,4 +1,6 @@
 {lix, ...} @ args: let
+  inherit (lix.attrsets.aggregation) recursiveUpdate;
+  inherit (lix.lists.aggregation) foldl';
   inherit (lix.options.construction) mkTrue mkFalse;
   inherit (lix.attrsets.construction) listToAttrs;
 
@@ -24,12 +26,20 @@
     ./web.nix
   ];
 
+  coreSettings = map load [
+    ./global.nix
+    ./editor.nix
+    ./files.nix
+    ./terminal.nix
+  ];
+
   mkOption = entry:
     with entry;
       if default
       then mkTrue description
       else mkFalse description;
 in {
+  userSettings = foldl' recursiveUpdate {} (map (entry: entry.userSettings) coreSettings);
   features = listToAttrs (
     map (entry: {
       inherit (entry) name;

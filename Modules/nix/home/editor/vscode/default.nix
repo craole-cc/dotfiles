@@ -29,7 +29,7 @@
     inherit inputs pkgs;
     sources = {
       coreutils = null;
-      dms = "dank-material-shell";
+      jaq = null;
       vscode-fhs = null;
       vscode-insiders =
         if cfg.insiders
@@ -43,7 +43,11 @@
     mkCore = cmd: "${tools.coreutils.paths.binary}/${cmd}";
     coreutils = genAttrs ["chmod" "cp" "dirname" "install" "mkdir" "rm"] mkCore;
   in
-    coreutils // {rmf = "${coreutils.rm} -rf";};
+    coreutils
+    // {
+      rmf = "${coreutils.rm} -rf";
+      jaq = tools.jaq.paths.executable;
+    };
 
   args = {
     inherit bins cfg config context entryAfter inputs lix mkDefault pkgs paths tools mkMerge;
@@ -89,7 +93,6 @@ in
         condition = resolved.enable;
       };
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
-      #TODO: what exactly is happening here?
       withExtensions = overrides.settings.options;
     };
 

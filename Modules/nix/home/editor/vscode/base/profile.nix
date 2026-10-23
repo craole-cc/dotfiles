@@ -37,7 +37,7 @@
         }
         {
           config = mkMerge (
-            [defaults]
+            [defaults overrides.control overrides.settings.userSettings]
             ++ ( # TODO: This maybe might be correct now but can be refactored
               map
               (name: overrides.settings.features.${name} cfg.withExtensions.${name})

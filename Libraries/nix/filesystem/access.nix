@@ -1,6 +1,6 @@
 {_, ...}: let
   inherit (_.filesystem.access) readFile;
-  inherit (_.filesystem.resolution) mkPath;
+  inherit (_.filesystem.primitives) concat;
   inherit (_.strings.construction) fromJSON;
   inherit (_.attrsets.predicates) isAttrs;
 
@@ -28,7 +28,7 @@
       if path != null
       then path
       else if root != null && stem != null
-      then mkPath {inherit root; stems = stem;}
+      then concat {inherit root stem;}
       else throw "readJSON: provide `path`, or provide both `root` and `stem`.";
   in
     fromJSON (readFile file);

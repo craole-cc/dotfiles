@@ -1,4 +1,5 @@
 {
+  fonts,
   pkgs,
   inputs,
   mkMerge,
@@ -23,7 +24,7 @@
       # "mvllow.rose-pine"
     ];
     userSettings = {
-      "workbench.colorTheme" = mkDefault "Catppuccin Frappé";
+      # "workbench.colorTheme" = "Dynamic Base16 DankShell";
       "workbench.preferredDarkColorTheme" = "Catppuccin Frappé";
       "workbench.preferredLightColorTheme" = "Catppuccin Latte";
     };
@@ -41,75 +42,144 @@
     ];
     userSettings = {
       "workbench.iconTheme" = "material-icon-theme";
-      "workbench.productIconTheme" = "material-product-icons";
+      "workbench.productIconTheme" = "el-vsc-v1-icons";
       "material-icon-theme.activeIconPack" = "react";
       "material-icon-theme.hidesExplorerArrows" = true;
       "material-icon-theme.files.color" = "#e8ddd8";
       "material-icon-theme.folders.color" = "#81c8be";
       "material-icon-theme.files.associations" = {
-        ".envrc" = "ember";
-        ".ignore" = "mocha";
-        ".cargo/config.toml" = "rust";
-        "Cargo.toml" = "rust";
-        ".rust-analyzer.toml" = "rust";
-        "rust-analyzer.toml" = "rust";
-        "rust-toolchain" = "rust";
-        "rust-toolchain.toml" = "rust";
-        ".rustfmt.toml" = "rust";
-        "rustfmt.toml" = "rust";
+        ".editorconfig" = "editorconfig";
+        ".mise.toml" = "jenkins";
         ".treefmt.toml" = "taze";
-        "treefmt/config.toml" = "taze";
+        "editorconfig" = "editorconfig";
+        "mise.toml" = "jenkins";
         "treefmt.toml" = "taze";
+        "treefmt/config.toml" = "taze";
       };
-      "material-icon-theme.folders.associations" = {
-        "users" = "admin";
-        "overlays" = "plugin";
-        "hosts" = "client";
-        "systems" = "client";
-        "media" = "video";
-        "types" = "Enum";
-        "methods" = "Config";
-        "traits" = "Tools";
-        "dots" = "Cluster";
-        ".cargo" = "config";
-        "options" = "tasks";
-        "desktops" = "interfaces";
-      };
-      "material-icon-theme.folders.customClones" = [
+      "material-icon-theme.files.customClones" = [
         {
           "name" = "rust-entrypoint";
-          "base" = "rust";
-          "color" = "amber-300";
-          "lightColor" = "amber-600";
+          "base" = "rstack";
+          "color" = "orange-800";
+          "lightColor" = "orange-800";
           "fileNames" = [
+            ".cargo/config.toml"
+            ".rust-analyzer.toml"
+            ".rustfmt.toml"
+            "Cargo.toml"
             "lib.rs"
             "main.rs"
             "mod.rs"
-            "Cargo.toml"
+            "rust-analyzer.toml"
+            "rust-toolchain"
+            "rust-toolchain.toml"
+            "rustfmt.toml"
           ];
         }
         {
           "name" = "nix-entrypoint";
           "base" = "nix";
-          "color" = "green-300";
-          "lightColor" = "green-600";
+          "color" = "cyan-300";
+          "lightColor" = "cyan-600";
           "fileNames" = [
+            "configuration.nix"
             "default.nix"
             "flake.nix"
             "shell.nix"
-            "configuration.nix"
           ];
         }
+        {
+          "name" = "dotenv";
+          "base" = "key";
+          "color" = "amber-300";
+          "lightColor" = "amber-600";
+          "fileNames" = [
+            ".env"
+            ".envrc"
+            "env"
+            "envrc"
+          ];
+        }
+        {
+          "name" = "sublime-text";
+          "base" = "sublime";
+          "color" = "amber-300";
+          "lightColor" = "amber-600";
+          "fileNames" = [
+            ".sublime"
+            "Preferences.sublime-settings"
+            "sublime"
+            "sublime-settings"
+          ];
+        }
+        {
+          "name" = "markdownlinter";
+          "base" = "markdownlint";
+          "color" = "blue-400";
+          "lightColor" = "blue-500";
+          "fileNames" = [
+            ".markdownlint-cli2.yaml"
+            ".markdownlint.yaml"
+            "markdownlint-cli2.yaml"
+            "markdownlint.yaml"
+          ];
+        }
+        {
+          "name" = "dots";
+          "base" = "ionic";
+          "color" = "teal-300";
+          "lightColor" = "teal-600";
+          "fileNames" = [
+            ".dots.conf"
+            ".dots.json"
+            ".dots.toml"
+            ".dots.txt"
+            ".dotsrc"
+            ".dotsrc.fish"
+            ".dotsrc.nu"
+            ".dotsrc.ps1"
+            ".dotsrc.sh"
+            "dots.json"
+            "dots.toml"
+          ];
+        }
+      ];
+      "material-icon-theme.folders.associations" = {
+        "_" = "base";
+        ".cargo" = "config";
+        "Advent-of-Code" = "Middleware";
+        "ai" = "robot";
+        "benches" = "debug";
+        "challenges" = "Cluster";
+        "crates" = "Packages";
+        "day-*" = "job";
+        "days" = "job";
+        "desktops" = "interfaces";
+        "dots" = "Cluster";
+        "hosts" = "client";
+        "media" = "video";
+        "methods" = "Config";
+        "options" = "tasks";
+        "overlays" = "plugin";
+        "polar" = "plastic";
+        "rails" = "Debug";
+        "systems" = "client";
+        "traits" = "Tools";
+        "trivial" = "sandbox";
+        "types" = "Enum";
+        "users" = "admin";
+      };
+      "material-icon-theme.folders.customClones" = [
         {
           "name" = "users";
           "base" = "admin";
           "color" = "light-green-300";
           "lightColor" = "light-green-700";
           "folderNames" = [
-            "users"
-            "user"
             "people"
             "roles"
+            "user"
+            "users"
           ];
         }
         {
@@ -118,9 +188,22 @@
           "color" = "purple-300";
           "lightColor" = "orange-700";
           "folderNames" = [
-            "desktops"
-            "desktop"
             "control"
+            "desktop"
+            "desktops"
+          ];
+        }
+        {
+          "name" = "editor";
+          "base" = "skills";
+          "color" = "blue-gray-600";
+          "lightColor" = "blue-gray-700";
+          "folderNames" = [
+            "editor"
+            "helix"
+            "neovim"
+            "nvim"
+            "zed"
           ];
         }
         {
@@ -129,8 +212,8 @@
           "color" = "blue-gray-400";
           "lightColor" = "orange-700";
           "folderNames" = [
-            "hosts"
             "host"
+            "hosts"
             "machine"
             "machines"
           ];
@@ -161,36 +244,217 @@
           "color" = "blue-gray-600";
           "lightColor" = "blue-gray-500";
           "folderNames" = [
-            "shell"
-            "shellscript"
             "bash"
-            "sh"
             "posix"
+            "sh"
+            "shell"
+            "shells"
+            "shellscript"
+          ];
+        }
+        {
+          "name" = "err";
+          "base" = "error";
+          "color" = "purple-400";
+          "lightColor" = "red-500";
+          "folderNames" = [
+            "err"
+            "erks"
+            "error"
+          ];
+        }
+        {
+          "name" = "filesystem";
+          "base" = "resource";
+          "color" = "deep-purple-400";
+          "lightColor" = "deep-purple-500";
+          "folderNames" = [
+            "file"
+            "files"
+            "filesystem"
+            "io"
+            "system"
+          ];
+        }
+        {
+          "name" = "folder";
+          "base" = "archive";
+          "color" = "deep-purple-300";
+          "lightColor" = "deep-purple-400";
+          "folderNames" = [
+            "folder"
+            "folders"
+          ];
+        }
+        {
+          "name" = "compression";
+          "base" = "archive";
+          "color" = "pink-400";
+          "lightColor" = "pink-600";
+          "folderNames" = [
+            "compress"
+            "compression"
+            "extract"
+            "extractor"
+          ];
+        }
+        {
+          "name" = "internal";
+          "base" = "import";
+          "color" = "green-300";
+          "lightColor" = "green-400";
+          "folderNames" = [
+            "importer"
+            "importers"
+            "internal"
+            "local"
+          ];
+        }
+        {
+          "name" = "external";
+          "base" = "packages";
+          "color" = "green-400";
+          "lightColor" = "green-700";
+          "folderNames" = [
+            "external"
+          ];
+        }
+        {
+          "name" = "workspace";
+          "base" = "project";
+          "color" = "blue-400";
+          "lightColor" = "blue-700";
+          "folderNames" = [
+            "workspace"
           ];
         }
         {
           "name" = "nixos";
-          "base" = "nix";
+          "base" = "quasar";
           "color" = "cyan-800";
           "lightColor" = "cyan-700";
           "folderNames" = [
-            "nixos"
+            ".nix"
             "flake"
             "flakes"
             "nix"
+            "nixos"
           ];
         }
         {
-          "name" = "dots";
-          "base" = "ionic";
-          "color" = "teal-300";
-          "lightColor" = "teal-600";
-          "fileNames" = [
-            ".dots.json"
-            "dots.json"
-            ".dotsrc"
-            ".dotsrc.sh"
-            ".dotsrc.nu"
+          "name" = "movie";
+          "base" = "video";
+          "color" = "orange-800";
+          "lightColor" = "orange-400";
+          "folderNames" = [
+            "imdb"
+            "movie"
+          ];
+        }
+        {
+          "name" = "string";
+          "base" = "storybook";
+          "color" = "light-blue-800";
+          "lightColor" = "light-blue-400";
+          "folderNames" = [
+            "derive"
+            "grammar"
+            "string"
+            "strings"
+            "terminology"
+            "terms"
+            "vocabulary"
+          ];
+        }
+        {
+          "name" = "lists";
+          "base" = "enum";
+          "color" = "teal-600";
+          "lightColor" = "teal-400";
+          "folderNames" = [
+            "list"
+            "lists"
+          ];
+        }
+        {
+          "name" = "sets";
+          "base" = "less";
+          "color" = "teal-600";
+          "lightColor" = "teal-400";
+          "folderNames" = [
+            "attr"
+            "attrsets"
+            "set"
+            "sets"
+          ];
+        }
+        {
+          "name" = "hardware";
+          "base" = "core";
+          "color" = "blue-gray-400";
+          "lightColor" = "blue-gray-700";
+          "folderNames" = [
+            "chip"
+            "hardware"
+            "memory"
+          ];
+        }
+        {
+          "name" = "format";
+          "base" = "custom";
+          "color" = "pink-800";
+          "lightColor" = "pink-400";
+          "folderNames" = [
+            "art"
+            "customize"
+            "fmt"
+            "format"
+          ];
+        }
+        {
+          "name" = "time";
+          "base" = "temp";
+          "color" = "teal-800";
+          "lightColor" = "teal-400";
+          "folderNames" = [
+            "clock"
+            "date"
+            "ephemeral"
+            "time"
+          ];
+        }
+        {
+          "name" = "registry";
+          "base" = "scons";
+          "color" = "purple-800";
+          "lightColor" = "purple-400";
+          "folderNames" = [
+            "register"
+            "registry"
+          ];
+        }
+        {
+          "name" = "sqlx";
+          "base" = "database";
+          "color" = "orange-800";
+          "lightColor" = "orange-400";
+          "folderNames" = [
+            ".sqlx"
+            "sqlx"
+          ];
+        }
+        {
+          "name" = "unit";
+          "base" = "interceptor";
+          "color" = "brown-800";
+          "lightColor" = "brown-400";
+          "folderNames" = [
+            "distance"
+            "measure"
+            "period"
+            "persistent"
+            "range"
+            "span"
           ];
         }
       ];
@@ -200,7 +464,9 @@
           "base" = "autohotkey";
           "color" = "blue-400";
           "lightColor" = "grey-600";
-          "ids" = ["ahk2"];
+          "ids" = [
+            "ahk2"
+          ];
         }
       ];
     };
@@ -233,9 +499,9 @@
       #? Acrylic/vibrancy window effect
       "illixion.vscode-vibrancy-continued"
     ];
-    userSettings = {
-      "custom-ui-style.font.sansSerif" = "'Maple Mono NF', 'Monaspace Radon', 'Dank Mono'";
-      "custom-ui-style.font.monospace" = "'Maple Mono NF', 'VictorMono Nerd Font', 'Dank Mono', 'Hack Nerd Font', monospace";
+    userSettings = with fonts.families; {
+      "custom-ui-style.font.sansSerif" = sansSerif;
+      "custom-ui-style.font.monospace" = monospace;
       "custom-ui-style.background.syncURL" = "file:///$\\{env:WALLPAPER\\}";
       "custom-ui-style.background.size" = "cover";
       "custom-ui-style.background.position" = "center";
@@ -264,34 +530,41 @@ in {
         (customUI.userSettings or {})
         {
           #~@ Window
-          "window.autoDetectColorScheme" = true;
+          "window.autoDetectColorScheme" = false;
           "window.autoDetectHighContrast" = false;
-          "window.titleBarStyle" = "native";
+          "window.customMenuBarAltFocus" = true;
+          "window.customTitleBarVisibility" = "auto";
           "window.menuBarVisibility" = "toggle";
-          "window.customTitleBarVisibility" = "never";
+          "window.restoreFullscreen" = true;
+          "window.titleBarStyle" = "native";
           "window.zoomPerWindow" = true;
 
           #~@ Workbench
+          "workbench.activityBar.location" = "default";
           "workbench.startupEditor" = "none";
           "workbench.panel.defaultLocation" = "bottom";
           "workbench.sideBar.location" = "right";
+          "workbench.statusBar.visible" = true;
+          "breadcrumbs.enabled" = true;
           "workbench.editor.empty.hint" = "hidden";
           "workbench.editor.revealIfOpen" = true;
+          "workbench.editor.showTabs" = "multiple";
           "workbench.quickOpen.preserveInput" = true;
           "workbench.commandPalette.preserveInput" = true;
           "workbench.experimental.share.enabled" = true;
-          "workbench.settings.openDefaultKeybindings" = true;
-          "workbench.statusBar.visible" = true;
+          "workbench.tree.enableStickyScroll" = false;
+          "workbench.editor.useModal" = "off";
           "workbench.editorAssociations" = {
             "*.copilotmd" = "vscode.markdown.preview.editor";
+            "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc" = "default";
+            "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.ui" = "default";
             "*.pdf" = "pdf.view";
             "*.db" = "default";
+            "*.qrc" = "qt-core.qrcEditor";
+            "*.tsv" = "csvViewer.csvEditor";
+            "*.xlsx" = "csvViewer.csvEditor";
           };
-          "workbench.colorCustomisations" = {
-            "editorGroupHeader.tabsBackground" = "#ffffff00";
-            "statusBar.background" = "#ffffff00";
-            "statusBar.border" = "#3c69e750";
-          };
+          "workbench.colorCustomizations" = {};
         }
       ];
     };

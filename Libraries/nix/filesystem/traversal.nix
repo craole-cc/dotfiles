@@ -10,6 +10,7 @@
   inherit (_.debug.assertions) withContext;
   inherit (_.lists.construction) toList;
   inherit (_.filesystem.meta) listNixModules;
+  inherit (_.filesystem.primitives) concatPath;
   inherit (_.filesystem.resolution) mkPath;
   inherit (_.filesystem.traversal) importJSON readDir;
   inherit (_.lists.aggregation) foldl';
@@ -680,7 +681,7 @@
       if path != null
       then path
       else if root != null && stem != null
-      then mkPath {inherit root; stems = stem;}
+      then concatPath {inherit root stem;}
       else throw "readJSON: provide `path`, or provide both `root` and `stem`.";
   in
     importJSON file;

@@ -50,6 +50,8 @@
       "[shellscript]"."editor.defaultFormatter" = "mkhl.shfmt";
       "[bats]"."editor.defaultFormatter" = "mkhl.shfmt";
       "[dotenv]"."editor.defaultFormatter" = "mkhl.shfmt";
+      "bashIde.explainshellEndpoint" = "http://localhost:5000";
+      "zig.zls.enabled" = "on";
     };
   };
 in {

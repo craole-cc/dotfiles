@@ -1,11 +1,10 @@
 {
   lix,
-  tools,
+  config,
   context,
   ...
 }: let
   inherit (lix.attrsets.construction) optionalAttrs;
-  inherit (lix.filesystem.traversal) importJSON';
   inherit (lix.filesystem.construction) concat;
 
   enabled = context.wantsDmsShell.condition;
@@ -14,27 +13,10 @@
   # `danklinux.dms-theme-*` extension in the editor's normal extensions
   # directory. Keep this one extension mutable because Matugen rewrites its
   # theme JSON files whenever DMS colors change.
-  source =
-    if tools ? dms && tools.dms.package ? src
-    then
-      concat {
-        root = tools.dms.package.src;
-        stem = ["quickshell" "matugen" "vsix-build"];
-      }
-    else null;
-
-  meta =
-    if source != null
-    then
-      importJSON' {
-        root = source;
-        stem = "package.json";
-      }
-    else null;
-  home =
-    if meta != null
-    then "danklinux.dms-theme-${meta.version}"
-    else null;
+  source = concat {
+    root = config.programs.dank-material-shell.package;
+    stem = ["share" "quickshell" "dms" "matugen" "vsix-build"];
+  };
 
   settings = optionalAttrs enabled {
     # DMS rewrites the default theme in place to follow its own runtime mode.
@@ -43,4 +25,4 @@
     "window.autoDetectColorScheme" = false;
     "workbench.colorTheme" = "Dynamic Base16 DankShell";
   };
-in {inherit enabled source meta home settings;}
+in {inherit enabled source settings;}
