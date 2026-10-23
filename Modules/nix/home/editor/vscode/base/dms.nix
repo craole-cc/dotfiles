@@ -14,8 +14,9 @@
   # directory. Keep this one extension mutable because Matugen rewrites its
   # theme JSON files whenever DMS colors change.
   source = concat {
-    root = config.programs.dank-material-shell.package;
-    stem = ["share" "quickshell" "dms" "matugen" "vsix-build"];
+    # The output omits the extension sources; follow the selected package's source.
+    root = config.programs.dank-material-shell.package.src;
+    stem = ["quickshell" "matugen" "vsix-build"];
   };
 
   settings = optionalAttrs enabled {
