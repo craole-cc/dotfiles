@@ -36,18 +36,16 @@
           };
         }
         {
-          config = mkMerge (
-            [
-              defaults
-              overrides.keybindings
-              {userSettings = overrides.settings.userSettings;}
-            ]
-            ++ ( # TODO: This maybe might be correct now but can be refactored
-              map
-              (name: overrides.settings.features.${name} cfg.withExtensions.${name})
-              (attrNames overrides.settings.options)
-            )
-          );
+          config = let
+            inherit (overrides) keybindings settings;
+            inherit (settings) features options userSettings;
+          in
+            mkMerge (
+              [defaults keybindings {inherit userSettings;}]
+              ++ map
+              (name: features.${name} cfg.withExtensions.${name})
+              (attrNames options)
+            );
         }
       ];
     }).config;
