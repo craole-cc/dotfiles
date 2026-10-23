@@ -54,7 +54,7 @@
     enabled = true;
     extensions = [
       #? License chooser and inserter
-      "ultramarine.vscode-choosealicense"
+      "ultram4rine.vscode-choosealicense"
     ];
     userSettings = {
       "license.author" = "Craig 'Craole' Cole";
@@ -97,6 +97,8 @@
       "hbenl.vscode-test-explorer"
       #? Bridge legacy Test Explorer adapters into VS Code's native test API
       "ms-vscode.test-adapter-converter"
+      #? Run the configured Statix and ShellCheck diagnostic targets
+      "vix.lint-runner"
     ];
   };
 
@@ -143,7 +145,7 @@
 
   spreadsheets = mkVSCodeSubFeature {
     enabled = true;
-    extensions = [];
+    extensions = ["mescius.spreadjs-xlsx-editor"];
     userSettings = {
       "spreadjs.ribbonMode" = "toolbar";
     };

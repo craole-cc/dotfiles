@@ -1,5 +1,5 @@
 {_, ...}: let
-  inherit (_.attrsets.resolution) vscodePackages;
+  inherit (_.attrsets.resolution) parseVscodeExt vscodePackage;
   inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.lists.construction) optionals;
 
@@ -23,10 +23,15 @@
     inputs,
   }:
     {
-      extensions = optionals enabled (vscodePackages {
-        inherit pkgs inputs;
-        entries = extensions;
-      });
+      extensions = optionals enabled (map (extension: let
+        identifier = parseVscodeExt extension;
+      in
+        vscodePackage {
+          inherit pkgs inputs;
+          entry = extension;
+          default = throw "Required VS Code extension '${identifier.publisher}.${identifier.name}' was not found in the configured extension catalogues.";
+        })
+      extensions);
     }
     // optionalAttrs enabled {inherit userSettings;};
 

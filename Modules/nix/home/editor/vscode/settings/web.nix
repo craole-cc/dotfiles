@@ -49,6 +49,8 @@
     extensions = [
       #? Prettier formatter
       "esbenp.prettier-vscode"
+      #? Biome formatter selected by the language settings below
+      "biomejs.biome"
     ];
     userSettings = {
       "[css]"."editor.defaultFormatter" = "biomejs.biome";
@@ -60,7 +62,7 @@
 
   browser = mkVSCodeSubFeature {
     enabled = true;
-    extensions = [];
+    extensions = ["phu1237.vs-browser"];
     userSettings = {
       "vs-browser.favourites.list" = {
         "http://127.0.0.1:3000" = "http://127.0.0.1:3000";
