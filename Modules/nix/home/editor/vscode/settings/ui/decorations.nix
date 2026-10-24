@@ -60,16 +60,13 @@ _: {
             "markup.changed"
             "markup.deleted.diff"
             "markup.italic"
-            "markup.italic.markdown"
             "markup.quote"
-            "markup.quote.markdown"
             "meta.decorator punctuation.decorator"
             "meta.delimiter.period"
             "meta.diff.header.git"
             "meta.diff.header.from-file"
             "meta.diff.header.to-file"
             "markup.inserted.diff"
-            "meta.class meta.method.declaration meta.var.expr storage.type.js"
             "meta.tag.sgml.doctype"
             "meta.selector"
             "punctuation.accessor"
@@ -78,7 +75,6 @@ _: {
             "punctuation.definition.template-expression.end"
             "punctuation.section.embedded"
             "quote"
-            "source.js constant.other.object.key.js string.unquoted.label.js"
             "storage"
             "storage.type"
             "storage.modifier"
@@ -148,7 +144,7 @@ _: {
     #> Counter background colour.
     "LWI.style.backgroundColor" = "transparent";
     #> Counter margin (px).
-    "LWI.style.margin" = 10;
+    "LWI.style.margin" = 12;
 
     #~@ Render special characters
     #> Border around rendered chars.
