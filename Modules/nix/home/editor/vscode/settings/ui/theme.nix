@@ -1,4 +1,5 @@
 _: {
+  extensions = ["Catppuccin.catppuccin-vsc"];
   settings = {
     #> Detect the system colour scheme and switch themes.
     #! overridden (default: false)

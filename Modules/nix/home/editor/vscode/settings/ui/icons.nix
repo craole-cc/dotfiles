@@ -3,7 +3,7 @@ _: {
     #? Material Design Icons for VS Code
     "PKief.material-icon-theme"
     #? Element Plus style product icon theme
-    "eliverlara.andromeda"
+    "ElAnandKumar.el-vsc-product-icon-theme"
   ];
 
   settings = {
