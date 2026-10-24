@@ -12,6 +12,7 @@
         mkHelixFeature
         mkNeovimFeature
         normalizeSettings
+        flattenVSCodeSetting
         ;
     };
     external = __exports.internal;
@@ -35,6 +36,21 @@
     ...
   }:
     mergeSafe [userSettings settings];
+
+  flattenVSCodeSetting = prefix: value:
+    if builtins.isAttrs value && value != {}
+    then
+      builtins.foldl' (
+        result: key:
+          result
+          // flattenVSCodeSetting (
+            if prefix == ""
+            then key
+            else "${prefix}.${key}"
+          )
+          value.${key}
+      ) {} (builtins.attrNames value)
+    else {"${prefix}" = value;};
 
   mkVSCodeFeature = {
     extensions,
@@ -74,7 +90,9 @@
     ...
   } @ args: let
     enable = args.enable or (args.enabled or false);
-    effectiveSettings = normalizeSettings {inherit settings userSettings;};
+    effectiveSettings = flattenVSCodeSetting "" (
+      normalizeSettings {inherit settings userSettings;}
+    );
   in
     {
       extensions = optionals enable extensions;
