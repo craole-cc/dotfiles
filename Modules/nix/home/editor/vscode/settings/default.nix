@@ -18,6 +18,7 @@
   inherit (lix.modules.construction) mkDefault mkMerge mkOverride;
   inherit (lix.modules.evaluation) evalModules;
   inherit (lix.options.construction) mkFalse mkOption mkTrue;
+  inherit (lix.strings.predicates) hasInfix hasPrefix;
   inherit (lix.types.combinators) listOf;
   inherit (lix.types.predicates) isAttrs isList isPath;
   inherit (lix.types.primitives) package;
@@ -26,7 +27,48 @@
     root = args.paths.store.cfg.default;
     stem = ["vscode" "settings.json"];
   };
-  settingNames = attrNames baselineSettings;
+  readEntries = dir:
+    removeAttrs
+    (importAllNamed {
+      inherit dir;
+      args = removeAttrs args ["mkEntries" "mkEntry" "mkGroup"];
+    }).value ["default"];
+
+  # Explicit dotted keys mark complete settings, including object values.
+  # Share these boundaries so another entry can use the same setting nested.
+  collectSettingNames = prefix: value:
+    if !isAttrs value || elem prefix (attrNames baselineSettings)
+    then []
+    else if value ? _type && value._type == "merge"
+    then concatMap (collectSettingNames prefix) value.contents
+    else if value ? _type && elem value._type ["if" "override" "order"]
+    then collectSettingNames prefix value.content
+    else
+      concatMap (key: let
+        name =
+          if prefix == ""
+          then key
+          else "${prefix}.${key}";
+      in
+        if prefix == "" && hasPrefix "[" key
+        then collectSettingNames "" value.${key}
+        else if hasInfix "." key
+        then [name]
+        else collectSettingNames name value.${key}) (attrNames value);
+
+  collectEntrySettingNames = tree:
+    if !isAttrs tree
+    then []
+    else if tree ? settings || tree ? userSettings
+    then
+      collectSettingNames "" (tree.settings or {})
+      ++ collectSettingNames "" (tree.userSettings or {})
+    else concatMap (key: collectEntrySettingNames tree.${key}) (attrNames tree);
+
+  settingNames = uniqueStrings (
+    attrNames baselineSettings
+    ++ concatMap (dir: collectEntrySettingNames (readEntries dir)) [./ai ./dev ./doc ./ui]
+  );
 
   mkEntry = {
     stem ? "entry",
@@ -50,13 +92,7 @@
     };
 
   mkEntries = dir: let
-    raw =
-      (importAllNamed {
-        inherit dir;
-        args = removeAttrs args ["mkEntries" "mkEntry" "mkGroup"];
-      }).value;
-    #? `default.nix` supplies group metadata; never treat it as an entry.
-    entries = removeAttrs raw ["default"];
+    entries = readEntries dir;
 
     collect = stem: entry: let
       isConfig =

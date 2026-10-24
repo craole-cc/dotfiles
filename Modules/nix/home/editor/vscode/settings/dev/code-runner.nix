@@ -21,7 +21,7 @@ _: {
       clearPreviousOutput = true;
     };
 
-    # TODO: Why is this not nested code-runner.executorMap = {...}
+    # The explicit setting name marks this map as an object for nested contributions in other entries.
     #> Per-language run commands. Replaces the built-in map for listed languages; unlisted languages keep their built-in defaults.
     #? Placeholders ($dir, $workspaceRoot, $fileName, $fileNameWithoutExt, $file) are Code
     #? Runner's own — bare `$`, no braces — so they need no Nix escaping.

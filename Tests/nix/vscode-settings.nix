@@ -53,6 +53,11 @@
     }).config.settings;
 
   checks = {
+    nestedExecutorMapUsesSharedObjectBoundary =
+      profile."code-runner.executorMap".zig
+      == "cd $dir && zig build run"
+      && profile."code-runner.executorMap" ? rust
+      && !(profile ? "code-runner.executorMap.zig");
     disabledEntriesDoNotFallBackToJSON = builtins.all (name: !(builtins.hasAttr name profile)) [
       "harper.dialect"
       "codeium.enableSearch"
