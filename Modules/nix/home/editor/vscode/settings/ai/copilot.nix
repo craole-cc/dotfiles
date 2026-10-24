@@ -6,29 +6,40 @@ _: {
     "github.copilot-chat"
   ];
   settings = {
-    "github.copilot.enable" = {
-      "*" = true;
-      "plaintext" = false;
-      "markdown" = false;
-      "scminput" = false;
-      "nix" = true;
-      "shellscript" = true;
-      "rust" = false;
-      "powershell" = false;
+    github.copilot = {
+      enable = {
+        "*" = true;
+        "plaintext" = false;
+        "markdown" = false;
+        "scminput" = false;
+        "nix" = true;
+        "shellscript" = true;
+        "rust" = false;
+        "powershell" = false;
+      };
+
+      chat = {
+        codesearch.enabled = true;
+        editor.temporalContext.enabled = true;
+      };
+
+      nextEditSuggestions = {
+        enabled = true;
+        eagerness = "low";
+      };
     };
-    "github.copilot.chat.codesearch.enabled" = true;
-    "github.copilot.chat.editor.temporalContext.enabled" = true;
-    "github.copilot.nextEditSuggestions.enabled" = true;
-    "github.copilot.nextEditSuggestions.eagerness" = "low";
-    "chat.experimental.stickyScroll.enabled" = false;
-    "chat.tools.terminal.autoApprove" = {
-      awk = true;
-      cksum = true;
-      command = true;
-      nix = true;
-      printf = true;
-      zig = true;
+
+    chat = {
+      experimental.stickyScroll.enabled = false;
+      tools.terminal.autoApprove = {
+        awk = true;
+        cksum = true;
+        command = true;
+        nix = true;
+        printf = true;
+        zig = true;
+      };
+      viewSessions.orientation = "stacked";
     };
-    "chat.viewSessions.orientation" = "stacked";
   };
 }

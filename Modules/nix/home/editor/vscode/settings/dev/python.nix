@@ -13,10 +13,8 @@ _: {
     #~@ Semantic  Colour and style for TextMate scopes.
     editor.tokenColorCustomizations.textMateRules = [
       {
-        scope = [
-          "keyword.operator.logical.python"
-        ];
-        settings = {fontStyle = "italic";};
+        scope = ["keyword.operator.logical.python"];
+        settings.fontStyle = "italic";
       }
     ];
   };

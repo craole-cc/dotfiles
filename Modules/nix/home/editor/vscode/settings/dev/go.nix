@@ -6,7 +6,7 @@ _: {
 
   settings = {
     "[go]" = {
-      "editor.insertSpaces" = false;
+      editor.insertSpaces = false;
       # "editor.formatOnSave" = true;
       # "editor.formatOnSaveMode" = "file";
       "editor.codeActionsOnSave" = {
@@ -15,8 +15,7 @@ _: {
     };
 
     #~@ Semantic  Colour and style for TextMate scopes.
-    #! overridden (default: {})
-    "editor.tokenColorCustomizations".textMateRules = [
+    editor.tokenColorCustomizations.textMateRules = [
       {
         scope = [
           "source.go keyword.package.go"
@@ -31,7 +30,7 @@ _: {
           "source.go keyword.channel.go"
           "source.go keyword.control.go"
         ];
-        settings = {fontStyle = "italic";};
+        settings.fontStyle = "italic";
       }
     ];
   };

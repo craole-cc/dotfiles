@@ -4,8 +4,11 @@ _: {
   ];
 
   settings = {
-    "[javascript][typescript]" = {
-      "editor.defaultFormatter" = "biomejs.biome";
+    "[javascript]" = {
+      editor.defaultFormatter = "biomejs.biome";
+    };
+    "[typescript]" = {
+      editor.defaultFormatter = "biomejs.biome";
     };
 
     #~@ Semantic  Colour and style for TextMate scopes.
@@ -33,7 +36,7 @@ _: {
           "tag.decorator.js entity.name.tag.js"
           "tag.decorator.js"
         ];
-        settings = {fontStyle = "italic";};
+        settings.fontStyle = "italic";
       }
     ];
   };

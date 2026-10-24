@@ -9,8 +9,9 @@ _: {
     server = "nixd";
   in {
     "[nix]" = {
-      "editor.defaultFormatter" = "jnoortheen.nix-ide";
-      "editor.formatOnSave" = true;
+      editor = {
+        defaultFormatter = "jnoortheen.nix-ide";
+      };
     };
     nix = {
       enableLanguageServer = true;
@@ -38,30 +39,20 @@ _: {
         {
           name = "Nix";
           match = {
-            languages = [
-              "nix"
-            ];
-            files = [
-              "**/*.nix"
-            ];
+            languages = ["nix"];
+            files = ["**/*.nix"];
           };
           onOpen = {
             strategy = "sequence";
-            tools = [
-              "statix"
-            ];
+            tools = ["statix"];
           };
           onSave = {
             strategy = "sequence";
-            tools = [
-              "statix"
-            ];
+            tools = ["statix"];
           };
           manual = {
             strategy = "sequence";
-            tools = [
-              "statix"
-            ];
+            tools = ["statix"];
           };
         }
       ];

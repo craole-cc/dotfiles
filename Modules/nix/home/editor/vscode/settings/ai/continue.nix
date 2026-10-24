@@ -2,9 +2,11 @@ _: {
   enable = false;
   extensions = [];
   settings = {
-    "continue.telemetryEnabled" = false;
-    "continue.disableQuickFix" = true;
-    "continue.enableTabAutocomplete" = true;
-    "continue.showInlineTip" = false;
+    continue = {
+      telemetryEnabled = false;
+      disableQuickFix = true;
+      enableTabAutocomplete = true;
+      showInlineTip = false;
+    };
   };
 }

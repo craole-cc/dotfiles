@@ -13,7 +13,7 @@ _: {
   ];
   settings = {
     "[github-actions-workflow]" = {
-      "editor.defaultFormatter" = "redhat.vscode-yaml";
+      editor.defaultFormatter = "redhat.vscode-yaml";
     };
     git = {
       enabled = true;

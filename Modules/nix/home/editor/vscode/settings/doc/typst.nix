@@ -5,9 +5,12 @@ _: {
   settings = {
     #> Language-scoped editor defaults for Typst documents.
     "[typst][typst-code]" = {
-      "editor.defaultFormatter" = "myriad-dreamin.tinymist";
-      # "editor.inlayHints.enabled" = "off";
-      "editor.quickSuggestions".strings = true;
+      editor = {
+        defaultFormatter = "myriad-dreamin.tinymist";
+        # "editor.inlayHints.enabled" = "off";
+        quickSuggestions.strings = true;
+      };
+
       # "editor.semanticHighlighting.enabled" = true;
       # "editor.tabSize" = 2;
       # "editor.wordWrap" = "on";

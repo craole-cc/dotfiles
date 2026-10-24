@@ -5,16 +5,18 @@ _: {
     "codeium.codeium"
   ];
   settings = {
-    "codeium.disableSupercomplete" = true;
-    "codeium.enableSearch" = true;
-    "codeium.enableConfig" = {
-      "*" = true;
-      "nix" = true;
-      "jsonc" = true;
-      "just" = true;
-      "markdown" = true;
-      "typst" = true;
-      "cypher" = true;
+    codeium = {
+      disableSupercomplete = true;
+      enableSearch = true;
+      enableConfig = {
+        "*" = true;
+        "nix" = true;
+        "jsonc" = true;
+        "just" = true;
+        "markdown" = true;
+        "typst" = true;
+        "cypher" = true;
+      };
     };
   };
 }

@@ -7,13 +7,12 @@ _: {
 
   settings = {
     "[ruby]" = {
-      "editor.defaultFormatter" = "LoranKloeze.ruby-rubocop-revived";
+      editor.defaultFormatter = "LoranKloeze.ruby-rubocop-revived";
     };
-    "rubyLsp.enableExperimentalFeatures" = true;
+    rubyLsp.enableExperimentalFeatures = true;
 
     #~@ Semantic  Colour and style for TextMate scopes.
-    #! overridden (default: {})
-    "editor.tokenColorCustomizations".textMateRules = [
+    editor.tokenColorCustomizations.textMateRules = [
       {
         scope = [
           "keyword.control.ruby"
@@ -21,7 +20,7 @@ _: {
           "keyword.control.class.ruby"
           "keyword.control.def.ruby"
         ];
-        settings = {fontStyle = "italic";};
+        settings.fontStyle = "italic";
       }
     ];
   };

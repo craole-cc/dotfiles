@@ -6,9 +6,12 @@ _: {
   ];
   settings = {
     "[zig]" = {
-      # "editor.formatOnSave" = true;
-      "editor.defaultFormatter" = "ziglang.vscode-zig";
-      "editor.stickyScroll.defaultModel" = "foldingProviderModel";
+      editor = {
+        # "editor.formatOnSave" = true;
+        defaultFormatter = "ziglang.vscode-zig";
+        stickyScroll.defaultModel = "foldingProviderModel";
+      };
+
       # "files.eol" = "\n";
     };
 

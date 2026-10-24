@@ -7,18 +7,21 @@ _: {
     "formulahendry.code-runner"
   ];
   settings = {
-    #> Run in the integrated terminal instead of the read-only Output panel. Required for interactive programs (stdin, TUI, REPLs).
-    "code-runner.runInTerminal" = true;
+    code-runner = {
+      #> Run in the integrated terminal instead of the read-only Output panel. Required for interactive programs (stdin, TUI, REPLs).
+      runInTerminal = true;
 
-    #> Save the file before running, so you never run stale code.
-    "code-runner.saveFileBeforeRun" = true;
+      #> Save the file before running, so you never run stale code.
+      saveFileBeforeRun = true;
 
-    #> Keep focus in the editor after running instead of jumping to the terminal.
-    "code-runner.preserveFocus" = false;
+      #> Keep focus in the editor after running instead of jumping to the terminal.
+      preserveFocus = false;
 
-    #> Clear previous output before each run.
-    "code-runner.clearPreviousOutput" = true;
+      #> Clear previous output before each run.
+      clearPreviousOutput = true;
+    };
 
+    # TODO: Why is this not nested code-runner.executorMap = {...}
     #> Per-language run commands. Replaces the built-in map for listed languages; unlisted languages keep their built-in defaults.
     #? Placeholders ($dir, $workspaceRoot, $fileName, $fileNameWithoutExt, $file) are Code
     #? Runner's own — bare `$`, no braces — so they need no Nix escaping.

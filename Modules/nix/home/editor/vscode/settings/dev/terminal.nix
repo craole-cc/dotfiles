@@ -2,22 +2,24 @@ _: {
   name = "terminal";
   description = "Terminal";
   settings = {
-    "terminal.integrated.allowMnemonics" = true;
-    "terminal.integrated.commandsToSkipShell" = [
-      "workbench.action.terminal.copySelection"
-    ];
-    "terminal.integrated.confirmOnExit" = "never";
-    "terminal.integrated.copyOnSelection" = true;
-    "terminal.integrated.enableImages" = true;
-    "terminal.integrated.enableMultiLinePasteWarning" = "never";
-    "terminal.integrated.hideOnStartup" = "whenEmpty";
-    "terminal.integrated.mouseWheelZoom" = false;
-    "terminal.integrated.rightClickBehavior" = "copyPaste";
-    "terminal.integrated.cursorBlinking" = true;
-    "terminal.integrated.cursorStyle" = "block";
-    "terminal.integrated.smoothScrolling" = true;
-    "terminal.integrated.stickyScroll.enabled" = false;
-    "terminal.integrated.tabs.location" = "right";
+    terminal.integrated = {
+      allowMnemonics = true;
+      commandsToSkipShell = [
+        "workbench.action.terminal.copySelection"
+      ];
+      confirmOnExit = "never";
+      copyOnSelection = true;
+      enableImages = true;
+      enableMultiLinePasteWarning = "never";
+      hideOnStartup = "whenEmpty";
+      mouseWheelZoom = false;
+      rightClickBehavior = "copyPaste";
+      cursorBlinking = true;
+      cursorStyle = "block";
+      smoothScrolling = true;
+      stickyScroll.enabled = false;
+      tabs.location = "right";
+    };
   };
 
   keybindings = [
