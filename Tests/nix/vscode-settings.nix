@@ -32,18 +32,21 @@
     dev = true;
     doc = true;
     ui = true;
+    web = true;
   };
   disabledProfile = resolveProfile {
     ai = false;
     dev = false;
     doc = false;
     ui = false;
+    web = false;
   };
   importedProfile = resolveProfileWithImports true {
     ai = true;
     dev = true;
     doc = true;
     ui = true;
+    web = true;
   };
   profile = enabledProfile.userSettings;
   terminalBinding = {
@@ -61,6 +64,8 @@
     }).config.settings;
 
   checks = {
+    webCategoryIsLoaded = profile."vs-browser.url" == "http://127.0.0.1:3000";
+    webObjectValuesRemainObjects = profile."vs-browser.favourites.list"."http://localhost" == "http://localhost";
     rustSnippetObjectsArePreserved =
       profile."rust-analyzer.completion.snippets.custom"."Arc::new".body
       == "Arc::new(\${receiver})"

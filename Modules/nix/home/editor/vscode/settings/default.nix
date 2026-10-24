@@ -69,9 +69,10 @@
       ++ collectSettingNames "" (tree.userSettings or {})
     else concatMap (key: collectEntrySettingNames tree.${key}) (attrNames tree);
 
+  groupPaths = [./ai ./dev ./doc ./ui ./web];
   settingNames = uniqueStrings (
     attrNames baselineSettings
-    ++ concatMap (dir: collectEntrySettingNames (readEntries dir)) [./ai ./dev ./doc ./ui]
+    ++ concatMap (dir: collectEntrySettingNames (readEntries dir)) groupPaths
   );
 
   mkEntry = {
@@ -180,12 +181,7 @@
     then loaded
     else mkGroup loaded;
 
-  groups = map load [
-    ./ai
-    ./dev
-    ./doc
-    ./ui
-  ];
+  groups = map load groupPaths;
 
   module = let
     options = listToAttrs (
