@@ -13,7 +13,7 @@
   inherit (lix.lists.aggregation) concatMap;
   inherit (lix.lists.construction) optional optionals;
   inherit (lix.lists.predicates) any;
-  inherit (lix.lists.transformation) flatten uniqueStrings;
+  inherit (lix.lists.transformation) filter flatten uniqueStrings;
   inherit (lix.modules.construction) mkDefault mkMerge mkOverride;
   inherit (lix.modules.evaluation) evalModules;
   inherit (lix.options.construction) mkFalse mkOption mkTrue;
@@ -31,7 +31,7 @@
     userSettings ? {},
     keybindings ? [],
   }:
-    {inherit name description;}
+    {inherit name description enable;}
     // mkVSCodeSubFeature {
       inherit enable extensions settings userSettings keybindings;
     };
@@ -97,18 +97,20 @@
   in {
     inherit (resolved) name description;
     inherit default;
-    feature = enable:
+    feature = enable: let
+      entries = filter (entry: entry.enable) resolved.entries;
+    in
       mkVSCodeFeature {
         inherit enable pkgs inputs;
         extensions = uniqueStrings (
-          concatMap (entry: entry.extensions or []) resolved.entries
+          concatMap (entry: entry.extensions or []) entries
         );
         userSettings = mkMerge (
-          map normalizeSettings resolved.entries
+          map normalizeSettings entries
         );
         keybindings =
           concatMap (entry: entry.keybindings or [])
-          resolved.entries;
+          entries;
       };
   };
 
