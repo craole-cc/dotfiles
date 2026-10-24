@@ -6,6 +6,8 @@ _: {
     "rvben.rumdl"
     #? Markdown editing helpers (TOC, table formatter, …)
     "yzhang.markdown-all-in-one"
+    #? Convert Markdown to PDF
+    "yzane.markdown-pdf"
   ];
 
   settings = {
@@ -269,41 +271,6 @@ _: {
       #> Paper width (overrides `format` when set). Units: mm, cm, in, px.
       width = "";
     };
-
-    markdownlint = {
-      #~@ markdownlint
-      #> Which files to lint.
-      #?  - allFiles | workspace | project | none
-      appliesTo = "allFiles";
-      #> Path to a config file (`.markdownlint.json` / `.yaml` / …).
-      configFile = null;
-      #> JSON Pointer into the config file.
-      configPointer = null;
-      #> Deprecated — use a config file.
-      customRules = [];
-      #> Focus mode (hide diagnostics on the current line).
-      focusMode = false;
-      #> Glob patterns for the `lintWorkspace` command.
-      lintWorkspaceGlobs = [
-        "**/*.{md,mkd,mdwn,mdown,markdown,markdn,mdtxt,mdtext,workbook}"
-        "!**/*.code-search"
-        "!**/bower_components"
-        "!**/node_modules"
-        "!**/.git"
-        "!**/vendor"
-      ];
-      #> When to lint.
-      #?  - onType | onSave
-      run = "onType";
-      #> Severity mapping for `error` diagnostics.
-      #?  - Error | Warning | Information | Hint
-      severityForError = "Warning";
-      #> Severity mapping for `warning` diagnostics.
-      #?  - Error | Warning | Information | Hint
-      severityForWarning = "Information";
-    };
-    #> Deprecated — use a `.markdownlint.*` config file.
-    "markdownlint.config" = {};
 
     rumdl = {
       #~@ rumdl
