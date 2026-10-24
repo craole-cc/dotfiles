@@ -1,4 +1,6 @@
-_: {
+{lix, ...}: let
+  inherit (lix.applications.editors) mkVSCodeSetting;
+in {
   enable = true;
   extensions = [
     "rust-lang.rust-analyzer"
@@ -150,7 +152,7 @@ _: {
         #? `"never"` Never show the status bar.
         #? `{ documentSelector: <DocumentSelector>[] }` Show the status bar if the open file matches any of the given document selectors.
         #? See [VS Code -- DocumentSelector](https://code.visualstudio.com/api/references/document-selector) for more information.
-        showStatusBar = {
+        showStatusBar = mkVSCodeSetting {
           documentSelector = [
             {language = "rust";}
             {pattern = "**/Cargo.toml";}
@@ -192,9 +194,9 @@ _: {
         #?  - webfreak.debug: Use [Native Debug](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
         engine = "auto";
         #> Optional settings passed to the debug engine. Example: `{ "lldb": { "terminal":"external"} }`
-        engineSettings = {};
+        engineSettings = mkVSCodeSetting {};
         #> Optional source file mappings passed to the debug engine.
-        sourceFileMap = {
+        sourceFileMap = mkVSCodeSetting {
           "/rustc/<id>" = "\${env:USERPROFILE}/.rustup/toolchains/<toolchain-id>/lib/rustlib/src/rust";
         };
       };
@@ -226,7 +228,7 @@ _: {
         #> Whether to show the main part of the rendered rustc output of a diagnostic message.
         previewRustcOutput = false;
         #> Map of prefixes to be substituted when parsing diagnostic file paths. This should be the reverse mapping of what is passed to `rustc` as `--remap-path-prefix`.
-        remapPrefix = {};
+        remapPrefix = mkVSCodeSetting {};
         styleLints = {
           #> Run additional style lints.
           enable = false;
@@ -305,7 +307,7 @@ _: {
         #> Extra arguments that are passed to every cargo invocation.
         extraArgs = [];
         #> Extra environment variables that will be set when running cargo, rustc or other commands within the workspace. Useful for setting RUSTFLAGS.
-        extraEnv = {};
+        extraEnv = mkVSCodeSetting {};
         #> List of features to activate.
         #? Set this to `"all"` to pass `--all-features` to cargo.
         features = [];
@@ -343,7 +345,7 @@ _: {
         #> Extra arguments for `cargo check`.
         extraArgs = [];
         #> Extra environment variables that will be set when running `cargo check`. Extends `rust-analyzer.cargo.extraEnv`.
-        extraEnv = {};
+        extraEnv = mkVSCodeSetting {};
         #> List of features to activate. Defaults to `rust-analyzer.cargo.features`.
         #? Set to `"all"` to pass `--all-features` to Cargo.
         features = null;
@@ -451,7 +453,7 @@ _: {
         };
         snippets = {
           #> Custom completion snippets.
-          custom = {
+          custom = mkVSCodeSetting {
             Ok = {
               postfix = "ok";
               body = "Ok(\${receiver})";
@@ -864,7 +866,7 @@ _: {
         capacity = null;
         query = {
           #> The LRU capacity of the specified queries.
-          capacities = {};
+          capacities = mkVSCodeSetting {};
         };
       };
 
@@ -882,7 +884,7 @@ _: {
         enable = true;
         #> These proc-macros will be ignored when trying to expand them.
         #? This config takes a map of crate names with the exported proc-macro names to ignore as values.
-        ignored = {};
+        ignored = mkVSCodeSetting {};
         #> Number of proc-macro server processes to spawn.
         #? Controls how many independent `proc-macro-srv` processes rust-analyzer runs in parallel to handle macro expansion.
         processes = 2;

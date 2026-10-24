@@ -1,13 +1,13 @@
 {lix ? (import ../.. {}).libraries.default}: let
   inherit (lix) lib;
-  inherit (lix.applications.editors) flattenVSCodeSetting mkVSCodeSubFeature normalizeSettings;
+  inherit (lix.applications.editors) flattenVSCodeSetting mkVSCodeSetting mkVSCodeSubFeature normalizeSettings;
   inherit (lix.modules.construction) mkForce mkIf mkMerge;
 
   baseline = builtins.fromJSON (builtins.readFile ../../Configuration/vscode/settings.json);
   settingNames = builtins.attrNames baseline;
   flatten = flattenVSCodeSetting {inherit settingNames;};
   entry = path:
-    (mkVSCodeSubFeature ((import path {})
+    (mkVSCodeSubFeature ((import path {inherit lix;})
       // {
         enable = true;
         inherit settingNames;
@@ -15,16 +15,18 @@
   nixSettings = entry ../../Modules/nix/home/editor/vscode/settings/dev/nix.nix;
   javascript = entry ../../Modules/nix/home/editor/vscode/settings/dev/js.nix;
   python = entry ../../Modules/nix/home/editor/vscode/settings/dev/python.nix;
-  resolveProfile = features:
+  resolveProfileWithImports = importJSON: features:
     (import ../../Modules/nix/home/editor/vscode/settings {
       inherit lix;
       inputs = {};
       pkgs = {};
       cfg.features = features;
+      cfg.importJSON = importJSON;
       json.type = lib.types.json;
       fonts.families.monospace = "monospace";
       paths.store.cfg.default = ../../Configuration;
     }).output;
+  resolveProfile = resolveProfileWithImports false;
   enabledProfile = resolveProfile {
     ai = true;
     dev = true;
@@ -36,6 +38,12 @@
     dev = false;
     doc = false;
     ui = false;
+  };
+  importedProfile = resolveProfileWithImports true {
+    ai = true;
+    dev = true;
+    doc = true;
+    ui = true;
   };
   profile = enabledProfile.userSettings;
   terminalBinding = {
@@ -53,6 +61,44 @@
     }).config.settings;
 
   checks = {
+    rustSnippetObjectsArePreserved =
+      profile."rust-analyzer.completion.snippets.custom"."Arc::new".body
+      == "Arc::new(\${receiver})"
+      && !(profile ? "rust-analyzer.completion.snippets.custom.Arc::new.body");
+    rustSourceFileMapIsPreserved =
+      profile."rust-analyzer.debug.sourceFileMap"."/rustc/<id>"
+      == "\${env:USERPROFILE}/.rustup/toolchains/<toolchain-id>/lib/rustlib/src/rust"
+      && !(profile ? "rust-analyzer.debug.sourceFileMap./rustc/<id>");
+    rustStatusBarObjectIsPreserved = profile."rust-analyzer.statusBar.showStatusBar" ? documentSelector;
+    explicitObjectValueNeedsNoCatalogue =
+      flattenVSCodeSetting "" {
+        extension.custom = mkVSCodeSetting {nested.value = true;};
+      }
+      == {"extension.custom".nested.value = true;};
+    markedKnownSettingIsUnwrapped =
+      flatten {
+        editor.tokenColorCustomizations = mkVSCodeSetting {textMateRules = [];};
+      }
+      == {"editor.tokenColorCustomizations".textMateRules = [];};
+    markedValuePreservesPriority =
+      evaluate (flatten {
+        editor.tokenColorCustomizations = mkForce (mkVSCodeSetting {textMateRules = [];});
+      })
+      == {"editor.tokenColorCustomizations".textMateRules = [];};
+    JSONFallbackDisabledByDefault = builtins.all (name: !(builtins.hasAttr name profile)) [
+      "cssvar.extensions"
+      "cssvar.files"
+      "cssvar.ignore"
+      "direnv.restart.automatic"
+      "dotenv.enableAutocloaking"
+      "editor.wordWrap"
+    ];
+    disabledGroupsProduceEmptySettingsWithoutImports = disabledProfile.userSettings == {};
+    javascriptColourRuleIsDefinedOnce =
+      builtins.length (builtins.filter
+        (rule: (rule.scope or null) == (builtins.head javascript."editor.tokenColorCustomizations".textMateRules).scope)
+        profile."editor.tokenColorCustomizations".textMateRules)
+      == 1;
     nestedExecutorMapUsesSharedObjectBoundary =
       profile."code-runner.executorMap".zig
       == "cd $dir && zig build run"
@@ -73,7 +119,7 @@
       "github.copilot.enable"
       "harper.dialect"
     ];
-    unrelatedJSONSettingsPreserved = profile."editor.wordWrap" == baseline."editor.wordWrap";
+    JSONFallbackCanBeEnabled = importedProfile.userSettings."editor.wordWrap" == baseline."editor.wordWrap";
     enabledEntryKeybindingIsNotDuplicated =
       builtins.length (builtins.filter (binding: binding == terminalBinding) enabledProfile.keybindings) == 1;
     disabledGroupKeybindingsDoNotFallBackToJSON = !(builtins.elem terminalBinding disabledProfile.keybindings);

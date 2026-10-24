@@ -18,6 +18,7 @@
         mkNeovimFeature
         normalizeSettings
         flattenVSCodeSetting
+        mkVSCodeSetting
         ;
     };
     external = __exports.internal;
@@ -45,6 +46,12 @@
   in
     mergeSafe [(flatten userSettings) (flatten settings)];
 
+  # Mark a complete setting value when its object shape resembles a namespace.
+  mkVSCodeSetting = content: {
+    _type = "vscode-setting";
+    inherit content;
+  };
+
   # Setting names identify where namespaces end and JSON object values begin.
   # Explicit dotted keys also mark complete settings. Language override blocks
   # contain another settings map; arrays and setting values stay intact.
@@ -55,9 +62,21 @@
       then context
       else {prefix = context;};
     settingNames = options.settingNames or [];
+    unwrap = value:
+      if !isAttrs value
+      then value
+      else if (value._type or null) == "vscode-setting"
+      then value.content
+      else if elem (value._type or null) ["if" "override" "order"]
+      then value // {content = unwrap value.content;}
+      else if (value._type or null) == "merge"
+      then value // {contents = map unwrap value.contents;}
+      else value;
     flatten = prefix: value:
-      if prefix != "" && elem prefix settingNames
-      then {"${prefix}" = value;}
+      if isAttrs value && (value._type or null) == "vscode-setting"
+      then {"${prefix}" = value.content;}
+      else if prefix != "" && elem prefix settingNames
+      then {"${prefix}" = unwrap value;}
       else if isAttrs value && value ? _type && elem value._type ["merge" "if" "override" "order"]
       then
         value
@@ -78,7 +97,7 @@
               if prefix == "" && hasPrefix "[" key
               then {"${key}" = flatten "" value.${key};}
               else if hasInfix "." key
-              then {"${name}" = value.${key};}
+              then {"${name}" = unwrap value.${key};}
               else flatten name value.${key};
           in
             mergeSafe [result setting]

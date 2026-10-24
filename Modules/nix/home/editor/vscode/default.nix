@@ -13,7 +13,7 @@
   inherit (lix.attrsets.aggregation) mergeSafe;
   inherit (lix.attrsets.construction) genAttrs;
   inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
-  inherit (lix.options.construction) mkEnable mkTrue;
+  inherit (lix.options.construction) mkEnable mkFalse mkTrue;
   inherit (lix.lists.construction) optional;
   inherit (lix.schema.fonts) mkFonts;
   inherit (lix.sources.packages) pkgsFrom;
@@ -107,6 +107,7 @@ in
         condition = app.enable;
       };
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
+      importJSON = mkFalse "Import fallback VS Code settings and keybindings from the saved JSON configuration.";
       features = profile.options;
     };
 

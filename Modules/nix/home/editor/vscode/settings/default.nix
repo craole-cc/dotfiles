@@ -37,7 +37,11 @@
   # Explicit dotted keys mark complete settings, including object values.
   # Share these boundaries so another entry can use the same setting nested.
   collectSettingNames = prefix: value:
-    if !isAttrs value || elem prefix (attrNames baselineSettings)
+    if !isAttrs value
+    then []
+    else if (value._type or null) == "vscode-setting"
+    then [prefix]
+    else if elem prefix (attrNames baselineSettings)
     then []
     else if value ? _type && value._type == "merge"
     then concatMap (collectSettingNames prefix) value.contents
@@ -233,12 +237,10 @@
     };
     config = mkMerge (
       module.output
-      ++ [
-        {
-          userSettings = learn "settings";
-          keybindings = learn "keybindings";
-        }
-      ]
+      ++ optional (cfg.importJSON or false) {
+        userSettings = learn "settings";
+        keybindings = learn "keybindings";
+      }
     );
     modules = evalModules {modules = [{inherit options config;}];};
     output = modules.config;
