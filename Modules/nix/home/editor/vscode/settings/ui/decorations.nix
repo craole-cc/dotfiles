@@ -45,12 +45,8 @@ _: {
           scope = [
             "comment"
             "emphasis"
-            "entity.name.method.js"
-            "entity.name.class.js"
             "entity.name.tag.doctype"
             "entity.other.attribute-name"
-            "entity.other.attribute-name.tag.jade"
-            "entity.other.attribute-name.tag.pug"
             "keyword"
             "keyword.control"
             "keyword.operator.comparison"
@@ -60,7 +56,6 @@ _: {
             "keyword.operator.cast"
             "keyword.operator.relational"
             "keyword.operator.sizeof"
-            "keyword.operator.logical.python"
             "italic"
             "markup.changed"
             "markup.deleted.diff"
@@ -101,7 +96,7 @@ _: {
     #! overridden (default: {})
     "workbench.colorCustomizations" = {};
 
-    #~@ Bracket colorization & guides ───────────────────────────────────
+    #~@ Bracket Colorization & Guides
     #> Per-type bracket colour pools.
     #! overridden (default: false)
     "editor.bracketPairColorization.independentColorPoolPerBracketType" = true;
@@ -124,7 +119,7 @@ _: {
     #! overridden (default: "always")
     "editor.matchBrackets" = "never";
 
-    #~@ Line-width indicators ───────────────────────────────────────────
+    #~@ Line-width Indicators
     #! overridden (default: [])
     "LWI.breakpoints" = [
       {
@@ -155,7 +150,7 @@ _: {
     #> Counter margin (px).
     "LWI.style.margin" = 10;
 
-    #~@ Render special characters ───────────────────────────────────────
+    #~@ Render special characters
     #> Border around rendered chars.
     #! overridden (default: "")
     "render-special-chars.border" = "1px solid; border-radius: 2px;";
