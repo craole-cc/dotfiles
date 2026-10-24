@@ -72,7 +72,10 @@
   };
 in {
   enable = true;
-  extensions = concatLists (map (language: language.extensions) [ini json toml yaml]);
+  extensions = concatLists (
+    map (language: language.extensions)
+    [ini json toml yaml]
+  );
   settings = {
     "[ini]" = ini;
     "[json]" = json;
