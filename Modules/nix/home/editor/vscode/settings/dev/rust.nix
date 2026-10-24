@@ -8,7 +8,15 @@ _: {
     "ms-vscode.test-adapter-converter"
     "Swellaby.vscode-rust-test-adapter"
   ];
-  settings = {
+  settings = let
+    flatten = prefix: value:
+      if builtins.isAttrs value && value != {}
+      then
+        builtins.foldl' (result: key:
+          result // flatten (if prefix == "" then key else "${prefix}.${key}") value.${key}
+        ) {} (builtins.attrNames value)
+      else { "${prefix}" = value; };
+  in flatten "" {
     dependi.rust = {
       #> Enable checking for Rust dependencies.
       enabled = true;
