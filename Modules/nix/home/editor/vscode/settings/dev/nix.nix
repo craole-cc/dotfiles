@@ -6,6 +6,7 @@ _: {
     "SebastianKarlsen.direnv-trusted"
     "vix.lint-runner"
   ];
+
   settings = let
     server = "nixd";
   in {

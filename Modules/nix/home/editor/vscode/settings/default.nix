@@ -69,7 +69,7 @@
       ++ collectSettingNames "" (tree.userSettings or {})
     else concatMap (key: collectEntrySettingNames tree.${key}) (attrNames tree);
 
-  groupPaths = [./ai ./dev ./doc ./ui];
+  groupPaths = [./ai ./app ./dev ./doc ./ui];
   settingNames = uniqueStrings (
     attrNames baselineSettings
     ++ concatMap (dir: collectEntrySettingNames (readEntries dir)) groupPaths

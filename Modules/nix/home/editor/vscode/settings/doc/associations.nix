@@ -1,5 +1,0 @@
-{
-  extensions = [];
-  keybindings = [];
-  settings = {};
-}

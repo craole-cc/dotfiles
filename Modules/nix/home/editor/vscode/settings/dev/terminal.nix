@@ -1,7 +1,7 @@
 _: {
   name = "terminal";
   description = "Terminal";
-
+  extensions = ["nguyenngoclong.terminal-keeper"];
   keybindings = [
     {
       key = "ctrl+j";
