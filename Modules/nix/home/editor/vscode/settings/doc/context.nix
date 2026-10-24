@@ -8,6 +8,33 @@ _: {
     "NixFractal.md-file-dumper"
   ];
 
+  keybindings = [
+    #> Copy the selected Context Craft files/selection as a prompt payload.
+    {
+      key = "ctrl+alt+c";
+      command = "contextCraft.copySelected";
+      when = "editorTextFocus || focusedView == 'contextCraftFileBrowser'";
+    }
+    #> Pre-select all files with uncommitted git changes.
+    {
+      key = "ctrl+alt+g";
+      command = "contextCraft.selectGitChanges";
+      when = "focusedView == 'contextCraftFileBrowser'";
+    }
+    #> Pre-select all currently open editors.
+    {
+      key = "ctrl+alt+o";
+      command = "contextCraft.selectOpenEditors";
+      when = "focusedView == 'contextCraftFileBrowser'";
+    }
+    #> Clear the selection.
+    {
+      key = "ctrl+alt+u";
+      command = "contextCraft.unselectAll";
+      when = "focusedView == 'contextCraftFileBrowser'";
+    }
+  ];
+
   settings = {
     #~@ context-craft
     #> Excludes scoped to "Copy Content" only. Merged with global excludes.

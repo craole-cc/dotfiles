@@ -25,9 +25,19 @@
   context = mkContext {inherit config dom mod top;};
   inherit (context) cfg ice;
 
+  interface = config.${top}.resolved.interface or {};
+  session = config.interface.common.session or {};
+  resolvedProtocol = interface.displayProtocol or null;
+  sessionProtocol = session.protocol or null;
+  displayProtocol =
+    if resolvedProtocol != null
+    then resolvedProtocol
+    else if sessionProtocol != null
+    then sessionProtocol
+    else "wayland";
+
   user = host.users.data.primary or {};
   groups = user.packages or (lix.schema.packages.resolve {record = user;});
-  displayProtocol = ice.displayProtocol or null;
 
   registry = let
     editor = editors.packages {
@@ -192,6 +202,7 @@
       gum
       helix
       jaq
+      yq-go
       jq
       jql
       lolcat
