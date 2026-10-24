@@ -8,5 +8,4 @@ _: {
       apiURL = "https://index.dependi.io";
     };
   };
-  keybindings = [];
 }

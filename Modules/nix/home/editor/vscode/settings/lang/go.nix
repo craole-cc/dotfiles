@@ -1,16 +1,14 @@
 _: {
-  enable = false;
+  enable = true;
   extensions = [
-    "golang.Go"
+    # "golang.Go"
   ];
 
   settings = {
     "[go]" = {
-      editor.insertSpaces = false;
-      # "editor.formatOnSave" = true;
-      # "editor.formatOnSaveMode" = "file";
-      "editor.codeActionsOnSave" = {
-        "source.organizeImports" = "explicit";
+      editor = {
+        insertSpaces = false;
+        codeActionsOnSave.source.organizeImports = "explicit";
       };
     };
 

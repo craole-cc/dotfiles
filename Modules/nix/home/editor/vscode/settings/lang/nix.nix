@@ -1,12 +1,16 @@
 _: let
+  formatter = "jnoortheen.nix-ide";
+  # formatter = "kamadorueda.alejandra"
+  server = "nixd";
+
   extensions = [
+    formatter
     "bbenoist.Nix"
-    "jnoortheen.nix-ide"
-    "kamadorueda.alejandra"
+    "jeff-hykin.better-nix-syntax"
     "SebastianKarlsen.direnv-trusted"
     "vix.lint-runner"
   ];
-  server = "nixd";
+
   settings = {
     "[nix]" = {
       editor = {
@@ -17,26 +21,29 @@ _: let
     nix = {
       enableLanguageServer = true;
       serverPath = server;
-      serverSettings = {
-        "${server}"."formatting"."command" = ["alejandra" "-q" "-"];
+      serverSettings."${server}" = {
+        formatting.command = ["alejandra" "-q" "-"];
+        diagnostic.suppress = ["sema-primop-overridden"];
       };
     };
 
     #~@ direnv
     direnv-trusted = {
-      # // Cache the loaded environment in the workspace state, and apply it synchronously at startup (if direnv still allows the same `.envrc`) so that other extensions see it from the start. **Note:** values, including secrets loaded from `.env` files, are stored in VS Code's workspace storage.
+      #> Cache the loaded environment in the workspace state, and apply it synchronously at startup (if direnv still allows the same `.envrc`) so that other extensions see it from the start. **Note:** values, including secrets loaded from `.env` files, are stored in VS Code's workspace storage.
       cacheEnvironment = true;
 
-      # // Path to the `direnv` executable (direnv >= 2.33). Machine-scoped so that a workspace cannot point it elsewhere.
+      #? Path to the `direnv` executable (direnv >= 2.33).
+      #? Machine-scoped so that a workspace cannot point it elsewhere.
       path = "direnv";
 
-      # // Show a notification offering to allow (or deny) an `.envrc` that direnv has not allowed yet.
+      #> Show a notification offering to allow (or deny) an `.envrc` that direnv has not allowed yet.
       promptToAllow = true;
 
-      # // Whether to restart extensions when the environment changes, so that processes they already started (language servers…) pick it up.
-      # //  - prompt: Ask before restarting the extension host.
-      # //  - always: Restart the extension host automatically (at most once a minute).
-      # //  - never: Never restart; processes already started by other extensions keep their old environment.
+      #> Restart extensions when the environment changes
+      #? Processes they already started (language servers…) are available.
+      #? - prompt: Ask before restarting the extension host.
+      #? - always: Restart the extension host automatically (at most once a minute).
+      #? - never: Never restart; processes already started by other extensions keep their old environment.
       restartExtensions = "prompt";
     };
 

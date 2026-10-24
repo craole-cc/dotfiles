@@ -236,9 +236,7 @@
     packages = resolve {inherit record protocol;};
   in
     removeAttrs record ["applications"]
-    // {
-      inherit packages;
-    };
+    // {inherit packages;};
 in {
   inherit merge normalize policyFields resolve resolveGroup roleView selectedPackages toApplications;
 }

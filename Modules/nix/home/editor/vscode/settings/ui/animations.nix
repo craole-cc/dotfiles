@@ -1,7 +1,13 @@
 {fonts, ...}: {
   name = "animations";
   description = "Animations";
-  extensions = ["brandonkirbyson.vscode-animations"];
+  extensions = [
+    "brandonkirbyson.vscode-animations"
+    "subframe7536.custom-ui-style"
+    "be5invis.vscode-custom-css"
+    #> Verify on Linux: vibrancy is only supported on Windows and macOS, as far as I know
+    "illixion.vscode-vibrancy-continued"
+  ];
   keybindings = [];
 
   settings = {

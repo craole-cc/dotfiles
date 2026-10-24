@@ -1,20 +1,21 @@
 _: {
   extensions = [
+    "bluebrown.yamlfmt"
     "codezombiech.gitignore"
+    "codezombiech.gitignore"
+    "donjayamanne.githistory"
     "GitHub.remotehub"
     "github.vscode-github-actions"
-    "mhutchie.git-graph"
+    "jjk.jjk"
     "maciejdems.add-to-gitignore"
-    "yy0931.gitconfig-lsp"
-    "donjayamanne.githistory"
-    "codezombiech.gitignore"
-    "bluebrown.yamlfmt"
+    "mhutchie.git-graph"
     "redhat.vscode-yaml"
+    "visualjj.visualjj"
+    "yy0931.gitconfig-lsp"
   ];
   settings = {
-    "[github-actions-workflow]" = {
-      editor.defaultFormatter = "redhat.vscode-yaml";
-    };
+    "[github-actions-workflow]".editor.defaultFormatter = "redhat.vscode-yaml";
+    "[properties]".editor.defaultFormatter = "yy0931.gitconfig-lsp";
     git = {
       enabled = true;
       autofetch = true;

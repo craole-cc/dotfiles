@@ -15,9 +15,12 @@
   inherit (lix.modules.construction) mkConfig mkContext mkMerge mkDefault;
   inherit (lix.options.construction) mkEnable mkFalse mkTrue;
   inherit (lix.lists.construction) optional;
+  inherit (lix.lists.predicates) isIn;
   inherit (lix.schema.fonts) mkFonts;
   inherit (lix.sources.packages) pkgsFrom;
   inherit (lix.strings.construction) optionalString;
+
+  requires = applications: isIn applications (user.applications.allowed or []);
 
   context = mkContext {
     inherit config;
@@ -25,7 +28,7 @@
     mod = "vscode";
     kind = "editor";
   };
-  inherit (context) cfg;
+  inherit (context) cfg wantsDmsShell;
 
   tools = pkgsFrom {
     inherit inputs pkgs;
@@ -59,6 +62,7 @@
       config
       context
       entryAfter
+      requires
       host
       inputs
       lix
@@ -67,6 +71,7 @@
       paths
       tools
       mkMerge
+      mkEnable
       user
       ;
     fonts = mkFonts {inherit host user;};
@@ -113,7 +118,7 @@
 in
   mkConfig {
     inherit context;
-    options = {
+    options = mergeSafe [ {
       enable = mkEnable {
         inherit context;
         condition = app.enable;
@@ -121,8 +126,11 @@ in
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
       importJSON = mkFalse "Import fallback VS Code settings and keybindings from the saved JSON configuration.";
       features = profile.options;
-      # Add an option for dms.enable, use mkEnable condition is config.
-    };
+      dms.enable = mkEnable {
+        inherit context;
+        inherit (wantsDmsShell) condition;
+      };
+    } profile.featureOptions ];
 
     outputs = {
       home = app.home // build.activation;

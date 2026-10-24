@@ -7,18 +7,47 @@
     optionalAttrs (isIn name formatter)
     {${link} = true;};
 in {
-  #TODO:
   extensions = [
     formatter
+    "bradlc.vscode-tailwindcss"
+    "denoland.vscode-deno"
+    "esbenp.prettier-vscode"
+    "phu1237.vs-browser"
   ];
 
   settings = {
-    "[javascript]" = {
-      editor.defaultFormatter = formatter;
+    "[javascript]".editor.defaultFormatter = formatter;
+    "[typescript]".editor.defaultFormatter = formatter;
+    "[html]".editor.defaultFormatter = formatter;
+    "[css]".editor.defaultFormatter = formatter;
+    "[scss]".editor.defaultFormatter = formatter;
+    "[json]".editor.defaultFormatter = "vscode.json-language-features";
+    "[jsonc]".editor.defaultFormatter = "vscode.json-language-features";
+
+    "tailwindCSS.includeLanguages".plaintext = "html";
+    "cssvar.files" = [
+      "./node_modules/open-props/open-props.min.css"
+      "assets/styles/variables.css"
+      "style.css"
+    ];
+    "cssvar.extensions" = ["css" "postcss" "jsx" "tsx"];
+    "cssvar.ignore" = [];
+
+    "typescript.inlayHints.parameterNames.enabled" = "all";
+
+    "vs-browser.favourites.list" = {
+      "http://127.0.0.1:3000" = "http://127.0.0.1:3000";
+      "http://localhost" = "http://localhost";
     };
-    "[typescript]" = {
-      editor.defaultFormatter = formatter;
-    };
+    "vs-browser.link.enabled" = true;
+    "vs-browser.link.openWith" = "ask";
+    "vs-browser.localProxyServer.cookieDomainRewrite" = true;
+    "vs-browser.localProxyServer.enabled" = true;
+    "vs-browser.localProxyServer.forceLocation" = true;
+    "vs-browser.reload.autoReloadDurationEnabled" = false;
+    "vs-browser.reload.autoReloadDurationTime" = 15000;
+    "vs-browser.reload.onSave" = false;
+    "vs-browser.url" = "http://127.0.0.1:3000";
 
     json.schemaDownload = {
       enable = false;

@@ -14,6 +14,12 @@ in {
   extensions = [
     "jbro.vscode-default-keybindings"
     "ultram4rine.vscode-choosealicense"
+    #? Justfile syntax highlighting
+    # "nefrob.vscode-just-syntax"
+    #? mise version manager integration
+    # "hverlin.mise-vscode"
+    #? Reload window command
+    "natqe.reload"
   ];
   keybindings = [
     {

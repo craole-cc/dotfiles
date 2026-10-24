@@ -1,4 +1,14 @@
-_: {
+{
+  user,
+  lix,
+  ...
+}: let
+  inherit (lix.lists.predicates) isIn;
+
+  mod = "shellscript";
+  enable = isIn [mod "bash" "sh" "shell"] (user.applications.allowed or []);
+in {
+  inherit enable;
   extensions = [
     "mads-hartmann.bash-ide-vscode"
     "mkhl.shfmt"
@@ -6,9 +16,8 @@ _: {
     "vix.lint-runner"
   ];
   settings = {
-    "[shellscript]" = {
-      editor.defaultFormatter = "mkhl.shfmt";
-    };
+    "[shellscript]".editor.defaultFormatter = "mkhl.shfmt";
+    "[dotenv]".editor.defaultFormatter = "mkhl.shfmt";
 
     bashIde = {
       #~@ Bash IDE
@@ -76,6 +85,11 @@ _: {
         # Follow redirection operators with a space.
         spaceRedirects = false;
       };
+    };
+
+    #~@ dotEnv
+    dotenv = {
+      enableAutocloaking = false;
     };
 
     shellcheck = {

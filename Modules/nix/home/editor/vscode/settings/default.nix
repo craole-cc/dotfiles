@@ -7,6 +7,7 @@
 } @ args: let
   inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature normalizeSettings;
   inherit (lix.attrsets.access) attrNames;
+  inherit (lix.attrsets.aggregation) mergeSafe;
   inherit (lix.attrsets.construction) listToAttrs;
   inherit (lix.attrsets.transformation) mapAttrs mapAttrsToList;
   inherit (lix.filesystem.access) readFileType;
@@ -84,6 +85,7 @@
     settings ? {},
     userSettings ? {},
     keybindings ? [],
+    options ? {},
   }: let
     declaredSettings = normalizeSettings {inherit settings userSettings settingNames;};
   in
@@ -91,6 +93,7 @@
       inherit name description enable;
       ownedSettings = attrNames declaredSettings;
       ownedKeybindings = keybindings;
+      inherit options;
     }
     // mkVSCodeSubFeature {
       inherit enable extensions settings userSettings keybindings settingNames;
@@ -103,7 +106,7 @@
       isConfig =
         isAttrs entry
         && any (name: entry ? ${name})
-        ["enable" "extensions" "settings" "userSettings" "keybindings"];
+        ["enable" "extensions" "settings" "userSettings" "keybindings" "options"];
     in
       optional isConfig (
         mkEntry ({inherit stem;} // entry)
@@ -121,6 +124,7 @@
     default ? true,
     entries ? null,
     features ? null,
+    options ? {},
   }: let
     resolved = {
       name =
@@ -153,6 +157,7 @@
     inherit default;
     ownedSettings = concatMap (entry: entry.ownedSettings) resolved.entries;
     ownedKeybindings = concatMap (entry: entry.ownedKeybindings) resolved.entries;
+    options = mergeSafe (map (entry: entry.options or {}) resolved.entries) options;
     feature = enable: let
       entries = filter (entry: entry.enable) resolved.entries;
     in
@@ -184,6 +189,7 @@
   groups = map load groupPaths;
 
   module = let
+    featureOptions = mergeSafe (map (group: group.options or {}) groups);
     options = listToAttrs (
       map (group: {
         inherit (group) name;
@@ -195,7 +201,7 @@
       groups
     );
     output = map (group: group.feature cfg.features.${group.name}) groups;
-  in {inherit options output;};
+  in {inherit options output featureOptions;};
 
   profile = let
     # Nix entries own their declarations even when disabled. The JSON files
@@ -242,6 +248,6 @@
     output = modules.config;
   in {inherit options config modules output;};
 in {
-  inherit (module) options;
+  inherit (module) options featureOptions;
   inherit (profile) output;
 }

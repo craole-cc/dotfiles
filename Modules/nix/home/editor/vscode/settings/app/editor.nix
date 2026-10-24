@@ -19,11 +19,6 @@ _: {
       command = "editor.action.clipboardCopyAction";
       when = "textInputFocus";
     }
-    {
-      key = "ctrl+alt+9";
-      command = "sortLines.sortLinesCaseInsensitive";
-      when = "editorTextFocus && !editorReadonly";
-    }
   ];
 
   settings = {

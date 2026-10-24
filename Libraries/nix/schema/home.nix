@@ -67,7 +67,9 @@
           record;
         }
         else record;
-      theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});
+      theme = recursiveUpdate (user.theme or {}) (
+        user.interface.theme or {}
+      );
       paths = mkTree {
         stems = recursiveUpdate stems (user.paths.stems or {});
         roots =

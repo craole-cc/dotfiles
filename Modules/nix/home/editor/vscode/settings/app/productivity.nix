@@ -2,6 +2,34 @@ _: {
   extensions = [
     #? Better Todo Tree leverages ripgrep to locate custom tags like TODO and FIXME across your workspace. Results are mapped into a dedicated tree view and highlighted directly within your open files. Click any node in the tree to snap your cursor straight to that line of code..
     "FanaticPythoner.better-todo-tree"
+    # #? Keyboard-driven file browser
+    # "bodil.file-browser"
+    #? Sort workspace folders alphabetically
+    "iciclesoft.workspacesort"
+    #? Diff two folders side by side
+    "moshfeu.compare-folders"
+    #? Multi-workspace file search
+    "joshmu.periscope"
+    #? Text transformation utilities
+    "dakara.transformer"
+    #? Convert case (camel, snake, kebab…)
+    "wmaurer.change-case"
+    #? Sort selected lines
+    "tyriar.sort-lines"
+    #? .env file support
+    "dotenv.dotenv-vscode"
+    # #? Restore familiar Windows keybindings
+    # "smcpeak.default-keys-windows"
+    #? Spreadsheet editing in VS Code
+    "mescius.spreadjs-xlsx-editor"
+  ];
+
+  keybindings = [
+    {
+      key = "ctrl+alt+9";
+      command = "sortLines.sortLinesCaseInsensitive";
+      when = "editorTextFocus && !editorReadonly";
+    }
   ];
 
   settings = {
@@ -53,6 +81,12 @@ _: {
         "[ ]"
         "[x]"
       ];
+    };
+
+
+    #~@ Office
+    spreadjs = {
+      ribbonMode = "toolbar";
     };
   };
 }

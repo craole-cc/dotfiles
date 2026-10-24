@@ -3,7 +3,6 @@
   mkEntry,
   ...
 } @ args: let
-  infrastructure = import ./entries/infrastructure.nix args;
   markup = import ./entries/markup.nix args;
   nix = import ./entries/nix.nix args;
   scripting = import ./entries/scripting.nix args;
@@ -43,34 +42,11 @@ in
               "tailwindCSS.includeLanguages": {
                 "plaintext": "html"
               },
-              "[dotenv]": {
-                "editor.defaultFormatter": "mkhl.shfmt"
-              },
-              "[github-actions-workflow]": {
-                "editor.defaultFormatter": "redhat.vscode-yaml"
-              },
               "[html]": {
                 "editor.defaultFormatter": "biomejs.biome"
               },
               "[javascript]": {
                 "editor.defaultFormatter": "biomejs.biome"
-              },
-              "[ini]": {
-                "editor.defaultFormatter": "lkrms.inifmt"
-              },
-              "[json]": {
-                "editor.defaultFormatter": "vscode.json-language-features",
-                "editor.codeActionsOnSave": {
-                  "source.fixAll": "always"
-                },
-                "editor.formatOnSave": true
-              },
-              "[jsonc]": {
-                "editor.defaultFormatter": "vscode.json-language-features",
-                "editor.codeActionsOnSave": {
-                  "source.fixAll": "always"
-                },
-                "editor.formatOnSave": true
               },
               "json.schemas": [
                 {
@@ -118,24 +94,6 @@ in
                   }
                 }
               },
-              "[powershell]": {
-                "editor.defaultFormatter": "ms-vscode.powershell",
-                "editor.renderControlCharacters": true,
-                "editor.renderWhitespace": "all",
-                "editor.tabCompletion": "on",
-                "files.autoGuessEncoding": true,
-                "files.encoding": "utf8bom",
-                "files.trimTrailingWhitespace": true
-              },
-              "powershell.codeFormatting.autoCorrectAliases": true,
-              "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
-              "powershell.codeFormatting.useConstantStrings": true,
-              "powershell.codeFormatting.useCorrectCasing": true,
-              "powershell.codeFormatting.whitespaceBetweenParameters": true,
-              "powershell.integratedConsole.focusConsoleOnExecute": false,
-              "powershell.integratedConsole.forceClearScrollbackBuffer": true,
-              "powershell.integratedConsole.showOnStartup": false,
-              "powershell.integratedConsole.suppressStartupBanner": true,
               "[properties]": {
                 "editor.defaultFormatter": "yy0931.gitconfig-lsp"
               },
@@ -183,13 +141,11 @@ in
           userSettings = {};
           keybindings = [];
         }) [
-        infrastructure.entries.sql
         markup.entries.dataFormats
         markup.entries.typst
         nix.entries.nixLsp
         scripting.entries.python
         scripting.entries.nushell
-        scripting.entries.powershell
         scripting.entries.ruby
         systems.entries.rust
         systems.entries.shell

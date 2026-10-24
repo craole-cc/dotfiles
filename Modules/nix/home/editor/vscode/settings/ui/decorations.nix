@@ -1,13 +1,29 @@
 _: {
   extensions = [
+    #? Colourful comment tags
+    "AllemandInstable.colorful-comments-refreshed"
+    #? log file syntax highlighting
+    "emilast.logfilehighlighter"
+    #? Better Todo Tree for TODO and FIXME across the workspace.
+    "FanaticPythoner.better-todo-tree"
+    #? Colorize output/terminal text
+    "ibm.output-colorizer"
+    #? ANSI escape code renderer
+    "iliazeus.vscode-ansi"
+    #? Colorize CSS color strings
+    "kamikillerto.vscode-colorize"
     #? Line-width indicators
     "lbragile.line-width-indicator"
     #? Render invisible characters
     "miku3920.vscode-render-special-chars"
-    #? Colourful comment tags
-    "AllemandInstable.colorful-comments-refreshed"
-    #? Better Todo Tree leverages ripgrep to locate custom tags like TODO and FIXME across your workspace. Results are mapped into a dedicated tree view and highlighted directly within your open files. Click any node in the tree to snap your cursor straight to that line of code..
-    "FanaticPythoner.better-todo-tree"
+    #? Highlight color values inline
+    "naumovs.color-highlight"
+    #? Colorized indentation guides
+    "oderwat.indent-rainbow"
+    #? Indentation and scope guides
+    "spywhere.guides"
+    #? Inline error/warning messages
+    "usernamehw.errorlens"
   ];
 
   settings = {

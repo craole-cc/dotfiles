@@ -1,6 +1,22 @@
-_: {
+{
+  cfg,
+  lix,
+  ...
+}: let
+  inherit (lix.attrsets.construction) optionalAttrs;
+in {
   extensions = ["Catppuccin.catppuccin-vsc"];
   settings = {
+    json = {
+      schemaDownload = {
+        enable = true;
+        trustedDomains = {
+          "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/colorOverrides.schema.json" = true;
+          "https://raw.githubusercontent.com/catppuccin/vscode/catppuccin-vsc-v3.19.0/packages/catppuccin-vsc/schemas/customUIColors.schema.json" = true;
+        };
+      };
+    };
+
     window = {
       #> Detect the system colour scheme and switch themes.
       #! overridden (default: false)
@@ -11,34 +27,41 @@ _: {
       autoDetectHighContrast = false;
     };
 
-    workbench = {
-      #? Active colour theme.
-      #! overridden (default: "Dark 2026")
-      colorTheme = "Catppuccin Frappé";
+    workbench =
+      {
+        #? Active colour theme.
+        #! overridden (default: "Dark 2026")
+        colorTheme = "Catppuccin Frappé";
 
-      #? Preferred dark theme (used when `autoDetectColorScheme` is on).
-      preferredDarkColorTheme = "Catppuccin Frappé";
+        #? Preferred dark theme (used when `autoDetectColorScheme` is on).
+        preferredDarkColorTheme = "Catppuccin Frappé";
 
-      #? Preferred light theme.
-      preferredLightColorTheme = "Catppuccin Latte";
+        #? Preferred light theme.
+        preferredLightColorTheme = "Catppuccin Latte";
 
-      #? Preferred HC dark theme.
-      preferredHighContrastColorTheme = "Default High Contrast";
+        #? Preferred HC dark theme.
+        preferredHighContrastColorTheme = "Default High Contrast";
 
-      #? Preferred HC light theme.
-      preferredHighContrastLightColorTheme = "Default High Contrast Light";
+        #? Preferred HC light theme.
+        preferredHighContrastLightColorTheme = "Default High Contrast Light";
 
-      #? File icon theme.
-      #! overridden (default: "vs-seti")
-      iconTheme = "material-icon-theme";
+        #? File icon theme.
+        #! overridden (default: "vs-seti")
+        iconTheme = "material-icon-theme";
 
-      #? Product icon theme.
-      #! overridden (default: "Default")
-      productIconTheme = "el-vsc-v1-icons";
+        #? Product icon theme.
+        #! overridden (default: "Default")
+        productIconTheme = "el-vsc-v1-icons";
 
-      #> Overrides for the current colour theme.
-      colorCustomizations = {};
-    };
+        #> Overrides for the current colour theme.
+        colorCustomizations = {};
+      }
+      // (
+        optionalAttrs cfg.dms.enable {
+          window.autoDetectColorScheme = false;
+          workbench.colorTheme = "Dynamic Base16 DankShell";
+        }
+      );
 
     editor = {
       #> Semantic highlighting switch.
