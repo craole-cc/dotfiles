@@ -1,27 +1,23 @@
 _: {
   extensions = [
-    #? Colorize brackets with a per-type palette
-    "CoenraadS.bracket-pair-colorizer-2"
     #? Line-width indicators
     "lbragile.line-width-indicator"
     #? Render invisible characters
     "miku3920.vscode-render-special-chars"
     #? Colourful comment tags
     "AllemandInstable.colorful-comments-refreshed"
-    #? Underlined matching brackets
-    "rafamel.subtle-brackets"
   ];
 
   settings = {
-    # ── Semantic token colour rules ─────────────────────────────────────
+    #~@ Semantic token colour rules
     #> Colour and style for semantic token types.
     #! overridden (default: {})
     "editor.semanticTokenColorCustomizations" = {
       rules = {
-        "*.static" = {italic = true;};
-        interface = {italic = true;};
-        keyword = {italic = true;};
-        selfParameter = {italic = true;};
+        "*.static".italic = true;
+        interface.italic = true;
+        keyword.italic = true;
+        selfParameter.italic = true;
       };
     };
 
@@ -45,7 +41,59 @@ _: {
         ];
       };
       textMateRules = [
-        # (Your full textMateRules array goes here; same shape as your settings.json)
+        {
+          scope = [
+            "comment"
+            "emphasis"
+            "entity.name.method.js"
+            "entity.name.class.js"
+            "entity.name.tag.doctype"
+            "entity.other.attribute-name"
+            "entity.other.attribute-name.tag.jade"
+            "entity.other.attribute-name.tag.pug"
+            "keyword"
+            "keyword.control"
+            "keyword.operator.comparison"
+            "keyword.operator.expression.delete"
+            "keyword.operator.new"
+            "keyword.operator.expression"
+            "keyword.operator.cast"
+            "keyword.operator.relational"
+            "keyword.operator.sizeof"
+            "keyword.operator.logical.python"
+            "italic"
+            "markup.changed"
+            "markup.deleted.diff"
+            "markup.italic"
+            "markup.italic.markdown"
+            "markup.quote"
+            "markup.quote.markdown"
+            "meta.decorator punctuation.decorator"
+            "meta.delimiter.period"
+            "meta.diff.header.git"
+            "meta.diff.header.from-file"
+            "meta.diff.header.to-file"
+            "markup.inserted.diff"
+            "meta.class meta.method.declaration meta.var.expr storage.type.js"
+            "meta.tag.sgml.doctype"
+            "meta.selector"
+            "punctuation.accessor"
+            "punctuation.definition.comment"
+            "punctuation.definition.template-expression.begin"
+            "punctuation.definition.template-expression.end"
+            "punctuation.section.embedded"
+            "quote"
+            "source.js constant.other.object.key.js string.unquoted.label.js"
+            "storage"
+            "storage.type"
+            "storage.modifier"
+            "text.html.basic entity.other.attribute-name.html"
+            "text.html.basic entity.other.attribute-name"
+            "variable.language"
+            "variable.other.object.property"
+          ];
+          settings = {fontStyle = "italic";};
+        }
       ];
     };
 
@@ -53,7 +101,30 @@ _: {
     #! overridden (default: {})
     "workbench.colorCustomizations" = {};
 
-    # ── Line-width indicators ───────────────────────────────────────────
+    #~@ Bracket colorization & guides ───────────────────────────────────
+    #> Per-type bracket colour pools.
+    #! overridden (default: false)
+    "editor.bracketPairColorization.independentColorPoolPerBracketType" = true;
+    #> Vertical bracket guides.
+    #?  - true | active | false
+    #! overridden (default: false)
+    "editor.guides.bracketPairs" = "active";
+    #> Horizontal bracket guides.
+    #?  - true | active | false
+    "editor.guides.bracketPairsHorizontal" = "active";
+    #> Highlight active bracket pair.
+    "editor.guides.highlightActiveBracketPair" = true;
+    #> Highlight active indent guide.
+    #?  - true | always | false
+    "editor.guides.highlightActiveIndentation" = true;
+    #> Show indent guides.
+    "editor.guides.indentation" = true;
+    #> Highlight matching brackets.
+    #?  - always | near | never
+    #! overridden (default: "always")
+    "editor.matchBrackets" = "never";
+
+    #~@ Line-width indicators ───────────────────────────────────────────
     #! overridden (default: [])
     "LWI.breakpoints" = [
       {
@@ -69,7 +140,7 @@ _: {
         column = 79;
       }
     ];
-    #> Font style for the counter (`normal` | `italic` | `oblique`).
+    #> Font style (`normal` | `italic` | `oblique`).
     #! overridden (default: "normal")
     "LWI.style.fontStyle" = "italic";
     #> Font weight (`normal` | `bold` | 100–900).
@@ -84,9 +155,9 @@ _: {
     #> Counter margin (px).
     "LWI.style.margin" = 10;
 
-    # ── Render special characters ───────────────────────────────────────
+    #~@ Render special characters ───────────────────────────────────────
     #> Border around rendered chars.
-    #! overridden (default: "1px solid; border-radius: 2px;")
+    #! overridden (default: "")
     "render-special-chars.border" = "1px solid; border-radius: 2px;";
     #> Position of the decoration (`before` | `after`).
     #! overridden (default: "before")
@@ -94,6 +165,12 @@ _: {
     #> Delay (ms) before updating decorations.
     #! overridden (default: 500)
     "render-special-chars.updateDelay" = 500;
+    #> Background colour of the decoration.
+    "render-special-chars.backgroundColor" = "";
+    #> Border colour of the decoration.
+    "render-special-chars.borderColor" = "";
+    #> Text colour of the decoration.
+    "render-special-chars.color" = "";
     #> URI schemes to exclude.
     #! overridden (default: [])
     "render-special-chars.excludedSchemes" = ["output" "debug" "git"];
@@ -120,29 +197,172 @@ _: {
       "：；，、。？！〜（）〈〉《》【】「」『』─"
     ];
 
-    # ── Colorful comments ───────────────────────────────────────────────
-    #> Tag list with per-tag colours.
+    #~@ Colorful Comments
     #! overridden (default: [])
     "colorful-comments-refreshed.tags" = [
-      # Your existing 20+ tag entries go here
-    ];
+      # Core markers
+      {
+        tag = "@";
+        italic = true;
+        backgroundColor = "#89a25722";
+        color = "#89a257";
+      }
+      {
+        tag = "~@";
+        italic = true;
+        backgroundColor = "#89a25722";
+        color = "#89a257";
+      }
+      {
+        tag = "!";
+        backgroundColor = "transparent";
+        color = "#ff0000";
+      }
+      {
+        tag = "/";
+        italic = true;
+        backgroundColor = "#bd8af41a";
+        color = "#bd8af4";
+      }
+      {
+        tag = "|";
+        italic = true;
+        color = "hsl(148, 70%, 50%)";
+      }
+      {
+        tag = "region";
+        italic = true;
+        backgroundColor = "#bd8af41a";
+        color = "#bd8af4";
+      }
+      {
+        tag = "endregion";
+        italic = true;
+        backgroundColor = "#bd8af41a";
+        color = "#bd8af4";
+      }
 
-    # ── Bracket colorizer ───────────────────────────────────────────────
-    #> Enable per-type bracket colour pools.
-    "editor.bracketPairColorization.independentColorPoolPerBracketType" = true;
-    #> Show bracket guides (`true` | `active` | `false`).
-    #! overridden (default: false)
-    "editor.guides.bracketPairs" = "active";
-    #> Horizontal bracket guides (`true` | `active` | `false`).
-    "editor.guides.bracketPairsHorizontal" = "active";
-    #> Highlight the active bracket pair.
-    "editor.guides.highlightActiveBracketPair" = true;
-    #> Highlight the active indent guide (`true` | `always` | `false`).
-    "editor.guides.highlightActiveIndentation" = true;
-    #> Show indent guides.
-    "editor.guides.indentation" = true;
-    #> Highlight matching brackets (`always` | `near` | `never`).
-    #! overridden (default: "always")
-    "editor.matchBrackets" = false;
+      # Keywords
+      {
+        tag = "HELP";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#fed200";
+      }
+      {
+        tag = "shellcheck";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#fd7b30";
+      }
+      {
+        tag = "DOC ";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#08c3d4";
+      }
+      {
+        tag = "TOC ";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#08c3d4";
+      }
+      {
+        tag = "USAGE ";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#08c3d4";
+      }
+      {
+        tag = " http";
+        italic = true;
+        backgroundColor = "transparent";
+        color = "#3498DB";
+      }
+      {
+        tag = " -- ";
+        bold = true;
+        backgroundColor = "transparent";
+        color = "#3498DB";
+      }
+      {
+        tag = ".";
+        bold = true;
+        backgroundColor = "transparent";
+        color = "#3498DB";
+      }
+      {
+        tag = "result:";
+        bold = true;
+        backgroundColor = "transparent";
+        color = "#3498DB";
+      }
+      {
+        tag = "todo";
+        italic = true;
+        underline = true;
+        backgroundColor = "transparent";
+        color = "hsla(27, 90%, 55%, 0.75)";
+      }
+      {
+        tag = "def";
+        backgroundColor = "transparent";
+        color = "hsla(43, 50%, 50%, 0.95)";
+      }
+
+      # Symbols
+      {
+        tag = "=";
+        backgroundColor = "transparent";
+        color = "hsla(335, 80%, 38%, 0.75)";
+      }
+      {
+        tag = "+";
+        backgroundColor = "transparent";
+        color = "hsla(335, 80%, 38%, 0.75)";
+      }
+      {
+        tag = ">";
+        bold = true;
+        italic = true;
+        underline = true;
+        backgroundColor = "transparent";
+        color = "hsla(162, 70%, 30%, 0.95)";
+      }
+      {
+        tag = "?";
+        bold = true;
+        italic = true;
+        underline = true;
+        backgroundColor = "transparent";
+        color = "hsla(162, 70%, 30%, 0.5)";
+      }
+
+      # Box drawing
+      {
+        tag = "╔";
+        italic = true;
+        backgroundColor = "hsla(300,86%,47%, 0.15)";
+        color = "hsl(300,86%,47%)";
+      }
+      {
+        tag = "║";
+        italic = true;
+        backgroundColor = "hsla(300,86%,47%, 0.15)";
+        color = "hsl(300,86%,47%)";
+      }
+      {
+        tag = "╠";
+        italic = true;
+        backgroundColor = "hsla(300,86%,47%, 0.15)";
+        color = "hsl(300,86%,47%)";
+      }
+      {
+        tag = "╚";
+        italic = true;
+        backgroundColor = "hsla(300,86%,47%, 0.15)";
+        color = "hsl(300,86%,47%)";
+      }
+    ];
   };
 }

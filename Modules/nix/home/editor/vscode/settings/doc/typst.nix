@@ -1,15 +1,16 @@
 _: {
-  extensions = ["myriad-dreamin.tinymist"];
+  extensions = [
+    "myriad-dreamin.tinymist"
+  ];
   settings = {
     #> Language-scoped editor defaults for Typst documents.
     "[typst][typst-code]" = {
-      "editor.wordWrap" = "on";
-      "editor.semanticHighlighting.enabled" = true;
-      "editor.tabSize" = 2;
-      "editor.inlayHints.enabled" = "off";
-      "editor.quickSuggestions" = {
-        strings = true;
-      };
+      "editor.defaultFormatter" = "myriad-dreamin.tinymist";
+      # "editor.inlayHints.enabled" = "off";
+      "editor.quickSuggestions".strings = true;
+      # "editor.semanticHighlighting.enabled" = true;
+      # "editor.tabSize" = 2;
+      # "editor.wordWrap" = "on";
     };
 
     #> Italic-bold the semantic scopes tinymist emits for variable references,

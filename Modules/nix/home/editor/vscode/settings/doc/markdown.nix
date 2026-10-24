@@ -288,4 +288,15 @@ _: {
     #?  - off | messages | verbose
     "rumdl.trace.server" = "off";
   };
+
+  #~@ Semantic  Colour and style for TextMate scopes.
+  "editor.tokenColorCustomizations".textMateRules = [
+    {
+      scope = [
+        "markup.italic.markdown"
+        "markup.quote.markdown"
+      ];
+      settings = {fontStyle = "italic";};
+    }
+  ];
 }
