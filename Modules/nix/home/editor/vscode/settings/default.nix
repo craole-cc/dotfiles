@@ -70,7 +70,7 @@
       ++ collectSettingNames "" (tree.userSettings or {})
     else concatMap (key: collectEntrySettingNames tree.${key}) (attrNames tree);
 
-  groupPaths = [./ai ./app ./dev ./doc ./ui];
+  groupPaths = [./ai ./app ./doc ./lang ./ui];
   settingNames = uniqueStrings (
     attrNames baselineSettings
     ++ concatMap (dir: collectEntrySettingNames (readEntries dir)) groupPaths
@@ -157,7 +157,7 @@
     inherit default;
     ownedSettings = concatMap (entry: entry.ownedSettings) resolved.entries;
     ownedKeybindings = concatMap (entry: entry.ownedKeybindings) resolved.entries;
-    options = mergeSafe ((map (entry: entry.options or {}) resolved.entries) ++ [options]);
+    options = mergeSafe (map (entry: entry.options or {}) resolved.entries);
     feature = enable: let
       entries = filter (entry: entry.enable) resolved.entries;
     in
