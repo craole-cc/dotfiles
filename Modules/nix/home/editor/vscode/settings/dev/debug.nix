@@ -7,6 +7,7 @@ in {
   # Runner's built-in defaults.
   extensions = [
     "formulahendry.code-runner"
+    "vadimcn.vscode-lldb"
   ];
   settings = {
     code-runner = {
@@ -55,6 +56,13 @@ in {
         #? sensible universal default. `sqlite3` is the most common local option.
         #? sql = "cd $dir && sqlite3 :memory: < $fileName";
       };
+    };
+
+    lldb = {
+      consoleMode = "commands";
+      dereferencePointers = true;
+      showDisassembly = "auto";
+      suppressUpdateNotifications = true;
     };
   };
   keybindings = [

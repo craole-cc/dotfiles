@@ -1,4 +1,4 @@
 _: {
-  name = "global-application";
+  name = "app";
   description = "Global & Application";
 }
