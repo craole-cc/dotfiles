@@ -109,6 +109,7 @@ in
       insiders = mkTrue "Whether to use Visual Studio Code Insiders instead of the standard release.";
       importJSON = mkFalse "Import fallback VS Code settings and keybindings from the saved JSON configuration.";
       features = profile.options;
+      # Add an option for dms.enable, use mkEnable condition is config.
     };
 
     outputs = {

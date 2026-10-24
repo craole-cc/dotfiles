@@ -7,7 +7,8 @@
   inherit (lix.attrsets.construction) optionalAttrs;
   inherit (lix.filesystem.construction) concat;
 
-  enabled = context.wantsDmsShell.condition;
+  # enabled = context.wantsDmsShell.condition;
+  enabled = true;
 
   # DMS only discovers its VS Code integration by finding a writable
   # `danklinux.dms-theme-*` extension in the editor's normal extensions
