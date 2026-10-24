@@ -42,193 +42,149 @@ _: {
     };
 
     # ── Tinymist LSP ──────────────────────────────────────────────────────
+    "tinymist.compileStatus" = "enable";
 
-    tinymist = {
-      #> Show compile status in the status bar.
-      compileStatus = "enable";
+    #> Postfix, symbol, and snippet completion behaviour.
+    "tinymist.completion.postfix" = true;
+    "tinymist.completion.postfixUfcs" = true;
+    "tinymist.completion.postfixUfcsLeft" = true;
+    "tinymist.completion.postfixUfcsRight" = true;
+    "tinymist.completion.symbol" = "step";
+    "tinymist.completion.triggerOnSnippetPlaceholders" = false;
 
-      completion = {
-        #> Enable postfix completion (`[A].box|` → `box[A]|`).
-        postfix = true;
-        #> Enable UFCS-style postfix completion.
-        postfixUfcs = true;
-        #> Enable left-variant UFCS postfix completion.
-        postfixUfcsLeft = true;
-        #> Enable right-variant UFCS postfix completion.
-        postfixUfcsRight = true;
+    #> Override default word separators on startup.
+    #?  - enable: Override the default word separators on startup
+    #?  - disable: Do not override the default word separators on startup
+    "tinymist.configureDefaultWordSeparator" = "disable";
 
-        #> Symbol completion mode.
-        #?  - step: Complete symbols step by step
-        #?  - stepless: Complete symbols steplessly
-        symbol = "step";
+    #> Conversions between Typst templates and other formats.
+    "tinymist.convertExtension" = [];
 
-        #> Trigger completions on snippet placeholders. No effect unless the
-        #> editor supports `editor.action.triggerSuggest`.
-        triggerOnSnippetPlaceholders = false;
-      };
+    #> Handle copy-paste of resources into the editing document.
+    #?  - enable: Enable copy-and-paste.
+    #?  - disable: Disable copy-and-paste.
+    "tinymist.copyAndPaste" = "enable";
 
-      #> Override default word separators on startup.
-      #?  - enable: Override the default word separators on startup
-      #?  - disable: Do not override the default word separators on startup
-      configureDefaultWordSeparator = "disable";
+    #> Handle drag-and-drop of resources into the editing document.
+    #?  - enable: Enable drag-and-drop.
+    #?  - disable: Disable drag-and-drop.
+    "tinymist.dragAndDrop" = "enable";
 
-      #> Conversions between Typst templates and other formats.
-      convertExtension = [];
+    #> When to export PDFs.
+    #?  - never: Never export PDFs, run typst manually.
+    #?  - onSave: Export PDFs when a file is saved.
+    #?  - onType: Export PDFs as you type.
+    #?  - onDocumentHasTitle: (Deprecated) Export PDFs when a document has a title.
+    "tinymist.exportPdf" = "never";
 
-      #> Handle copy-paste of resources into the editing document.
-      #?  - enable: Enable copy-and-paste.
-      #?  - disable: Disable copy-and-paste.
-      copyAndPaste = "enable";
+    #> Export target; affects how the language server completes code.
+    #?  - paged: PDF, PNG, and SVG export.
+    #?  - html: HTML export.
+    #?  - bundle: Bundle export.
+    "tinymist.exportTarget" = "paged";
 
-      #> Handle drag-and-drop of resources into the editing document.
-      #?  - enable: Enable drag-and-drop.
-      #?  - disable: Disable drag-and-drop.
-      dragAndDrop = "enable";
+    #> Extra font files/directories for the shared compiler environment.
+    "tinymist.fontPaths" = null;
 
-      #> When to export PDFs.
-      #?  - never: Never export PDFs, run typst manually.
-      #?  - onSave: Export PDFs when a file is saved.
-      #?  - onType: Export PDFs as you type.
-      #?  - onDocumentHasTitle: (Deprecated) Export PDFs when a document has a title.
-      exportPdf = "never";
+    #> Formatter settings.
+    "tinymist.formatterIndentSize" = 2;
+    "tinymist.formatterMode" = "typstyle";
+    "tinymist.formatterPrintWidth" = 120;
+    "tinymist.formatterProseWrap" = "none";
 
-      #> Export target; affects how the language server completes code.
-      #?  - paged: PDF, PNG, and SVG export.
-      #?  - html: HTML export.
-      #?  - bundle: Bundle export.
-      exportTarget = "paged";
+    #> Show inline decorations for package version status.
+    "tinymist.inlayHints.packageVersionStatus" = true;
 
-      #> Extra font files/directories for the shared compiler environment.
-      fontPaths = null;
+    #> Lint settings.
+    "tinymist.lint.enabled" = false;
+    #?  - onSave: Perform lint checks on save
+    #?  - onType: Perform lint checks on type
+    "tinymist.lint.when" = "onSave";
 
-      #> Formatter indent size (spaces).
-      formatterIndentSize = 2;
+    #> Enable LSP `onEnter` for automatic insertion (e.g. `///` for comments).
+    "tinymist.onEnterEvent" = true;
 
-      #> Formatter backend.
-      #?  - disable: Formatter is not activated.
-      #?  - typstyle: Use typstyle formatter.
-      #?  - typstfmt: Use typstfmt formatter.
-      formatterMode = "typstyle";
+    #> Paste script for resources (Typst expression or path pattern).
+    "tinymist.onPaste" = "$root/assets";
 
-      #> Soft limit on characters per line for the formatter.
-      formatterPrintWidth = 120;
+    #> Path pattern for Typst artifacts (`$root`/`$dir`/`$name` supported).
+    "tinymist.outputPath" = "";
 
-      #> How the formatter handles prose line wrapping.
-      formatterProseWrap = "none";
+    #> Preview settings.
+    "tinymist.preview.cursorIndicator" = false;
+    #> Deprecated; use `tinymist.fontPaths`.
+    "tinymist.preview.fontPaths" = [];
+    "tinymist.preview.invertColors" = "never";
+    "tinymist.preview.partialRendering" = true;
+    #> Deprecated; the previewed file is always pinned as the entrypoint.
+    "tinymist.preview.pinPreviewFile" = false;
+    #> When to refresh the preview.
+    #?  - onSave: Refresh preview on save
+    #?  - onType: Refresh preview on type
+    "tinymist.preview.refresh" = "onType";
+    #> Scroll sync mode.
+    #?  - never: Disable automatic scroll sync
+    #?  - onSelectionChangeByMouse: Sync on mouse selection
+    #?  - onSelectionChange: Sync on any selection change
+    "tinymist.preview.scrollSync" = "onSelectionChangeByMouse";
+    #> Ignored; use `tinymist.typstExtraArgs` for `--input`.
+    "tinymist.preview.sysInputs" = {};
+    #> Deprecated; use `tinymist.systemFonts`.
+    "tinymist.preview.systemFonts" = true;
 
-      inlayHints = {
-        #> Show inline decorations for package version status.
-        packageVersionStatus = true;
-      };
+    #> Previewer selection.
+    "tinymist.previewer" = "myriad-dreamin.tinymist";
 
-      lint = {
-        #> Enable lint checks.
-        enabled = false;
-        #> When to run lint checks.
-        #?  - onSave: Perform lint checks on save
-        #?  - onType: Perform lint checks on type
-        when = "onSave";
-      };
+    #> Enable preview features.
+    #?  - enable: Enable preview features.
+    #?  - disable: Disable preview features.
+    "tinymist.previewFeature" = "enable";
 
-      #> Enable LSP `onEnter` for automatic insertion (e.g. `///` for comments).
-      onEnterEvent = true;
+    #> Project resolution strategy.
+    #?  - singleFile: Each file is its own document (like Markdown).
+    #?  - lockDatabase: Track preview/compile history per workspace (like Rust).
+    "tinymist.projectResolution" = "singleFile";
 
-      #> Paste script for resources (Typst expression or path pattern).
-      onPaste = "$root/assets";
+    #> Render Typst elements in hover docs.
+    #?  - enable: Enable render docs.
+    #?  - disable: Disable render docs.
+    "tinymist.renderDocs" = "enable";
 
-      #> Path pattern for Typst artifacts (`$root`/`$dir`/`$name` supported).
-      outputPath = "";
+    #> Typst root for absolute paths.
+    "tinymist.rootPath" = null;
 
-      preview = {
-        #> Show cursor indicator in preview.
-        cursorIndicator = false;
+    #> Semantic tokens (LSP syntax highlighting).
+    #?  - enable: Use semantic tokens
+    #?  - disable: Do not use semantic tokens
+    "tinymist.semanticTokens" = "enable";
 
-        #> Deprecated; use `tinymist.fontPaths`.
-        fontPaths = [];
+    #> Path to a local tinymist executable; `"tinymist"` looks in PATH.
+    "tinymist.serverPath" = null;
 
-        #> Invert preview colors.
-        invertColors = "never";
+    #> How to open exported files.
+    "tinymist.showExportFileIn" = null;
 
-        #> Render only the visible part of the document.
-        partialRendering = true;
+    #> Status bar format string. Placeholders: `{compileStatusIcon}`,
+    #> `{wordCount}`, `{charCount}`, `{fileName}`. Empty hides the status bar.
+    "tinymist.statusBarFormat" = "{compileStatusIcon} {wordCount} [{fileName}]";
 
-        #> Deprecated; the previewed file is always pinned as the entrypoint.
-        pinPreviewFile = false;
+    #> Syntax-only mode.
+    #?  - auto: Follow future heuristics (currently off).
+    #?  - onPowerSaving: Enable in power-saving mode.
+    #?  - enable: Always enable.
+    #?  - disable: Always disable.
+    "tinymist.syntaxOnly" = "auto";
 
-        #> When to refresh the preview.
-        #?  - onSave: Refresh preview on save
-        #?  - onType: Refresh preview on type
-        refresh = "onType";
+    #> Load system fonts for the shared compiler environment.
+    "tinymist.systemFonts" = true;
 
-        #> Scroll sync mode.
-        #?  - never: Disable automatic scroll sync
-        #?  - onSelectionChangeByMouse: Sync on mouse selection
-        #?  - onSelectionChange: Sync on any selection change
-        scrollSync = "onSelectionChangeByMouse";
+    #> Trace LSP communication.
+    "tinymist.trace.server" = "off";
 
-        #> Ignored; use `tinymist.typstExtraArgs` for `--input`.
-        sysInputs = {};
+    #> Prefix newlines after comments with the corresponding prefix.
+    "tinymist.typingContinueCommentsOnNewline" = true;
 
-        #> Deprecated; use `tinymist.systemFonts`.
-        systemFonts = true;
-      };
-
-      #> Previewer selection.
-      previewer = "myriad-dreamin.tinymist";
-
-      #> Enable preview features.
-      #?  - enable: Enable preview features.
-      #?  - disable: Disable preview features.
-      previewFeature = "enable";
-
-      #> Project resolution strategy.
-      #?  - singleFile: Each file is its own document (like Markdown).
-      #?  - lockDatabase: Track preview/compile history per workspace (like Rust).
-      projectResolution = "singleFile";
-
-      #> Render Typst elements in hover docs.
-      #?  - enable: Enable render docs.
-      #?  - disable: Disable render docs.
-      renderDocs = "enable";
-
-      #> Typst root for absolute paths.
-      rootPath = null;
-
-      #> Semantic tokens (LSP syntax highlighting).
-      #?  - enable: Use semantic tokens
-      #?  - disable: Do not use semantic tokens
-      semanticTokens = "enable";
-
-      #> Path to a local tinymist executable; `"tinymist"` looks in PATH.
-      serverPath = null;
-
-      #> How to open exported files.
-      showExportFileIn = null;
-
-      #> Status bar format string. Placeholders: `{compileStatusIcon}`,
-      #> `{wordCount}`, `{charCount}`, `{fileName}`. Empty hides the status bar.
-      statusBarFormat = "{compileStatusIcon} {wordCount} [{fileName}]";
-
-      #> Syntax-only mode.
-      #?  - auto: Follow future heuristics (currently off).
-      #?  - onPowerSaving: Enable in power-saving mode.
-      #?  - enable: Always enable.
-      #?  - disable: Always disable.
-      syntaxOnly = "auto";
-
-      #> Load system fonts for the shared compiler environment.
-      systemFonts = true;
-
-      trace = {
-        #> Trace LSP communication.
-        server = "off";
-      };
-
-      #> Prefix newlines after comments with the corresponding prefix.
-      typingContinueCommentsOnNewline = true;
-
-      #> CLI-shaped extra arguments to the Typst compiler.
-      typstExtraArgs = [];
-    };
+    #> CLI-shaped extra arguments to the Typst compiler.
+    "tinymist.typstExtraArgs" = [];
   };
 }
