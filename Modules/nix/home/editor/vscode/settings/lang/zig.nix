@@ -1,13 +1,16 @@
-_: {
+{cfg, ...}: let
+  defaultFormatter = "ziglang.vscode-zig";
+  # TODO: Our enable needs to be based on cfg.zig.enable
+in {
   extensions = [
-    "ziglang.vscode-zig"
+    defaultFormatter
     "formulahendry.code-runner"
     "vadimcn.vscode-lldb"
   ];
   settings = {
     "[zig]" = {
       editor = {
-        defaultFormatter = "ziglang.vscode-zig";
+        inherit defaultFormatter;
         stickyScroll.defaultModel = "foldingProviderModel";
       };
     };
