@@ -1,12 +1,11 @@
 _: {
-  enable = true;
   extensions = [
     #? AI inline completions
     "github.copilot"
     #? AI chat assistant
     "github.copilot-chat"
   ];
-  userSettings = {
+  settings = {
     "github.copilot.enable" = {
       "*" = true;
       "plaintext" = false;

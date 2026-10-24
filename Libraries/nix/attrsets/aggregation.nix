@@ -356,28 +356,47 @@
       )
     else defaults // attrs;
 
-  #TODO: Add real documentation with Arguments, Type, Examples
-  # Merge plain namespaces key by key, but treat module-system values
-  # (option declarations, mkIf, mkMerge, mkOverride, ...) as atomic: right wins.
-  # mergeSafe = recursiveUpdateUntil (
-  #   _path: left: right:
-  #     !(isAttrs left && isAttrs right)
-  #     || left ? _type
-  #     || right ? _type
-  # );
+  /**
+    Deep-merge a list of attrsets (or a single attrset for curried use),
+    recursing into plain nested attrsets but treating module-system values
+    (anything tagged with `_type`, e.g. `mkIf`, `mkMerge`, `mkOverride`,
+    option declarations) as atomic: the right side wins on conflict.
+
+    Unlike `mergeDeep`, `mergeSafe` never recurses into a module value
+    (its `contents` are opaque) and treats a plain empty `{}` on the
+    right as neutral — so a default `{}` (e.g. VS Code feature
+    `settings = {}`) never clobbers an accumulated `mkMerge [...]` value.
+
+    # Type
+    ```nix
+    mergeSafe :: [AttrSet] | AttrSet -> AttrSet
+  Examples
+  nix
+  # Plain attrsets deep-merge recursively
+  mergeSafe [ { a.b = 1; } { a.c = 2; } ]
+  # => { a = { b = 1; c = 2; }; }
+
+  # Module values survive an empty `{}` on the right
+  mergeSafe [ { x = { _type = "merge"; contents = [ { a = 1; } ]; }; } { x = {}; } ]
+  # => { x = { _type = "merge"; contents = [ { a = 1; } ]; }; }
+
+  # A non-empty plain attrset on the right still wins atomically
+  mergeSafe [ { x = { _type = "merge"; contents = [ { a = 1; } ]; }; } { x = { b = 2; }; } ]
+  # => { x = { b = 2; }; }
+  */
+
   mergeSafe = let
     baseMatcher = recursiveUpdateUntil (
       _path: left: right:
         !(isAttrs left && isAttrs right)
-        || left ? _type
-        || right ? _type
+        || (right ? _type)
+        || (left ? _type && attrNames right != [])
     );
   in
     args:
       if isList args
       then foldl' baseMatcher {} args
-      else baseMatcher args; # allows binary usage like (mergeSafe set1 set2) if curried/called appropriately,
-  # or you can adapt it to handle 2 explicit arguments.
+      else baseMatcher args;
 
   /**
   Deep-merge a list of attrsets, left-to-right, combining nested attrsets
@@ -742,6 +761,72 @@ in {
         outcome = mergeShellFragments [
           {description = "first";}
           {description = "second";}
+        ];
+      };
+    };
+
+    mergeSafe = {
+      plainDeepMerges = mkTest {
+        desired = {
+          a = {
+            b = 1;
+            c = 2;
+          };
+        };
+        command = "mergeSafe [ { a.b = 1; } { a.c = 2; } ]";
+        outcome = mergeSafe [{a.b = 1;} {a.c = 2;}];
+      };
+
+      moduleValueSurvivesEmpty = mkTest {
+        # regression: `{}` on the right must not clobber a module value
+        desired = {
+          x = {
+            _type = "merge";
+            contents = [{a = 1;}];
+          };
+        };
+        command = "mergeSafe [ { x = { _type = \"merge\"; contents = [ { a = 1; } ]; }; } { x = {}; } ]";
+        outcome = mergeSafe [
+          {
+            x = {
+              _type = "merge";
+              contents = [{a = 1;}];
+            };
+          }
+          {x = {};}
+        ];
+      };
+
+      plainNonEmptyStillWinsAtomically = mkTest {
+        desired = {x = {b = 2;};};
+        command = "mergeSafe [ { x = { _type = \"merge\"; contents = [ { a = 1; } ]; }; } { x = { b = 2; }; } ]";
+        outcome = mergeSafe [
+          {
+            x = {
+              _type = "merge";
+              contents = [{a = 1;}];
+            };
+          }
+          {x = {b = 2;};}
+        ];
+      };
+
+      moduleValueOnRightWins = mkTest {
+        desired = {
+          x = {
+            _type = "merge";
+            contents = [{b = 2;}];
+          };
+        };
+        command = "mergeSafe [ { x = { a = 1; }; } { x = { _type = \"merge\"; contents = [ { b = 2; } ]; }; } ]";
+        outcome = mergeSafe [
+          {x = {a = 1;};}
+          {
+            x = {
+              _type = "merge";
+              contents = [{b = 2;}];
+            };
+          }
         ];
       };
     };

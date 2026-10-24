@@ -1,5 +1,6 @@
 {_, ...}: let
   inherit (_.attrsets.resolution) parseVscodeExt vscodePackage;
+  inherit (_.attrsets.aggregation) mergeSafe;
   inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.lists.construction) optionals;
 
@@ -10,13 +11,34 @@
         mkVSCodeSubFeature
         mkHelixFeature
         mkNeovimFeature
+        normalizeSettings
         ;
     };
     external = __exports.internal;
   };
 
+  # Accept both `settings` (user-facing alias) and `userSettings` (canonical)
+  # and normalize to `userSettings`.
+  #
+  # `userSettings` is the base, `settings` the override. `mergeSafe` deep-merges
+  # plain attrsets, but treats module-system values (`mkMerge`, `mkIf`,
+  # `mkOverride`, option declarations, …) as atomic. A plain empty `{}` on
+  # either side is the identity — so a feature layer passing
+  # `userSettings = mkMerge [...]` plus the default `settings = {}` keeps the
+  # accumulated module value intact (this is what Option B of `mergeSafe`'s
+  # predicate fixes).
+  #
+  # No `!= {}` comparison, so `settings = mkMerge [...]` doesn't throw.
+  normalizeSettings = {
+    settings ? {},
+    userSettings ? {},
+    ...
+  }:
+    mergeSafe [userSettings settings];
+
   mkVSCodeFeature = {
     extensions,
+    settings ? {},
     userSettings ? {},
     keybindings ? [],
     pkgs,
@@ -24,6 +46,7 @@
     ...
   } @ args: let
     enable = args.enable or (args.enabled or false);
+    effectiveSettings = normalizeSettings {inherit settings userSettings;};
   in
     {
       extensions = optionals enable (
@@ -41,21 +64,23 @@
       );
       keybindings = optionals enable keybindings;
     }
-    // optionalAttrs enable {inherit userSettings;};
+    // optionalAttrs enable {userSettings = effectiveSettings;};
 
   mkVSCodeSubFeature = {
     extensions ? [],
+    settings ? {},
     userSettings ? {},
     keybindings ? [],
     ...
   } @ args: let
     enable = args.enable or (args.enabled or false);
+    effectiveSettings = normalizeSettings {inherit settings userSettings;};
   in
     {
       extensions = optionals enable extensions;
       keybindings = optionals enable keybindings;
     }
-    // optionalAttrs enable {inherit userSettings;};
+    // optionalAttrs enable {userSettings = effectiveSettings;};
 
   mkHelixFeature = {
     enable,
@@ -71,4 +96,4 @@
   }:
     optionalAttrs enable {inherit plugins extraConfig;};
 in
-  __exports.internal // {__rootAliases = __exports.external;}
+  __exports.internal // {__rootAliases = __exports.internal;}

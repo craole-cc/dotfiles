@@ -1,7 +1,7 @@
 _: {
   enable = false;
   extensions = [];
-  userSettings = {
+  settings = {
     "continue.telemetryEnabled" = false;
     "continue.disableQuickFix" = true;
     "continue.enableTabAutocomplete" = true;

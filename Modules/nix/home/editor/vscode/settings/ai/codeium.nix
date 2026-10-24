@@ -4,7 +4,7 @@ _: {
     #? alternative AI completions
     "codeium.codeium"
   ];
-  userSettings = {
+  settings = {
     "codeium.disableSupercomplete" = true;
     "codeium.enableSearch" = true;
     "codeium.enableConfig" = {
