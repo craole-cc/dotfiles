@@ -1,6 +1,6 @@
 {fonts, ...}: {
   settings = {
-    # ── Editor ───────────────────────────────────────────────────────────
+    #~@ Editor
     #> Font family.
     #! overridden (default: "'Droid Sans Mono', monospace")
     "editor.fontFamily" = fonts.families.monospace;
@@ -24,7 +24,7 @@
     #> Allow variable line heights.
     "editor.allowVariableLineHeights" = true;
 
-    # ── Terminal ─────────────────────────────────────────────────────────
+    #~@ Terminal
     #> Font family. Empty = inherit editor's.
     #! overridden (default: "")
     "terminal.integrated.fontFamily" = "'Maple Mono NF', 'Lilex Nerd Font', monospace";

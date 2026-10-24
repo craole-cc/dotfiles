@@ -25,10 +25,10 @@ _: {
     "material-icon-theme.hidesExplorerArrows" = true;
     #> File icon colour.
     #! overridden (default: "#90a4ae")
-    "material-icon-theme.files.color" = "#e8ddd8";
+    "material-icon-theme.files.color" = "#81c8be"; #TODO: This should be the global accent color
     #> Folder icon colour.
     #! overridden (default: "#90a4ae")
-    "material-icon-theme.folders.color" = "#81c8be";
+    "material-icon-theme.folders.color" = "#81c8be"; #TODO: This should be the global accent color
     #> Folder icon theme.
     #?  - specific | classic | none
     "material-icon-theme.folders.theme" = "specific";
@@ -41,13 +41,13 @@ _: {
     #> Log level.
     "material-icon-theme.logLevel" = "info";
 
-    # ── Root folders ────────────────────────────────────────────────────
+    #~@ Root Folders
     #> Custom root-folder associations.
     "material-icon-theme.rootFolders.associations" = {};
     #> Root-folder icon colour.
     "material-icon-theme.rootFolders.color" = "#90a4ae";
 
-    # ── File associations ───────────────────────────────────────────────
+    #~@ File Associations
     #! overridden (default: {})
     "material-icon-theme.files.associations" = {
       ".editorconfig" = "editorconfig";
@@ -59,7 +59,7 @@ _: {
       "treefmt/config.toml" = "taze";
     };
 
-    # ── Custom file icon clones ─────────────────────────────────────────
+    #~@ Custom file icon clones
     #! overridden (default: [])
     "material-icon-theme.files.customClones" = [
       {
@@ -129,8 +129,6 @@ _: {
           "markdownlint.yaml"
         ];
       }
-      # Moved from folders.customClones: it used `fileNames`, which only
-      # applies to file icons.
       {
         name = "dots";
         base = "ionic";
@@ -192,10 +190,8 @@ _: {
       "users" = "admin";
     };
 
-    # ── Custom folder icon clones ───────────────────────────────────────
+    #~@ Custom folder icon clones
     #! overridden (default: [])
-    # NOTE: "file", "files" and "system" were listed in both `filesystem`
-    # and `lists`; removed from `lists`.
     "material-icon-theme.folders.customClones" = [
       {
         name = "users";
