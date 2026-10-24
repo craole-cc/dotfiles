@@ -1,4 +1,5 @@
 _: {
+  enable = false;
   name = "windows";
   description = "Terminal on Windows";
   settings = {

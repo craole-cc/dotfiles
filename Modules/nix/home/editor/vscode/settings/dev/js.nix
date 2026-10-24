@@ -7,7 +7,6 @@ _: {
     "[javascript][typescript]" = {
       "editor.defaultFormatter" = "biomejs.biome";
     };
-    "typescript.inlayHints.parameterNames.enabled" = "all";
 
     #~@ Semantic  Colour and style for TextMate scopes.
     "editor.tokenColorCustomizations".textMateRules = [

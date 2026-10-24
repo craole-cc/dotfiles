@@ -29,9 +29,13 @@ _: {
     "markdown.validate.enabled" = true;
 
     #~@ Marp
-    #> Enable raw HTML in Markdown slides (needed for most themes).
-    #! overridden (default: false)
-    "markdown.marp.enableHtml" = true;
+    #> Sets which HTML elements within Marp Markdown are enabled in rendered slides.
+    #? If the workspace is not trusted, this setting treats as always "off".
+    #? - off: Disable all HTML elements, including originally allowed HTML elements by Marp.
+    #? - default: Enable only selectively enabled HTML elements by Marp. _([See the list of HTML elements](https://github.com/marp-team/marp-core/blob/main/src/html/allowlist.ts))_
+    #? - all: Enable all HTML elements. This setting may become the slide rendering insecure.
+    "markdown.marp.html" = "default";
+
     #> Default export format.
     #?  - pdf | html | pptx | png | jpeg
     #! overridden (default: "pdf")
@@ -186,8 +190,6 @@ _: {
     "markdown.extension.showActionButtons" = false;
     #> Skip syntax decorations above this size (bytes).
     "markdown.extension.syntax.decorationFileSizeLimit" = 50000;
-    #> Deprecated — use `theming.decoration.renderCodeSpan`.
-    "markdown.extension.syntax.decorations" = null;
     #> Experimental plain theme.
     "markdown.extension.syntax.plainTheme" = false;
     #> No padding on the table delimiter row.

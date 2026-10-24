@@ -10,7 +10,7 @@ _: {
       "editor.defaultFormatter" = "mkhl.shfmt";
     };
 
-    # Bash IDE configuration
+    #~@ Bash IDE
     # Glob patterns excluded from background file discovery. Open files and sourced files can still be analyzed on demand.
     "bashIde.backgroundAnalysisIgnore" = [
       "**/node_modules/**"
@@ -74,7 +74,7 @@ _: {
     # Follow redirection operators with a space.
     "bashIde.shfmt.spaceRedirects" = false;
 
-    # ShellCheck
+    #~@ ShellCheck
     # Custom arguments to pass to ShellCheck. Always prefer to use a `.shellcheckrc` file instead of this setting. When `shellcheck.runtime` is `wasm`, as it always is in VS Code for the Web, paths on your machine in these arguments do not resolve.
     "shellcheck.customArgs" = [];
 
@@ -166,7 +166,7 @@ _: {
     # Lint open documents again when a `.shellcheckrc` or `shellcheckrc` in the workspace is created, changed or deleted, along with a file passed with `--rcfile` in `shellcheck.customArgs` that lives in the workspace. Only the documents that can pick up the changed file are linted again, and never those passed `--norc`.
     "shellcheck.watchConfigFiles.workspace" = false;
 
-    # shfmt
+    #~@ shfmt
     # Additional arguments to pass to the shfmt executable
     "shfmt.executableArgs" = [];
 
