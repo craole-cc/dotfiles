@@ -15,18 +15,20 @@ _: {
     "[github-actions-workflow]" = {
       "editor.defaultFormatter" = "redhat.vscode-yaml";
     };
-    "git.enabled" = true;
-    "git.autofetch" = true;
-    "git.autoStash" = true;
-    "git.enableSmartCommit" = true;
-    "git.openRepositoryInParentFolders" = "always";
-    "git.rebaseWhenSync" = true;
-    "git.allowForcePush" = true;
-    "git.confirmForcePush" = false;
-    "git.confirmSync" = false;
-    "git.ignoreRebaseWarning" = true;
+    git = {
+      enabled = true;
+      autofetch = true;
+      autoStash = true;
+      enableSmartCommit = true;
+      openRepositoryInParentFolders = "always";
+      rebaseWhenSync = true;
+      allowForcePush = true;
+      confirmForcePush = false;
+      confirmSync = false;
+      ignoreRebaseWarning = true;
+    };
 
-    "yaml.disableSchemaDetection" = [
+    yaml.disableSchemaDetection = [
       "**/.github/workflows/*.yml"
       "**/.github/workflows/*.yaml"
       "**/.gitea/workflows/*.yml"
