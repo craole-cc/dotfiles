@@ -61,68 +61,6 @@
     in {inherit internal external;};
   };
 
-  # __exports = {
-  #   inherit
-  #     byPaths
-  #     flakeAttrs # TODO: Move to sources.inputs or sources.modules
-  #     getAttr
-  #     hostAttrs # TODO: Move to sources.inputs or sources.modules
-  #     inputPackages # TODO: Move to sources.packages
-  #     inputSource # TODO: Move to sources.inputs
-  #     nestedByPaths
-  #     withPath
-  #     nixpkgs # TODO: Move to sources.inputs or sources.packages
-  #     optional
-  #     orDefault
-  #     orNull
-  #     package # TODO: Move to sources.packages or applications.registry
-  #     packages # TODO: Move to sources.packages
-  #     shellPackage # TODO: Move to sources.packages or applications.registry
-  #     parseVscodeExt # TODO: Move to applications.vscode or applications.registry
-  #     vscodePackage # TODO: Move to applications.vscode or applications.registry
-  #     vscodePackages # TODO: Move to applications.vscode or applications.registry
-  #     normalizePath
-  #     ;
-  #   getAttrWithPath = withPath;
-  #   normalizeAttrPath = normalizePath;
-  #   getAttrByPaths = byPaths;
-  #   getAttrOrDefault = orDefault;
-  #   getAttrOrNull = orNull;
-  #   getFlake = flakeAttrs;
-  #   getHost = hostAttrs;
-  #   getNestedAttrByPaths = nestedByPaths;
-  #   getPackage = package;
-  #   getPackages = packages;
-  #   getPkgs = packages;
-  #   mkPkgs = packages;
-  #   getShellPackage = shellPackage;
-  #   mkInputPackages = inputPackages;
-  #   mkInputSource = inputSource;
-  #   optionalAttr = optional;
-  # };
-
-  # __rootAliases = {
-  #   inherit
-  #     (__exports)
-  #     flakeAttrs
-  #     getAttrByPaths
-  #     getAttrOrDefault
-  #     getAttrOrNull
-  #     getFlake
-  #     getHost
-  #     getNestedAttrByPaths
-  #     getPackage
-  #     getPackages
-  #     getPkgs
-  #     getShellPackage
-  #     optionalAttr
-  #     ;
-  #   mkPkgs = packages;
-  #   mkInputPackages = inputPackages;
-  #   mkVSCodePackages = vscodePackages; # TODO: Move to applications.vscode or applications.registry
-  #   mkVSCodePackage = vscodePackage; # TODO: Move to applications.vscode or applications.registry
-  # };
-
   inherit (_.attrsets.access) attrByPath attrValues;
   inherit (_.attrsets.predicates) hasAttrByPath;
   inherit (_.attrsets.construction) listToAttrs optionalAttrs;
@@ -140,6 +78,7 @@
   inherit (_.lists.construction) optionals toList;
   inherit (_.lists.transformation) filter;
   inherit (_.strings.construction) concatStringsSep optionalString splitString splitStringBy;
+  inherit (_.strings.transformation) toLower;
   inherit (_.strings.predicates) isString;
   inherit (_.types.predicates) isDerivation;
 
@@ -669,21 +608,29 @@
   Parse a VSCode extension identifier into { publisher, name }.
 
   Accepts either "publisher.name" string or { publisher; name; } attrset.
+  Both fields are normalized to lowercase, which is the canonical form the
+  extension catalogues (`pkgs.vscode-extensions`, `nix-vscode-extensions`'s
+  `vscode-marketplace`) store them under. The marketplace itself is
+  case-insensitive, so this is a normalization step, not a rejection.
 
   # Type
   ```nix
   parseVscodeExt :: string | { publisher :: string, name :: string }
                 -> { publisher :: string, name :: string }
-  ```
   */
-  parseVscodeExt = entry:
+  parseVscodeExt = entry: let
+    normalize = publisher: name: {
+      publisher = toLower publisher;
+      name = toLower name;
+    };
+  in
     if isString entry
     then let
       parts = splitString "." entry;
-    in {
-      publisher = elemAt parts 0;
-      name = elemAt parts 1;
-    }
+    in
+      normalize (elemAt parts 0) (elemAt parts 1)
+    else if isAttrs entry && hasAttr "publisher" entry && hasAttr "name" entry
+    then normalize entry.publisher entry.name
     else entry;
 
   /**
@@ -707,7 +654,24 @@
     entry,
     default ? null,
   }: let
-    e = parseVscodeExt entry;
+    ext = parseVscodeExt entry;
+
+    # Retain raw casing so we can fall back to catalogues that preserve
+    # marketplace casing.
+    raw =
+      if isString entry
+      then let
+        parts = splitString "." entry;
+      in {
+        publisher = elemAt parts 0;
+        name = elemAt parts 1;
+      }
+      else ext;
+
+    # Only worth attempting the raw-cased fallback when it differs from the
+    # canonical form — otherwise it's duplicate work `byPaths` would
+    # short-circuit on anyway.
+    needsFallback = raw.publisher != ext.publisher || raw.name != ext.name;
   in
     byPaths {
       attrset =
@@ -722,10 +686,19 @@
           market =
             inputs.nix-vscode-extensions.extensions.${system}.vscode-marketplace;
         };
-      paths = [
-        ["nixpkgs" e.publisher e.name]
-        ["market" e.publisher e.name]
-      ];
+      paths =
+        [
+          ["nixpkgs" ext.publisher ext.name]
+          ["market" ext.publisher ext.name]
+        ]
+        ++ (
+          if needsFallback
+          then [
+            ["nixpkgs" raw.publisher raw.name]
+            ["market" raw.publisher raw.name]
+          ]
+          else []
+        );
       inherit default;
     };
 
@@ -749,17 +722,8 @@
     entries,
   }:
     filter (x: x != null) (
-      map (
-        entry:
-          vscodePackage {
-            inherit
-              pkgs
-              inputs
-              system
-              entry
-              ;
-          }
-      )
+      map
+      (entry: vscodePackage {inherit pkgs inputs system entry;})
       entries
     );
 

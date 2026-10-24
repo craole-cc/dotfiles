@@ -126,6 +126,7 @@
   groups = map load [
     ./ai
     ./dev
+    ./doc
   ];
 
   module = let
