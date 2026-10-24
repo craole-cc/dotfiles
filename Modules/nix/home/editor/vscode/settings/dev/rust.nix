@@ -4,6 +4,8 @@ _: {
     "rust-lang.rust-analyzer"
     "fill-labs.dependi"
     "vadimcn.vscode-lldb"
+    "hbenl.vscode-test-explorer"
+    "ms-vscode.test-adapter-converter"
     "Swellaby.vscode-rust-test-adapter"
   ];
   settings = {

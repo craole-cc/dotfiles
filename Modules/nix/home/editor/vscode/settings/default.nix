@@ -127,6 +127,7 @@
     ./ai
     ./dev
     ./doc
+    ./ui
   ];
 
   module = let
