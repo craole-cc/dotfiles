@@ -17,6 +17,7 @@
   inherit (lix.lists.construction) optional;
   inherit (lix.schema.fonts) mkFonts;
   inherit (lix.sources.packages) pkgsFrom;
+  inherit (lix.strings.construction) optionalString;
 
   context = mkContext {
     inherit config;
@@ -87,6 +88,15 @@
     #? identity is Insiders rather than stable `code`.
     extraPackages = optional cfg.insiders (
       tools.vscode-insiders.package.overrideAttrs (old: {
+        # Restore the original .NET bundle after fixup, as in Nixpkgs' VS Code package.
+        postFixup =
+          (old.postFixup or "")
+          + optionalString pkgs.stdenv.hostPlatform.isLinux ''
+            signer=resources/app/node_modules/@vscode/vsce-sign/bin/vsce-sign
+            cp "./$signer" "$out/lib/vscode/$signer"
+            patchelf --add-needed ${pkgs.openssl.out}/lib/libssl.so.3 "$out/lib/vscode/$signer"
+            chmod +x "$out/lib/vscode/$signer"
+          '';
         passthru =
           (old.passthru or {})
           // {
