@@ -1,5 +1,6 @@
 _: {
   extensions = ["rebornix.toggle"];
+
   keybindings = [
     {
       key = "ctrl+t ctrl+m";
@@ -56,6 +57,71 @@ _: {
   ];
 
   settings = {
+    #~@ Breadcrumbs for Navigation
+    breadcrumbs = {
+      #! overridden (default: false)
+      enabled = true;
+      #> How file paths appear in breadcrumbs.
+      #?  - on | off | last
+      filePath = "on";
+      #> Show icons in breadcrumbs.
+      icons = true;
+      #> Show editor-type dropdown when multiple editors can open the file.
+      showEditorType = true;
+      #> Symbol path in breadcrumbs (`on` | `off` | `last`).
+      symbolPath = "on";
+      #> Symbol path separator when copying breadcrumb paths.
+      symbolPathSeparator = ".";
+      #> Symbol outline sort order.
+      #?  - position | name | type
+      symbolSortOrder = "position";
+    };
+
+    #~@ Window
+    window = {
+      #> Menu bar style.
+      #?  - classic | visible | toggle | hidden | compact
+      #! overridden (default: "classic")
+      menuBarVisibility = "toggle";
+      #> Custom title bar style (`native` | `custom`).
+      #! overridden (default: "native")
+      titleBarStyle = "native";
+      #> Custom title bar visibility.
+      #? - auto | windowed | never
+      #! overridden (default: "auto")
+      customTitleBarVisibility = "auto";
+      #> Alt-key focuses the menu bar.
+      #! overridden (default: true)
+      customMenuBarAltFocus = true;
+      #> Restore to fullscreen if exited in fullscreen.
+      #! overridden (default: false)
+      restoreFullscreen = true;
+      #> Zoom per window vs global.
+      #! overridden (default: false)
+      zoomPerWindow = true;
+      #> Command centre in the title bar.
+      commandCenter = true;
+      #> Menu style (`custom` | `native` | `inherit`).
+      menuStyle = "inherit";
+      #> Window controls style (`native` | `custom` | `hidden`).
+      controlsStyle = "native";
+      #> Dialog style (`native` | `custom`).
+      dialogStyle = "native";
+      #> Double-click title bar icon to close.
+      doubleClickIconToClose = false;
+      #> Open files in a new window (`on` | `off` | `default`).
+      openFilesInNewWindow = "off";
+      #> Open folders in a new window (`on` | `off` | `default`).
+      openFoldersInNewWindow = "default";
+      #> New window dimensions.
+      #?  - default | inherit | offset | maximized | fullscreen
+      newWindowDimensions = "default";
+
+      #~@ Layout density
+      #> Editor tab height (`default` | `compact`).
+      density.editorTabHeight = "default";
+    };
+
     workbench = {
       activityBar = {
         #~@ Activity bar & side bar
@@ -255,73 +321,8 @@ _: {
       experimental.share.enabled = true;
     };
 
-    breadcrumbs = {
-      #~@ Breadcrumbs
-      #! overridden (default: false)
-      enabled = true;
-      #> How file paths appear in breadcrumbs.
-      #?  - on | off | last
-      filePath = "on";
-      #> Show icons in breadcrumbs.
-      icons = true;
-      #> Show editor-type dropdown when multiple editors can open the file.
-      showEditorType = true;
-      #> Symbol path in breadcrumbs (`on` | `off` | `last`).
-      symbolPath = "on";
-      #> Symbol path separator when copying breadcrumb paths.
-      symbolPathSeparator = ".";
-      #> Symbol outline sort order.
-      #?  - position | name | type
-      symbolSortOrder = "position";
-    };
-
-    window = {
-      #~@ Window
-      #> Menu bar style.
-      #?  - classic | visible | toggle | hidden | compact
-      #! overridden (default: "classic")
-      menuBarVisibility = "toggle";
-      #> Custom title bar style (`native` | `custom`).
-      #! overridden (default: "native")
-      titleBarStyle = "native";
-      #> Custom title bar visibility.
-      #? - auto | windowed | never
-      #! overridden (default: "auto")
-      customTitleBarVisibility = "auto";
-      #> Alt-key focuses the menu bar.
-      #! overridden (default: true)
-      customMenuBarAltFocus = true;
-      #> Restore to fullscreen if exited in fullscreen.
-      #! overridden (default: false)
-      restoreFullscreen = true;
-      #> Zoom per window vs global.
-      #! overridden (default: false)
-      zoomPerWindow = true;
-      #> Command centre in the title bar.
-      commandCenter = true;
-      #> Menu style (`custom` | `native` | `inherit`).
-      menuStyle = "inherit";
-      #> Window controls style (`native` | `custom` | `hidden`).
-      controlsStyle = "native";
-      #> Dialog style (`native` | `custom`).
-      dialogStyle = "native";
-      #> Double-click title bar icon to close.
-      doubleClickIconToClose = false;
-      #> Open files in a new window (`on` | `off` | `default`).
-      openFilesInNewWindow = "off";
-      #> Open folders in a new window (`on` | `off` | `default`).
-      openFoldersInNewWindow = "default";
-      #> New window dimensions.
-      #?  - default | inherit | offset | maximized | fullscreen
-      newWindowDimensions = "default";
-
-      #~@ Layout density
-      #> Editor tab height (`default` | `compact`).
-      density.editorTabHeight = "default";
-    };
-
+    #~@ Zen mode
     zenMode = {
-      #~@ Zen mode
       #> Centre layout in Zen mode.
       centerLayout = true;
       #> Full screen in Zen mode.

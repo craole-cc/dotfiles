@@ -58,6 +58,8 @@ _: {
     };
 
     files = {
+      eol = "\n";
+
       #> Save when the editor loses focus
       autoSave = "afterDelay";
       #> Ensure files end with a newline on save
