@@ -11,35 +11,6 @@ _: {
   ];
 
   settings = {
-    #~@ TODO Tree
-    better-todo-tree.general = {
-      automaticGitRefreshInterval = 0;
-      debug = false;
-      exportPath = "~/better-todo-tree-%Y%m%d-%H%M.txt";
-      periodicRefreshInterval = 0;
-      revealBehaviour = "start of todo";
-      rootFolder = "";
-      schemes = ["file" "ssh" "untitled" "vscode-notebook-cell"];
-      showActivityBarBadge = false;
-      showIconsInsteadOfTagsInStatusBar = false;
-      showScanningProgress = "status bar";
-      statusBar = "none";
-      statusBarClickBehaviour = "reveal";
-
-      # Object-valued setting: keep as a real attrset, do not flatten
-      tagGroups = {};
-
-      tags = [
-        "BUG"
-        "HACK"
-        "FIXME"
-        "TODO"
-        "XXX"
-        "[ ]"
-        "[x]"
-      ];
-    };
-
     #~@ Line Width Indicator
     LWI = {
       #~@ Line-width Indicators

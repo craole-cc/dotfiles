@@ -1,4 +1,8 @@
 _: {
+  extensions = [
+    #? Toggle settings in Visual Studio Code
+    "rebornix.toggle"
+  ];
   keybindings = [
     {
       key = "ctrl+t ctrl+m";
@@ -51,6 +55,10 @@ _: {
           }
         ];
       };
+    }
+    {
+      key = "ctrl+alt+.";
+      command = "extension.toggleFiles";
     }
   ];
 
