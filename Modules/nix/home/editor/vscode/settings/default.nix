@@ -157,7 +157,7 @@
     inherit default;
     ownedSettings = concatMap (entry: entry.ownedSettings) resolved.entries;
     ownedKeybindings = concatMap (entry: entry.ownedKeybindings) resolved.entries;
-    options = mergeSafe (map (entry: entry.options or {}) resolved.entries) options;
+    options = mergeSafe ((map (entry: entry.options or {}) resolved.entries) ++ [options]);
     feature = enable: let
       entries = filter (entry: entry.enable) resolved.entries;
     in
