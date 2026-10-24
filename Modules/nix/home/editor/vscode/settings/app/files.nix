@@ -51,17 +51,24 @@ _: {
 
   settings = {
     explorer = {
+      #> Show single-child folder chains as one compact entry
       compactFolders = false;
+      #> Hide files matched by .gitignore in the explorer
       excludeGitIgnore = false;
     };
 
     files = {
-      autoSave = "onFocusChange";
+      #> Save when the editor loses focus
+      autoSave = "afterDelay";
+      #> Ensure files end with a newline on save
       insertFinalNewline = true;
+      #> Remove extra trailing newlines at the end of the file on save
       trimFinalNewlines = true;
+      #> Remove trailing whitespace on save
       trimTrailingWhitespace = true;
 
-      # Object-valued settings below: glob keys must stay as-is, do not flatten
+      #> Object-valued settings below: glob keys must stay as-is, do not flatten
+      #? Hide patterns in the explorer; false entries override the defaults so these stay visible
       exclude = {
         "**/.DS_Store" = false;
         "**/.git" = false;
@@ -70,6 +77,8 @@ _: {
         "**/Thumbs.db" = false;
       };
 
+      #> Verify these globs: some look mangled (stray spaces, missing trailing **)
+      #? Paths the file watcher ignores
       watcherExclude = {
         "**/.local/* *" = true;
         "**/.vscode-server-insiders/* *" = true;
@@ -81,6 +90,7 @@ _: {
         "**/.trunk/*plugins/" = true;
       };
 
+      #? Glob to language ID mapping
       associations = {
         ".bash*" = "shellscript";
         ".dotsrc" = "coffeescript";
@@ -130,6 +140,8 @@ _: {
       };
     };
 
+    #> Object-valued setting: keep as a real attrset, do not flatten
+    #? Glob to custom editor mapping; "default" uses the normal text editor
     workbench.editorAssociations = {
       "*.copilotmd" = "vscode.markdown.preview.editor";
       "{git,gitlens,chat-editing-snapshot-text-model,copilot,git-graph,git-graph-3}:/**/*.qrc" = "default";
