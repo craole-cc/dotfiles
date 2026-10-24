@@ -25,6 +25,10 @@
       record = user;
       protocol = (mkUI {inherit host user;}).displayProtocol;
     };
+    firewallTCPPorts =
+      user.firewall.tcp.ports or (
+        host.firewall.tcp.ports or (host.defaults.firewall.tcp.ports or [])
+      );
     uid =
       if (user.uid or null) != null
       then user.uid
@@ -36,6 +40,7 @@
         };
   in
     normalized
+    // {firewall.tcp.ports = firewallTCPPorts;}
     // optionalAttrs (user ? interface) {
       interface = (removeAttrs user.interface ["theme"]) // {fonts = getFonts user;};
     }
@@ -45,7 +50,22 @@
         record = user.git or {};
       in
         if isList record
-        then {identities = record;}
+        then {
+          identities = map (identity: let
+            licence = identity.license or (identity.licence or {});
+          in
+            identity
+            // {
+              license =
+                optionalAttrs (licence ? author || licence ? name) {
+                  author = licence.author or licence.name;
+                }
+                // optionalAttrs (licence ? default || licence ? type) {
+                  default = licence.default or licence.type;
+                };
+            })
+          record;
+        }
         else record;
       theme = recursiveUpdate (user.theme or {}) (user.interface.theme or {});
       paths = mkTree {

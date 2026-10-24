@@ -10,10 +10,6 @@ _: {
         # "editor.inlayHints.enabled" = "off";
         quickSuggestions.strings = true;
       };
-
-      # "editor.semanticHighlighting.enabled" = true;
-      # "editor.tabSize" = 2;
-      # "editor.wordWrap" = "on";
     };
 
     #> Italic-bold the semantic scopes tinymist emits for variable references,

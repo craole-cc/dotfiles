@@ -3,37 +3,6 @@
   projectPath,
   ...
 }: let
-  inherit (_.attrsets.access) attrNames attrValues;
-  inherit (_.attrsets.aggregation) recursiveUpdate;
-  inherit (_.attrsets.construction) listToAttrs optionalAttrs;
-  inherit (_.attrsets.transformation) filterAttrs functionArgs mapAttrs;
-  inherit (_.debug.assertions) withContext;
-  inherit (_.lists.construction) toList;
-  inherit (_.filesystem.meta) listNixModules;
-  inherit (_.filesystem.primitives) concatPath;
-  inherit (_.filesystem.resolution) mkPath;
-  inherit (_.filesystem.traversal) importJSON readDir;
-  inherit (_.lists.aggregation) foldl';
-  inherit (_.lists.predicates) elem any;
-  inherit (_.lists.selection) filter;
-  inherit (_.lists.transformation) flatten unique;
-  inherit (_.strings.access) substring stringLength;
-  inherit (_.strings.construction) concat tokenize;
-  inherit (_.strings.predicates) hasSuffix hasPrefix;
-  inherit (_.types.predicates) isAttrs isPath isString;
-
-  #> Directory names always excluded from every traversal, regardless of any
-  #> `exclude`/`excludePrefixes` passed at the call site. This is the single
-  #> exclusion contract for the filesystem domain - importers and any other
-  #> traversal consumer inherit it rather than redeclaring the list, so a new
-  #> reserved folder name only has to be added here.
-  foldersToExclude = [
-    "archives"
-    "review"
-    "temp"
-    "tmp"
-  ];
-
   exports = {
     inherit
       foldersToExclude
@@ -51,6 +20,37 @@
       ;
     importJSON' = readJSON;
   };
+
+  inherit (_.attrsets.access) attrNames attrValues;
+  inherit (_.attrsets.aggregation) recursiveUpdate;
+  inherit (_.attrsets.construction) listToAttrs optionalAttrs;
+  inherit (_.attrsets.transformation) filterAttrs functionArgs mapAttrs;
+  inherit (_.debug.assertions) withContext;
+  inherit (_.lists.construction) toList;
+  inherit (_.filesystem.meta) listNixModules;
+  inherit (_.filesystem.primitives) concatPath;
+  inherit (_.filesystem.resolution) mkPath;
+  inherit (_.filesystem.traversal) importJSON readDir;
+  inherit (_.lists.aggregation) foldl';
+  inherit (_.lists.predicates) elem any;
+  inherit (_.lists.selection) filter;
+  inherit (_.lists.transformation) flatten unique;
+  inherit (_.strings.access) substring stringLength;
+  inherit (_.strings.construction) concat tokenize;
+  inherit (_.strings.predicates) hasSuffix hasPrefix;
+  inherit (_.types.predicates) isAttrs isFunction isPath isString;
+
+  #> Directory names always excluded from every traversal, regardless of any
+  #> `exclude`/`excludePrefixes` passed at the call site. This is the single
+  #> exclusion contract for the filesystem domain - importers and any other
+  #> traversal consumer inherit it rather than redeclaring the list, so a new
+  #> reserved folder name only has to be added here.
+  foldersToExclude = [
+    "archives"
+    "review"
+    "temp"
+    "tmp"
+  ];
 
   #> Name prefixes excluded by default from every `importTree`-based walk
   #> (`importAllNamed`, `importAllMerged`). Pass `excludePrefixes = []` at
@@ -102,11 +102,23 @@
   (unchanged from original - see prior docstring)
   */
   importModuleFiltered = args: path: let
-    required = functionArgs (import path);
+    imported = import path;
   in
-    if required == {}
-    then import path args
-    else import path (filterAttrs (name: _: elem name (attrNames required)) args);
+    if isFunction imported
+    then let
+      fn = functionArgs imported;
+    in
+      if fn == {}
+      then imported args
+      else imported (filterAttrs (n: _: elem n (attrNames fn)) args)
+    else if isAttrs imported && imported ? __functionArgs
+    then
+      imported (
+        filterAttrs
+        (n: _: elem n (attrNames imported.__functionArgs))
+        args
+      )
+    else imported;
 
   # -- importNixModules
 

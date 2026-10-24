@@ -1,6 +1,15 @@
 {
-  name = "template";
-  description = "Template for mkEntry";
+  lix,
+  user,
+  ...
+}: let
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.lists.access) head;
+  ids = user.git.identities or [];
+  licence = optionalAttrs (ids != []) ((head ids).license or {});
+in {
+  name = "admin";
+  description = "Administration & Secuirity";
   enable = false;
   extensions = [
     "jbro.vscode-default-keybindings"
@@ -25,10 +34,10 @@
     #~@ Choose a License
     license = {
       #> Author for licenses.
-      author = "Craig 'Craole' Cole";
+      author = licence.author or "Craig 'Craole' Cole";
 
       #> Default license.
-      default = "mit";
+      default = licence.default or "mit";
 
       #> License file extension.
       #? - "": Create licenses without extension

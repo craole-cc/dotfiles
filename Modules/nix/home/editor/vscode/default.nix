@@ -59,6 +59,7 @@
       config
       context
       entryAfter
+      host
       inputs
       lix
       mkDefault
@@ -66,6 +67,7 @@
       paths
       tools
       mkMerge
+      user
       ;
     fonts = mkFonts {inherit host user;};
     json = pkgs.formats.json {};

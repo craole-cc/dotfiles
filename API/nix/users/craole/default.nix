@@ -15,12 +15,20 @@
       name = "craole-cc";
       email = "134658831+craole-cc@users.noreply.github.com";
       root = "craole-cc";
+      licence = {
+        name = "Craig 'Craole' Cole";
+        type = "mit";
+      };
     }
     {
       id = "craole";
       name = "Craole";
       email = "32288735+Craole@users.noreply.github.com";
       root = "Craole";
+      licence = {
+        name = "Craig 'Craole' Cole";
+        type = "mit";
+      };
     }
   ];
 

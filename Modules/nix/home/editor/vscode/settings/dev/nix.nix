@@ -1,4 +1,4 @@
-_: {
+_: let
   extensions = [
     "bbenoist.Nix"
     "jnoortheen.nix-ide"
@@ -6,10 +6,8 @@ _: {
     "SebastianKarlsen.direnv-trusted"
     "vix.lint-runner"
   ];
-
-  settings = let
-    server = "nixd";
-  in {
+  server = "nixd";
+  settings = {
     "[nix]" = {
       editor = {
         defaultFormatter = "jnoortheen.nix-ide";
@@ -78,5 +76,8 @@ _: {
         }
       ];
     };
+    settingsSync = {
+      ignoredExtensions = removeAttrs extensions ["vix.lint-runner"];
+    };
   };
-}
+in {inherit extensions settings;}
