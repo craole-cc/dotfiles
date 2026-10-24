@@ -28,5 +28,4 @@ _: {
       strings.enabled = true;
     };
   };
-  keybindings = [];
 }

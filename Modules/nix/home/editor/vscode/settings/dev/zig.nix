@@ -7,12 +7,9 @@ _: {
   settings = {
     "[zig]" = {
       editor = {
-        # "editor.formatOnSave" = true;
         defaultFormatter = "ziglang.vscode-zig";
         stickyScroll.defaultModel = "foldingProviderModel";
       };
-
-      # "files.eol" = "\n";
     };
 
     code-runner = {
@@ -183,5 +180,4 @@ _: {
       };
     };
   };
-  keybindings = [];
 }

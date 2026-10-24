@@ -12,7 +12,6 @@ _: {
     editor = {
       #~@ Semantic token colour rules
       #> Colour and style for semantic token types.
-      #! overridden (default: {})
       semanticTokenColorCustomizations = {
         rules = {
           "*.static".italic = true;
@@ -23,7 +22,6 @@ _: {
       };
 
       #> Colour and style for TextMate scopes.
-      #! overridden (default: {})
       tokenColorCustomizations = {
         "[*Light*]" = {
           textMateRules = [
@@ -113,16 +111,14 @@ _: {
       #> Highlight matching brackets.
       #?  - always | near | never
       #! overridden (default: "always")
-      matchBrackets = "never";
+      matchBrackets = "always";
     };
 
     #> UI colour overrides.
-    #! overridden (default: {})
     workbench.colorCustomizations = {};
 
     LWI = {
       #~@ Line-width Indicators
-      #! overridden (default: [])
       breakpoints = [
         {
           color = "rgb(0, 255, 0, 0.6)";

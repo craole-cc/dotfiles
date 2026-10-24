@@ -6,7 +6,6 @@ _: {
         #> Where the Activity Bar sits relative to the side bars.
         #?  - default: Side of the Primary Side Bar, above the Secondary.
         #?  - top | bottom | hidden
-        #! overridden (default: "default")
         location = "default";
         #> Auto-hide the Activity Bar when only one view container is shown.
         autoHide = false;
@@ -34,7 +33,6 @@ _: {
         #~@ Panel
         #> Default location of the panel (terminal, output, problems, …).
         #?  - bottom | top | left | right
-        #! overridden (default: "bottom")
         defaultLocation = "bottom";
         #> Whether the panel opens maximized.
         #?  - always | never | preserve
@@ -44,7 +42,6 @@ _: {
       };
 
       #~@ Status Bar
-      #! overridden (default: true)
       statusBar.visible = true;
 
       #~@ Editor tabs
@@ -57,7 +54,6 @@ _: {
       editor = {
         #> How editor tabs are shown.
         #?  - multiple | single | none
-        #! overridden (default: "multiple")
         showTabs = "multiple";
         #> Reveal an already-open editor instead of opening another.
         #! overridden (default: false)
@@ -233,7 +229,7 @@ _: {
       #! overridden (default: "native")
       titleBarStyle = "native";
       #> Custom title bar visibility.
-      #?  - auto | windowed | never
+      #? - auto | windowed | never
       #! overridden (default: "auto")
       customTitleBarVisibility = "auto";
       #> Alt-key focuses the menu bar.

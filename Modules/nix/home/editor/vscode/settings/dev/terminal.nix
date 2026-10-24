@@ -1,6 +1,24 @@
 _: {
   name = "terminal";
   description = "Terminal";
+
+  keybindings = [
+    {
+      key = "ctrl+j";
+      command = "-workbench.action.togglePanel";
+      when = "editorTextFocus && !editorReadonly";
+    }
+    {
+      key = "ctrl+alt+`";
+      command = "workbench.action.terminal.kill";
+    }
+    {
+      key = "shift+escape";
+      command = "workbench.action.terminal.kill";
+      when = "terminalFocus";
+    }
+  ];
+
   settings = {
     terminal.integrated = {
       allowMnemonics = true;
@@ -21,21 +39,4 @@ _: {
       tabs.location = "right";
     };
   };
-
-  keybindings = [
-    {
-      "key" = "ctrl+j";
-      "command" = "-workbench.action.togglePanel";
-      "when" = "editorTextFocus && !editorReadonly";
-    }
-    {
-      "key" = "ctrl+alt+`";
-      "command" = "workbench.action.terminal.kill";
-    }
-    {
-      "key" = "shift+escape";
-      "command" = "workbench.action.terminal.kill";
-      "when" = "terminalFocus";
-    }
-  ];
 }

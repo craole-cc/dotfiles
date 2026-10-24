@@ -37,5 +37,4 @@ _: {
       "**/.forgejo/workflows/*.yaml"
     ];
   };
-  keybindings = [];
 }

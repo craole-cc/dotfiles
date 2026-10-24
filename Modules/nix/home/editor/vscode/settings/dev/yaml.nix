@@ -34,7 +34,7 @@ _: {
           "tag.decorator.js entity.name.tag.js"
           "tag.decorator.js"
         ];
-        settings = {fontStyle = "italic";};
+        settings.fontStyle = "italic";
       }
     ];
   };
