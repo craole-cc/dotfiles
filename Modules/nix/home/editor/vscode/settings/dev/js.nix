@@ -1,14 +1,31 @@
-_: {
+{lix, ...}: let
+  inherit (lix.attrsets.construction) optionalAttrs;
+  inherit (lix.attrsets.aggregation) mergeSafe;
+  inherit (lix.lists.predicates) isIn;
+  formatter = "biomejs.biome";
+  trustFormatter = name: link:
+    optionalAttrs (isIn name formatter)
+    {${link} = true;};
+in {
+  #TODO:
   extensions = [
-    "biomejs.biome"
+    formatter
   ];
 
   settings = {
     "[javascript]" = {
-      editor.defaultFormatter = "biomejs.biome";
+      editor.defaultFormatter = formatter;
     };
     "[typescript]" = {
-      editor.defaultFormatter = "biomejs.biome";
+      editor.defaultFormatter = formatter;
+    };
+
+    json.schemaDownload = {
+      enable = false;
+      trustedDomains = mergeSafe [
+        (trustFormatter "biome" "https://biomejs.dev")
+        (trustFormatter "dprint" "https://dprint.dev")
+      ];
     };
 
     #~@ Semantic  Colour and style for TextMate scopes.
