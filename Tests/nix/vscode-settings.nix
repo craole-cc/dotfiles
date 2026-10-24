@@ -15,21 +15,33 @@
   nixSettings = entry ../../Modules/nix/home/editor/vscode/settings/dev/nix.nix;
   javascript = entry ../../Modules/nix/home/editor/vscode/settings/dev/js.nix;
   python = entry ../../Modules/nix/home/editor/vscode/settings/dev/python.nix;
-  profile =
+  resolveProfile = features:
     (import ../../Modules/nix/home/editor/vscode/settings {
       inherit lix;
       inputs = {};
       pkgs = {};
-      cfg.features = {
-        ai = true;
-        dev = true;
-        doc = true;
-        ui = true;
-      };
+      cfg.features = features;
       json.type = lib.types.json;
       fonts.families.monospace = "monospace";
       paths.store.cfg.default = ../../Configuration;
-    }).output.userSettings;
+    }).output;
+  enabledProfile = resolveProfile {
+    ai = true;
+    dev = true;
+    doc = true;
+    ui = true;
+  };
+  disabledProfile = resolveProfile {
+    ai = false;
+    dev = false;
+    doc = false;
+    ui = false;
+  };
+  profile = enabledProfile.userSettings;
+  terminalBinding = {
+    key = "ctrl+alt+`";
+    command = "workbench.action.terminal.kill";
+  };
   evaluate = value:
     (lib.evalModules {
       modules = [
@@ -41,6 +53,26 @@
     }).config.settings;
 
   checks = {
+    disabledEntriesDoNotFallBackToJSON = builtins.all (name: !(builtins.hasAttr name profile)) [
+      "harper.dialect"
+      "codeium.enableSearch"
+      "continue.enableTabAutocomplete"
+      "geminicodeassist.inlineSuggestions.enableAuto"
+      "rubyLsp.enableExperimentalFeatures"
+      "terminal.integrated.profiles.windows"
+    ];
+    disabledGroupsDoNotFallBackToJSON = builtins.all (name: !(builtins.hasAttr name disabledProfile.userSettings)) [
+      "[nix]"
+      "nix.serverSettings"
+      "workbench.iconTheme"
+      "github.copilot.enable"
+      "harper.dialect"
+    ];
+    unrelatedJSONSettingsPreserved = profile."editor.wordWrap" == baseline."editor.wordWrap";
+    enabledEntryKeybindingIsNotDuplicated =
+      builtins.length (builtins.filter (binding: binding == terminalBinding) enabledProfile.keybindings) == 1;
+    disabledGroupKeybindingsDoNotFallBackToJSON = !(builtins.elem terminalBinding disabledProfile.keybindings);
+    disabledGroupsHaveNoKeybindings = disabledProfile.keybindings == [];
     profilePassesSettingNamesToEntries =
       profile."nix.serverSettings"
       == nixSettings."nix.serverSettings"
@@ -60,11 +92,9 @@
       == "statix"
       && nixSettings."lintRunner.tools".statix.parser.flags == "gm";
     languageOverridesRemainObjects =
-      nixSettings."[nix]"
-      == {
-        "editor.defaultFormatter" = "jnoortheen.nix-ide";
-        "editor.formatOnSave" = true;
-      };
+      builtins.isAttrs nixSettings."[nix]"
+      && nixSettings."[nix]"."editor.defaultFormatter" == "jnoortheen.nix-ide"
+      && !(nixSettings ? "[nix].editor.defaultFormatter");
     javascriptRulesRemainInsideObject = javascript."editor.tokenColorCustomizations" ? textMateRules;
     pythonRulesRemainInsideObject = python."editor.tokenColorCustomizations" ? textMateRules;
     colourRulesMergeAcrossEntries = let

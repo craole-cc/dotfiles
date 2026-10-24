@@ -13,7 +13,7 @@
   inherit (lix.filesystem.traversal) importAllNamed importJSON';
   inherit (lix.lists.aggregation) concatMap;
   inherit (lix.lists.construction) optional optionals;
-  inherit (lix.lists.predicates) any;
+  inherit (lix.lists.predicates) any elem;
   inherit (lix.lists.transformation) filter flatten uniqueStrings;
   inherit (lix.modules.construction) mkDefault mkMerge mkOverride;
   inherit (lix.modules.evaluation) evalModules;
@@ -37,8 +37,14 @@
     settings ? {},
     userSettings ? {},
     keybindings ? [],
-  }:
-    {inherit name description enable;}
+  }: let
+    declaredSettings = normalizeSettings {inherit settings userSettings settingNames;};
+  in
+    {
+      inherit name description enable;
+      ownedSettings = attrNames declaredSettings;
+      ownedKeybindings = keybindings;
+    }
     // mkVSCodeSubFeature {
       inherit enable extensions settings userSettings keybindings settingNames;
     };
@@ -104,6 +110,8 @@
   in {
     inherit (resolved) name description;
     inherit default;
+    ownedSettings = concatMap (entry: entry.ownedSettings) resolved.entries;
+    ownedKeybindings = concatMap (entry: entry.ownedKeybindings) resolved.entries;
     feature = enable: let
       entries = filter (entry: entry.enable) resolved.entries;
     in
@@ -154,6 +162,10 @@
   in {inherit options output;};
 
   profile = let
+    # Nix entries own their declarations even when disabled. The JSON files
+    # supply only settings and bindings that have not moved to an entry yet.
+    ownedSettings = uniqueStrings (concatMap (group: group.ownedSettings or []) groups);
+    ownedKeybindings = concatMap (group: group.ownedKeybindings or []) groups;
     learn = name: let
       baseline = 1500;
       data =
@@ -166,8 +178,8 @@
           };
     in
       if isList data
-      then mkOverride baseline data
-      else mapAttrs (_: mkOverride baseline) data;
+      then mkOverride baseline (filter (binding: !(elem binding ownedKeybindings)) data)
+      else mapAttrs (_: mkOverride baseline) (removeAttrs data ownedSettings);
 
     options = {
       userSettings = mkOption {
