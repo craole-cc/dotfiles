@@ -6,6 +6,7 @@
   ...
 } @ args: let
   inherit (lix.applications.editors) mkVSCodeFeature mkVSCodeSubFeature normalizeSettings;
+  inherit (lix.attrsets.access) attrNames;
   inherit (lix.attrsets.construction) listToAttrs;
   inherit (lix.attrsets.transformation) mapAttrs mapAttrsToList;
   inherit (lix.filesystem.access) readFileType;
@@ -21,6 +22,12 @@
   inherit (lix.types.predicates) isAttrs isList isPath;
   inherit (lix.types.primitives) package;
 
+  baselineSettings = importJSON' {
+    root = args.paths.store.cfg.default;
+    stem = ["vscode" "settings.json"];
+  };
+  settingNames = attrNames baselineSettings;
+
   mkEntry = {
     stem ? "entry",
     name ? stem,
@@ -33,7 +40,7 @@
   }:
     {inherit name description enable;}
     // mkVSCodeSubFeature {
-      inherit enable extensions settings userSettings keybindings;
+      inherit enable extensions settings userSettings keybindings settingNames;
     };
 
   mkEntries = dir: let
@@ -149,10 +156,14 @@
   profile = let
     learn = name: let
       baseline = 1500;
-      data = importJSON' {
-        root = args.paths.store.cfg.default;
-        stem = ["vscode" "${name}.json"];
-      };
+      data =
+        if name == "settings"
+        then baselineSettings
+        else
+          importJSON' {
+            root = args.paths.store.cfg.default;
+            stem = ["vscode" "${name}.json"];
+          };
     in
       if isList data
       then mkOverride baseline data

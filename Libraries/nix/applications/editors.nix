@@ -1,8 +1,13 @@
 {_, ...}: let
   inherit (_.attrsets.resolution) parseVscodeExt vscodePackage;
+  inherit (_.attrsets.access) attrNames;
   inherit (_.attrsets.aggregation) mergeSafe;
   inherit (_.attrsets.construction) optionalAttrs;
   inherit (_.lists.construction) optionals;
+  inherit (_.lists.aggregation) foldl';
+  inherit (_.lists.predicates) elem;
+  inherit (_.strings.predicates) hasInfix hasPrefix;
+  inherit (_.types.predicates) isAttrs;
 
   __exports = {
     internal = {
@@ -33,24 +38,56 @@
   normalizeSettings = {
     settings ? {},
     userSettings ? {},
+    settingNames ? [],
     ...
-  }:
-    mergeSafe [userSettings settings];
+  }: let
+    flatten = flattenVSCodeSetting {inherit settingNames;};
+  in
+    mergeSafe [(flatten userSettings) (flatten settings)];
 
-  flattenVSCodeSetting = prefix: value:
-    if builtins.isAttrs value && value != {}
-    then
-      builtins.foldl' (
-        result: key:
-          result
-          // flattenVSCodeSetting (
-            if prefix == ""
-            then key
-            else "${prefix}.${key}"
-          )
-          value.${key}
-      ) {} (builtins.attrNames value)
-    else {"${prefix}" = value;};
+  # Setting names identify where namespaces end and JSON object values begin.
+  # Explicit dotted keys also mark complete settings. Language override blocks
+  # contain another settings map; arrays and setting values stay intact.
+  # A string prefix remains supported for existing callers.
+  flattenVSCodeSetting = context: let
+    options =
+      if isAttrs context
+      then context
+      else {prefix = context;};
+    settingNames = options.settingNames or [];
+    flatten = prefix: value:
+      if prefix != "" && elem prefix settingNames
+      then {"${prefix}" = value;}
+      else if isAttrs value && value ? _type && elem value._type ["merge" "if" "override" "order"]
+      then
+        value
+        // (
+          if value._type == "merge"
+          then {contents = map (flatten prefix) value.contents;}
+          else {content = flatten prefix value.content;}
+        )
+      else if isAttrs value && attrNames value != []
+      then
+        foldl' (
+          result: key: let
+            name =
+              if prefix == ""
+              then key
+              else "${prefix}.${key}";
+            setting =
+              if prefix == "" && hasPrefix "[" key
+              then {"${key}" = flatten "" value.${key};}
+              else if hasInfix "." key
+              then {"${name}" = value.${key};}
+              else flatten name value.${key};
+          in
+            mergeSafe [result setting]
+        ) {} (attrNames value)
+      else if prefix == ""
+      then value
+      else {"${prefix}" = value;};
+  in
+    flatten (options.prefix or "");
 
   mkVSCodeFeature = {
     extensions,
@@ -62,7 +99,10 @@
     ...
   } @ args: let
     enable = args.enable or (args.enabled or false);
-    effectiveSettings = normalizeSettings {inherit settings userSettings;};
+    effectiveSettings = normalizeSettings {
+      inherit settings userSettings;
+      settingNames = args.settingNames or [];
+    };
   in
     {
       extensions = optionals enable (
@@ -90,9 +130,10 @@
     ...
   } @ args: let
     enable = args.enable or (args.enabled or false);
-    effectiveSettings = flattenVSCodeSetting "" (
-      normalizeSettings {inherit settings userSettings;}
-    );
+    effectiveSettings = normalizeSettings {
+      inherit settings userSettings;
+      settingNames = args.settingNames or [];
+    };
   in
     {
       extensions = optionals enable extensions;

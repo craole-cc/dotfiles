@@ -11,7 +11,7 @@ _: {
 
   settings = {
     #~@ Semantic  Colour and style for TextMate scopes.
-    "editor.tokenColorCustomizations".textMateRules = [
+    editor.tokenColorCustomizations.textMateRules = [
       {
         scope = [
           "keyword.operator.logical.python"

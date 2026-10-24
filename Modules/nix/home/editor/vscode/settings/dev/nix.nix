@@ -12,56 +12,60 @@ _: {
       "editor.defaultFormatter" = "jnoortheen.nix-ide";
       "editor.formatOnSave" = true;
     };
-    "nix.enableLanguageServer" = true;
-    "nix.serverPath" = server;
-    "nix.serverSettings" = {
-      "${server}"."formatting"."command" = ["alejandra" "-q" "-"];
-    };
-
-    "lintRunner.tools" = {
-      statix = {
-        kind = "diagnostic";
-        command = "statix";
-        args = ["check" "--format" "errfmt" "\${file}"];
-        successExitCodes = [0 1];
-        parser = {
-          flags = "gm";
-          pattern = "^.+?>(?<line>\\\\d+):(?<col>\\\\d+):[WE]:(?<code>\\\\d+):(?<message>.+)$";
-        };
+    nix = {
+      enableLanguageServer = true;
+      serverPath = server;
+      serverSettings = {
+        "${server}"."formatting"."command" = ["alejandra" "-q" "-"];
       };
     };
 
-    "lintRunner.targets" = [
-      {
-        name = "Nix";
-        match = {
-          languages = [
-            "nix"
-          ];
-          files = [
-            "**/*.nix"
-          ];
+    lintRunner = {
+      tools = {
+        statix = {
+          kind = "diagnostic";
+          command = "statix";
+          args = ["check" "--format" "errfmt" "\${file}"];
+          successExitCodes = [0 1];
+          parser = {
+            flags = "gm";
+            pattern = "^.+?>(?<line>\\\\d+):(?<col>\\\\d+):[WE]:(?<code>\\\\d+):(?<message>.+)$";
+          };
         };
-        onOpen = {
-          strategy = "sequence";
-          tools = [
-            "statix"
-          ];
-        };
-        onSave = {
-          strategy = "sequence";
-          tools = [
-            "statix"
-          ];
-        };
-        manual = {
-          strategy = "sequence";
-          tools = [
-            "statix"
-          ];
-        };
-      }
-    ];
+      };
+
+      targets = [
+        {
+          name = "Nix";
+          match = {
+            languages = [
+              "nix"
+            ];
+            files = [
+              "**/*.nix"
+            ];
+          };
+          onOpen = {
+            strategy = "sequence";
+            tools = [
+              "statix"
+            ];
+          };
+          onSave = {
+            strategy = "sequence";
+            tools = [
+              "statix"
+            ];
+          };
+          manual = {
+            strategy = "sequence";
+            tools = [
+              "statix"
+            ];
+          };
+        }
+      ];
+    };
   };
   keybindings = [];
 }
